@@ -2,13 +2,13 @@
 <template>
   <div>
     <el-row class="bet-area m-b-lg">
-      <el-row type="flex" class="actions" justify="center">
+      <el-row type="flex" class="actions m-b" justify="center">
       <el-col :span="1" class="amount">金额</el-col>
       <el-col :span="3">
         <el-input v-model.number="amount" :min="1" type="number" @keypress.native="filtAmount" />
       </el-col>
       <el-col class="m-l-lg" :span="4">
-        <el-button class="placeOrder-btn" type="primary" size="small" @click="openDialog" :disabled="gameClosed">下单</el-button>
+        <el-button class="place-order-btn" type="primary" size="small" @click="openDialog" :disabled="gameClosed">下单</el-button>
         <el-button size="small" @click="reset">重置</el-button>
       </el-col>
     </el-row>
@@ -55,22 +55,24 @@
                 @mouseleave="toggleHover(play, false)"
                 @click="toggleActive(plays[play.id], $event)"
                 v-if="play.code">
-                <el-col :span="play.value?2:6" class="name">
-                  <span :class="play.value?'':[playgroup.code, play.code.replace(',', '')]">{{play.display_name}}</span>
+                <el-col :span="play.value ? 2 : 6" class="name">
+                  <span>
+                    <span :class="play.value?'':[playgroup.code, play.code.replace(',', '')]">{{play.display_name}}</span>
+                  </span>
                 </el-col>
-                <el-col v-if="play.value" :span="17" class="number">
+                <el-col v-if="play.value" :span="15" class="number">
                   <span :class="[playgroup.code, `${playgroup.code}_${num}`,'m-l-sm']" v-for="(num,index) in play.value" :key="index">{{num}}</span>
                 </el-col>
-                <el-col :span="play.value?2:6" class="odds">
-                  {{ !gameClosed ? play.odds : '-'}}
+                <el-col :span="play.value ? 2 : 6" class="odds">
+                  <span>{{ !gameClosed ? play.odds : '-'}}</span>
                 </el-col>
-                <el-col :span="play.value?3:12" class="input">
+                <el-col :span="play.value ? 5 : 12" class="input">
                   <el-input v-if="!gameClosed" size="mini" class="extramini" v-model="plays[play.id].amount" @keypress.native="filtAmount" type="number" min="1" step="10"
                   />
                   <el-input v-else size="mini" class="extramini" placeholder="封盘" disabled />
                 </el-col>
               </td>
-              <td :colspan="playSection.playCol - playChunk.length" v-if="playChunk.length < playSection.playCol && playChunkIndex === playgroup.plays.length - 1"></td>
+              <td :colspan="playSection.playCol - playChunk.length" v-if="playChunk.length < playSection.playCol"></td>
             </tr>
           </table>
           <component
@@ -87,19 +89,19 @@
         </div>
       </div>
        <el-row type="flex" class="actions" justify="center" v-if="!loading">
-                <el-col :span="1" class="amount">金额</el-col>
-                <el-col :span="3">
-                  <el-input v-model.number="amount" :min="1" type="number" @keypress.native="filtAmount"/>
-                </el-col>
-                <el-col class="m-l-lg" :span="4">
-                  <el-button type="primary"
-                    class="placeOrder-btn"
-                    size="small"
-                    @click="openDialog"
-                    :disabled="gameClosed">下单</el-button>
-                  <el-button size="small" @click="reset">重置</el-button>
-                </el-col>
-              </el-row>
+        <el-col :span="1" class="amount">金额</el-col>
+        <el-col :span="3">
+          <el-input v-model.number="amount" :min="1" type="number" @keypress.native="filtAmount"/>
+        </el-col>
+        <el-col class="m-l" :span="4">
+          <el-button type="primary"
+            class="place-order-btn"
+            size="small"
+            @click="openDialog"
+            :disabled="gameClosed">下单</el-button>
+          <el-button size="small" @click="reset">重置</el-button>
+        </el-col>
+      </el-row>
     </el-row>
     <el-dialog title="确认注单"
       width="40%"
@@ -108,7 +110,7 @@
       :close-on-click-modal="false"
       :close-on-press-escape="false">
       <el-table :data="activePlays" stripe max-height="350">
-        <el-table-column property="display_name" label="号码" width="150">
+        <el-table-column property="display_name" label="内容" >
           <template slot-scope="scope">
             <span class="play-name">{{scope.row.display_name}}</span>
             <span v-if="scope.row.isCustom" class="combinations-count">共 {{scope.row.combinations.length}} 组</span>
@@ -138,12 +140,12 @@
             <span class="red bet-amount">{{scope.row.odds}}</span>
           </template>
         </el-table-column>
-        <el-table-column property="bet_amount" label="金额">
+        <el-table-column property="bet_amount" label="金额" width="150">
           <template slot-scope="scope">
             <el-input size="mini" v-model.number="scope.row.bet_amount" type="number" @keypress.native="filtAmount"></el-input>
           </template>
         </el-table-column>
-        <el-table-column property="active" label="确认">
+        <el-table-column property="active" label="确认" width="100">
           <template slot-scope="scope">
             <el-checkbox v-model="scope.row.active">确认</el-checkbox>
           </template>
@@ -175,13 +177,15 @@ import Vue from 'vue'
 import _ from 'lodash'
 import '../../style/playicon.scss'
 import { fetchPlaygroup, placeBet } from '../../api'
-import { formatPlayGroup, filtAmount } from '../../utils'
+import { msgFormatter, formatPlayGroup, filtAmount } from '../../utils'
 import { zodiacs, zodiacMap, colorWave } from '../../utils/hk6'
 const common = (resolve) => require(['../../components/playGroup/common'], resolve)
 const gd11x5Seq = (resolve) => require(['../../components/playGroup/gd11x5_pg_seq_seq'], resolve)
 const hklPgShxiaoSpczdc = (resolve) => require(['../../components/playGroup/hkl_pg_shxiao_spczdc'], resolve)
 const hklPgExl = (resolve) => require(['../../components/playGroup/hkl_pg_exl'], resolve)
 const hklPgNtinfvrNum = (resolve) => require(['../../components/playGroup/hkl_pg_ntinfvr_num'], resolve)
+const fc3dPg2df = (resolve) => require(['../../components/playGroup/fc3d_pg_2df'], resolve)
+const fc3dPgIc = (resolve) => require(['../../components/playGroup/fc3d_pg_ic'], resolve)
 
 export default {
   props: {
@@ -202,7 +206,9 @@ export default {
     hklPgShxiaoSpczdc,
     gd11x5Seq,
     hklPgExl,
-    hklPgNtinfvrNum
+    hklPgNtinfvrNum,
+    fc3dPg2df,
+    fc3dPgIc
   },
   data () {
     return {
@@ -348,11 +354,6 @@ export default {
         return item.code === groupCode
       })
     },
-    getResultClass (resultNum) {
-      let gameClass = `result-${this.gameLatestResult.game_code}`
-      let resultClass = `resultnum-${resultNum}`
-      return [gameClass, resultClass]
-    },
     updateBetrecords () {
       this.$root.bus.$emit('new-betrecords', {
         gameId: this.game.id,
@@ -392,7 +393,7 @@ export default {
         },
         errRes => {
           this.submitting = false
-          this.errors = errRes.join()
+          this.errors = msgFormatter(errRes)
           setTimeout(() => {
             this.dialogVisible = false
           }, 3000)
@@ -400,7 +401,6 @@ export default {
     },
     initPlaygroups () {
       const categoryId = this.$route.params.categoryId
-      this.$store.commit('START_LOADING')
       fetchPlaygroup(categoryId).then(res => {
         let plays = {}
         res.forEach(item => {
@@ -413,15 +413,11 @@ export default {
             if (item.code === 'hkl_pg_txiao_spczdc' || item.code === 'hkl_pg_shawzdc' || item.code === 'hkl_pg_pxxmzdc') {
               plays[play.id]['value'] = this.zodiacMap[play.display_name]
             }
-          }
-          )
+          })
         })
         this.raw = res
         this.plays = plays
         this.loading = false
-        this.$store.commit('END_LOADING')
-      }, errRes => {
-        this.$store.commit('END_LOADING')
       })
     },
     openDialog () {
@@ -463,9 +459,25 @@ export default {
         } else {
           optionDisplayNames = ''
         }
+
+        let forShow = ''
+
+        if (play.hideName) {
+          forShow = play.group
+        } else {
+          if (play.alias) {
+            if (play.alias === play.display_name) {
+              forShow = `${play.group} - ${play.alias}`
+            } else {
+              forShow = `${play.alias} - ${play.display_name}`
+            }
+          } else {
+            forShow = `${play.group} - ${play.display_name}`
+          }
+        }
         return {
           game_schedule: 10,
-          display_name: play.hideName ? play.group : `${play.group} - ${play.display_name}`,
+          display_name: forShow,
           odds: play.odds,
           bet_amount: play.amount,
           id: play.id,
@@ -508,11 +520,6 @@ export default {
       })
 
       Vue.set(this, 'playReset', !this.playReset)
-    },
-    validateAmount (value) {
-      if (value < 1) {
-        this.amount = 1
-      }
     }
   }
 }
@@ -526,7 +533,7 @@ export default {
     display: inline-block;
     cursor: pointer;
     float: left;
-    padding: 8px 20px;
+    padding: 6px 15px;
     margin: 0 -1px 2px 0;
     background: #fff;
     color: #666;
@@ -535,25 +542,11 @@ export default {
       border: 1px solid $primary;
       background: $primary;
       color: #fff;
-      margin-bottom: 10px;
+      margin-bottom: 5px;
     }
   }
 }
-.name {
-  font-weight: bold;
-  line-height: $cell-height;
-  border-right: $cell-border;
-}
-.number {
-  text-align: left;
-}
-.odds {
-  background-color: #fff;
-  line-height: $cell-height;
-  border-right: $cell-border;
-  color: $red;
-  font-weight: 700;
-}
+
 .clickable {
   cursor: pointer;
 }
@@ -569,14 +562,9 @@ export default {
   padding-left: 10px;
   font-weight: 700;
 }
-.actions {
-  background: #fff;
-  padding: 10px;
-  margin: 10px 0;
-}
 .bet-area {
   background: #fff;
-  padding: 20px;
+  padding: 10px;
 }
 .summary {
   font-size: 12px;
@@ -597,9 +585,6 @@ export default {
   padding-left: 10px;
   font-weight: 700;
 }
-.placeOrder-btn {
-  background-color: $azul;
-}
 .el-input /deep/ .el-input__inner{
   height: 30px;
   border: solid 1px #c8c8c8;
@@ -607,15 +592,7 @@ export default {
 
 .extramini  /deep/ .el-input__inner {
   width: 90%;
-  height: 28px;
-}
-.sssss {
-  &:after {
-    display: inline-block;
-    content: '';
-    height: 100%;
-    vertical-align: middle;
-  }
+  height: 26px;
 }
 </style>
 

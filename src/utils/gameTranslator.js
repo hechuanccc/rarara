@@ -115,6 +115,35 @@ const bjkl8Translator = function (title) {
   }
   return ['']
 }
+const auluck8Translator = function (title) {
+  for (let i = 1; i < 21; i++) {
+    if (`${i}` === title || `ball_than_size_${i}` === title || `ball_odd_even_${i}` === title) {
+      return [`第${i}球`]
+    }
+  }
+  switch (title) {
+    case 'sum_of_ball_odd_even':
+      return ['总和']
+    case 'sum_of_ball_than_size':
+      return ['总和']
+    case 'sum_of_ball_five_element':
+      return ['五行']
+  }
+  return ['']
+}
+
+const auluck8StatisticTranslator = function (title) {
+  switch (title) {
+    case 'sum_of_ball_odd_even':
+      return ['总和']
+    case 'sum_of_ball_than_size':
+      return ['总和']
+    case 'sum_of_ball_five_element':
+      return ['五行']
+  }
+  return ['']
+}
+
 const pcddTranslator = function (title) {
   switch (title) {
     case 'sum_of_ball_odd_even':
@@ -158,6 +187,51 @@ const jsk3Translator = function (title) {
   }
   return ['']
 }
+const fc3dTranslator = function (title) {
+  for (let i = 1; i <= 3; i++) {
+    for (let j = 1; j <= 3; j++) {
+      switch (title) {
+        case 'balls_odd_even_1_2':
+          return ['佰拾和數']
+        case 'balls_than_size_1_2':
+          return ['佰拾和數']
+        case 'balls_prime_composite_tail_1_2':
+          return ['佰拾和數', 'tail']
+        case 'balls_than_size_tail_1_2':
+          return ['佰拾和數', 'tail']
+        case 'balls_odd_even_1_3':
+          return ['佰个和數']
+        case 'balls_than_size_1_3':
+          return ['佰个和數']
+        case 'balls_prime_composite_tail_1_3':
+          return ['佰个和數', 'tail']
+        case 'balls_than_size_tail_1_3':
+          return ['佰个和數', 'tail']
+        case 'balls_odd_even_2_3':
+          return ['拾个和數']
+        case 'balls_than_size_2_3':
+          return ['拾个和數']
+        case 'balls_prime_composite_tail_2_3':
+          return ['拾个和數', 'tail']
+        case 'balls_than_size_tail_2_3':
+          return ['拾个和數', 'tail']
+      }
+    }
+  }
+  switch (title) {
+    case 'sum_of_ball_odd_even':
+      return ['佰拾个和數']
+    case 'sum_of_ball_than_size':
+      return ['佰拾个和數']
+    case 'sum_of_ball_prime_composite':
+      return ['佰拾个和數']
+    case 'sum_of_ball_tail_than_size':
+      return ['佰拾个和數', 'tail']
+    case 'sum_of_ball_tail_prime_composite':
+      return ['佰拾个和數', 'tail']
+  }
+  return ['']
+}
 
 export default {
   'jspk10': transformerTranslator,
@@ -172,7 +246,11 @@ export default {
   'gdklsf': cqlfTranslator,
   'gd11x5': gd11x5Translator,
   'bjkl8': bjkl8Translator,
+  'auluck8': auluck8Translator,
+  'auluck8Statistic': auluck8StatisticTranslator,
   'pcdd': pcddTranslator,
+  'jnd28': pcddTranslator,
   'hkl': hklTranslator,
-  'jsk3': jsk3Translator
+  'jsk3': jsk3Translator,
+  'fc3d': fc3dTranslator
 }

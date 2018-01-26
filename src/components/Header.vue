@@ -12,6 +12,7 @@
           }
         ]">
         <Logo/>
+        <GameResult :gameid="$route.params.gameId" v-if="$route.path.indexOf('/game/') >= 0"/>
         <NavMenu :menus="isUserPage ? showUserMenus : menus" />
       </div>
     </div>
@@ -22,6 +23,7 @@
 import TopBar from '../components/TopBar'
 import NavMenu from '../components/NavMenu'
 import Logo from '../components/Logo'
+import GameResult from '../components/GameResult'
 
 export default {
   data () {
@@ -59,9 +61,13 @@ export default {
   components: {
     TopBar,
     NavMenu,
-    Logo
+    Logo,
+    GameResult
   },
   computed: {
+    currentGame () {
+      return this.$store.getters.gameById(this.$route.params.gameId)
+    },
     isUserPage () {
       let pat = new RegExp(/\/game\/|\/game|\/account\/|\/gamehistory|\/gameintro/)
       return pat.test(this.$route.path)
@@ -88,17 +94,16 @@ export default {
 
 .header
   width: 100%
-  height: 100px
+  height: 96px
 .topbar
   display: inline-block
   background-color: #f9f9f9
-  height: 40px
+  height: 36px
   width: 100%
 .bottomnavs
   display: inline-block
   width: 100%
   height: 60px
-  line-height: 60px
   background-color: #ffffff
   text-align: justify
   .navs

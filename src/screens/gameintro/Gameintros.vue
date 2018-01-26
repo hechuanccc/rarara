@@ -7,7 +7,7 @@
       </el-breadcrumb>
       <el-row class="rules-container">
         <div class="aside">
-          <AsideMenu @clicked="onClickChild" :items="games ? games : []" />
+          <AsideMenu @clicked="onClickChild" :items="games ? games : []" :defaultActive="active"/>
         </div>
         <div class="main rules-content m-b-xlg">
           <h1 class="rules-main-title m-b-lg">{{currentGame.display_name}}</h1>
@@ -63,6 +63,9 @@
   import tjssc from './rules/tjssc'
   import bjkl8 from './rules/bjkl8'
   import er75ft from './rules/er75ft'
+  import auluck8 from './rules/auluck8'
+  import jnd28 from './rules/jnd28'
+  import fc3d from './rules/fc3d'
   import AsideMenu from '../../components/AsideMenu'
   import _ from 'lodash'
 
@@ -84,23 +87,37 @@
       xjssc,
       tjssc,
       bjkl8,
-      er75ft
+      er75ft,
+      auluck8,
+      jnd28,
+      fc3d
     },
     data () {
       return {
         games: '',
         currentGame: {},
         currentPlaySettings: [],
-        loading: false
+        loading: false,
+        playing: localStorage.getItem('lastGame')
       }
     },
     created () {
       fetchGames().then(
         games => {
           this.games = games
-          this.currentGame = games[0]
+          if (this.playing && this.$store.state.games.length > 0) {
+            this.currentGame = this.$store.getters.gameById(this.playing)
+          } else {
+            this.currentGame = games[0]
+          }
         }
       )
+    },
+    computed: {
+      active () {
+        // the second judgement is for the page refresh condition
+        return (this.playing && this.$store.state.games.length > 0) ? String(this.$store.getters.gameById(this.playing).rank - 1) : '0'
+      }
     },
     watch: {
       'currentGame': function () {
@@ -143,7 +160,7 @@ $title-color: black !default;
 .main.rules-content {
   display: inline-block;
   box-sizing: border-box;
-  width: 1095px;
+  width: $main_width;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
   background-color: #ffffff;
   padding: 40px;

@@ -48,7 +48,7 @@ $racing_length: length($results_racing);
 }
 
 /*specific: guandong region games, common: ball_1.png*/
-$results_gd: gd11x5, gdklsf;
+$results_gd: gd11x5, gdklsf, fc3d;
 $gd_length: length($results_gd);
 
 @for $index from 1 through $gd_length {
@@ -101,11 +101,12 @@ $gd_length: length($results_gd);
     margin-left: 1px;
   }
   &:nth-child(7) {
+    margin-left: 10px;
     &:before {
       content: '＋';
       color: black;
       position: relative;
-      right: 11px;
+      right: 15px;
       top: 3px;
     }
   }
@@ -158,6 +159,30 @@ $gd_length: length($results_gd);
   }
 }
 
+.result-jnd28 {
+  background: url("../assets/ball-sprites.png") no-repeat -117px -26px;
+  height: 27px;
+  line-height: 27px;
+  text-align: center;
+  +.ball-sum {
+    margin-left: 5px;
+    span {
+      background: url("../assets/ball-sprites.png") no-repeat -117px -26px;
+      line-height: 27px;
+      b {
+        display: inline-block;
+        width: 24px;
+        font-size: 14px;
+      }
+    }
+  }
+  b {
+    display: inline-block;
+    width: 24px;
+    font-size: 16px;
+  }
+}
+
 .result-cqlf {
   background: url("../assets/ball_nc_top.png") no-repeat;
   height: 32px;
@@ -177,6 +202,23 @@ $gd_length: length($results_gd);
 }
 
 .result-bjkl8 {
+  background: url("../assets/ball_5_small.png") no-repeat;
+  height: 22px;
+  width: 25px;
+  margin-bottom: 1px;
+  b {
+    display: inline-block;
+    text-indent: -9999px;
+  }
+
+  @for $num from 1 through 80 {
+    &.resultnum-#{$num} {
+      background-position: 0 (-23px * ($num - 1));
+    }
+  }
+}
+
+.result-auluck8 {
   background: url("../assets/ball_5_small.png") no-repeat;
   height: 22px;
   width: 25px;

@@ -1,7 +1,11 @@
+@import "./vars.scss";
+
+.el-container {
+  width: $container_width;
+}
 .el-input.extramini .el-input__inner {
-  margin: 4px 0;
+  margin: 2px 0;
   height: 26px;
-  padding: 0 5px;
 }
 
 .el-table--small td, .el-table--small th {

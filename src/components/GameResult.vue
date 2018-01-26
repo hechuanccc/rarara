@@ -4,7 +4,8 @@
       <p class="game">{{gameLatestResult.display_name}}</p>
       <p class="issue">{{gameLatestResult.issue_number}}{{$t('navMenu.result_period')}}</p>
     </div>
-    <div class="balls-number" v-if="gameLatestResult">
+    <AudioButton class="audio-button"/>
+    <div :class="['balls-number', 'wrapper-' + gameLatestResult.game_code]" v-if="gameLatestResult">
       <span
         v-for="(num, index) in resultNums"
         :key="gameLatestResult.issue_number + index"
@@ -13,7 +14,7 @@
         <p class="ball-zodiac" v-if="showZodiac"> {{zodiacs[index]}} </p>
       </span>
       <div class="ball-sum" v-if="showSum">
-        {{$t('navMenu.total')}}:
+        {{$t('navMenu.total')}}
         <span>
           <b>{{resultsSum}}</b>
         </span>
@@ -23,6 +24,7 @@
 </template>
 
 <script>
+import AudioButton from '../components/AudioButton'
 import {fetchGameResult} from '../api'
 import _ from 'lodash'
 
@@ -31,6 +33,9 @@ export default {
     gameid: {
       type: String
     }
+  },
+  components: {
+    AudioButton
   },
   data () {
     return {
@@ -79,7 +84,7 @@ export default {
       if (code === 'hkl') {
         this.showZodiac = true
       }
-      if (code === 'pcdd') {
+      if (code === 'pcdd' || code === 'jnd28') {
         this.showSum = true
       }
     }
@@ -127,10 +132,10 @@ export default {
                 this.$store.dispatch('fetchUser')
               }, 2000)
               this.pollResult(gameid)
-              this.$emit('refreshResult')
+              this.$root.bus.$emit('refreshResult')
             }
           })
-        }, 5000)
+        }, 1000)
         this.pollResult(gameid)
       }, startPollingTime)
     }
@@ -147,34 +152,48 @@ export default {
 @import "../style/vars.scss";
 
 .result-balls {
-  background: #fff;
-  border-left: 5px solid $marine-blue;
-  width: 49%;
-  height: 55px;
+  display: table;
+  max-width: 425px;
+  height: 60px;
+  margin-left: 40px;
   float: left;
   .balls-text {
-    color: #4a4a4a;
-    padding-left: 20px;
+    font-size: 13px;
+    display: table-cell;
+    vertical-align: middle;
+    color: #666;
     text-align: center;
-    p{
-      height: 27px;
-      line-height: 27px;
-      letter-spacing: 2px;
+    p {
+      width: 100px;
+      height: 18px;
+      line-height: 18px;
+    }
+    .issue {
+      color: #999;
     }
   }
-  .balls-number {
-    padding-left: 3px;
-    width: 275px;
-  }
-  div {
-    display: inline-block;
-    position: relative;
+  .audio-button{
+    display: table-cell;
+    text-align: center;
     vertical-align: middle;
-    font-size: 12px;
+  }
+  .balls-number {
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
+    height: 100%;
+    width: 100%;
   }
   span {
     display: inline-block;
-    margin-left: 2px;
+    margin: 1px 5px 1px 0;
+    vertical-align: middle;
+  }
+  .ball-sum {
+    display: inline-block;
+  }
+  .wrapper-hkl span{
+    margin-bottom: 10px;
   }
 }
 </style>

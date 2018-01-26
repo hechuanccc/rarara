@@ -79,8 +79,9 @@ export function formatPlayGroup (raw, formatting) {
   return sections
 }
 
-export function msgFormatter (msgs) {
+export function msgFormatter (error) {
   let formatMsg
+  let msgs = error.msg
   if (Array.isArray(msgs)) {
     let arr = []
     msgs.forEach(msg => {
@@ -162,4 +163,15 @@ export function filtAmount (evt) {
 
 export function statisticTranslator (code) {
   return gameTranslator[code]
+}
+
+export function getCookie (name) {
+  let arr = document.cookie.split('; ')
+  for (let i = 0; i < arr.length; i++) {
+    let arr2 = arr[i].split('=')
+    if (arr2[0] === name) {
+      return arr2[1]
+    }
+  }
+  return ''
 }

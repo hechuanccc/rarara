@@ -24,7 +24,8 @@ export default {
     result_period: '期',
     total: '总和',
     no_result: '尚无开奖结果',
-    online_service: '在线客服'
+    online_service: '在线客服',
+    register_now: '立即注册'
   },
   agent: {
     register: '代理注册',
@@ -112,7 +113,8 @@ export default {
     success: '成功',
     failed: '失败',
     ongoing: '处理中',
-    cancelled: '取消',
+    cancelled: '已取消',
+    no_draw: '官方未开',
     declined: '拒绝',
     finance: '财务记录',
     message: '站内消息',
@@ -130,7 +132,11 @@ export default {
     visitor: '游客',
     min_amount: '最小金额',
     max_amount: '最大金额',
-    unread_email: '未读信件'
+    unread_email: '未读信件',
+    read_status: '状态',
+    read: '已读',
+    unread: '未读',
+    agreement: '用户协议'
   },
   gameIntro: {
     gameinfo: '游戏资讯：',
@@ -178,7 +184,8 @@ export default {
     min_amount_validate: '必须大于最充值金额',
     max_withdraw_amount_validate: '必须小于最大取款金额',
     min_withdraw_amount_validate: '必须大于最小取款金额',
-    date_range_validate: '起日不得晚于迄日'
+    date_range_validate: '起日不得晚于迄日',
+    agreement_validate: '请阅读并同意用户协议'
   },
   message: {
     save_success: '保存成功',

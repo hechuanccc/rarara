@@ -1,7 +1,7 @@
 <template>
-  <div class="logo">
+  <div class="logo p-l">
     <router-link to="/">
-      <img :src="$store.state.common.homePageLogo" alt="logo" />
+      <img :src="$store.state.systemConfig.homePageLogo" alt="logo" />
     </router-link>
   </div>
 </template>
@@ -18,13 +18,11 @@ export default {
 
 <style lang="sass" scoped>
 .logo
-  display: inline-block
+  float: left
   width: 225px
   height: 50px
-  padding-left: 40px
+  margin: 5px 0
   vertical-align: middle
-  position: relative
-  top: -4px
   img
     width: 100%
     height: 100%

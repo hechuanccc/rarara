@@ -1,48 +1,46 @@
 <template>
 <el-row>
-  <div class="container">
-    <el-col :span="16" :offset="8">
-      <el-form :model="user"
-        status-icon
-        :rules="rules"
-        ref="user"
-        label-width="150px">
-        <el-form-item :label="$t('user.username')" prop="username">
-          <el-input class="input-width" :maxlength="15" v-model="user.username" auto-complete="off"></el-input>
-        </el-form-item>
-        <el-form-item :label="$t('user.password')" prop="password">
-          <el-input class="input-width" :maxlength="15" type="password" v-model="user.password" auto-complete="off"></el-input>
-        </el-form-item>
-        <el-form-item :label="$t('user.confirm_password')" prop="confirm_password">
-          <el-input class="input-width" :maxlength="15" type="password" v-model="user.confirm_password" auto-complete="off"></el-input>
-        </el-form-item>
-        <el-form-item :label="$t('user.realname')" prop="real_name">
-          <el-input class="input-width" v-model="user.real_name"></el-input>
-        </el-form-item>
-        <el-form-item :label="$t('user.phone')" prop="phone">
-          <el-input class="input-width" v-model="user.phone"></el-input>
-        </el-form-item>
-        <el-form-item :label="$t('user.email')" prop="email">
-          <el-input class="input-width" v-model="user.email"></el-input>
-        </el-form-item>
-        <el-form-item :label="$t('user.captcha')" required>
-          <el-col :span="7">
-            <el-form-item  prop="captcha_1">
-              <el-input class="input-width" :maxlength="4" v-model="user.captcha_1" auto-complete="off">
-                <el-button slot="suffix" type="info" icon="el-icon-refresh" class="captcha" @click="fetchCaptcha"></el-button>
-              </el-input>
-            </el-form-item>
-          </el-col>
-          <el-col :span="4" :offset="1">
-            <img :src="captcha_src" alt="" height="30">
-          </el-col>
-        </el-form-item>
-        <el-form-item>
-          <div class="success" v-if="successMsg">{{successMsg}}</div>
-          <el-button type="primary" size="medium" class="input-width" @click="submitForm">{{$t('action.submit')}}</el-button>
-        </el-form-item>
-      </el-form>
-    </el-col>
+  <div class="register-container">
+    <el-form :model="user"
+      status-icon
+      :rules="rules"
+      ref="user"
+      label-width="120px">
+      <el-form-item :label="$t('user.username')" prop="username">
+        <el-input class="input-width" :maxlength="15" v-model="user.username" auto-complete="off"></el-input>
+      </el-form-item>
+      <el-form-item :label="$t('user.password')" prop="password">
+        <el-input class="input-width" :maxlength="15" type="password" v-model="user.password" auto-complete="off"></el-input>
+      </el-form-item>
+      <el-form-item :label="$t('user.confirm_password')" prop="confirm_password">
+        <el-input class="input-width" :maxlength="15" type="password" v-model="user.confirm_password" auto-complete="off"></el-input>
+      </el-form-item>
+      <el-form-item :label="$t('user.realname')" prop="real_name">
+        <el-input class="input-width" v-model="user.real_name"></el-input>
+      </el-form-item>
+      <el-form-item :label="$t('user.phone')" prop="phone">
+        <el-input class="input-width" v-model="user.phone"></el-input>
+      </el-form-item>
+      <el-form-item :label="$t('user.email')" prop="email">
+        <el-input class="input-width" v-model="user.email"></el-input>
+      </el-form-item>
+      <el-form-item :label="$t('user.captcha')" required>
+        <el-col :span="7">
+          <el-form-item  prop="captcha_1">
+            <el-input class="input-width" :maxlength="4" v-model="user.captcha_1" auto-complete="off">
+              <el-button slot="suffix" type="info" icon="el-icon-refresh" class="captcha" @click="fetchCaptcha"></el-button>
+            </el-input>
+          </el-form-item>
+        </el-col>
+        <el-col :span="4" :offset="12">
+          <img :src="captcha_src" alt="" height="30">
+        </el-col>
+      </el-form-item>
+      <el-form-item>
+        <div class="success" v-if="successMsg">{{successMsg}}</div>
+        <el-button type="primary" size="medium" class="input-width submit" @click="submitForm">{{$t('action.submit')}}</el-button>
+      </el-form-item>
+    </el-form>
   </div>
 </el-row>
 </template>
@@ -56,7 +54,9 @@
     name: 'agentRegister',
     data () {
       const userNameValidator = (rule, value, callback) => {
-        if (!validateUserName(value)) {
+        if (!value) {
+          callback(new Error(this.$t('validate.required')))
+        } else if (!validateUserName(value)) {
           callback(new Error(this.$t('validate.username_validate')))
         } else {
           checkAgentName(value).then(data => {
@@ -126,8 +126,7 @@
         captcha_src: '',
         rules: {
           username: [
-          { required: true, message: this.$t('validate.required'), trigger: 'blur' },
-          { validator: userNameValidator, trigger: 'blur,change' }
+          { required: true, validator: userNameValidator, trigger: 'blur' }
           ],
           password: [
           { required: true, validator: passwordValidator, trigger: 'blur' },
@@ -189,15 +188,26 @@
   }
 </script>
 
-<style lang="sass" scoped>
-@import '../../style/vars.scss'
-.el-input /deep/ .el-input__suffix
+<style lang="scss" scoped>
+@import '../../style/vars.scss';
+.register-container{
+  box-sizing: border-box;
+  width: 600px;
+  height: auto;
+  padding: 30px 80px 20px 80px;
+  margin: 0 auto 40px auto;
+}
+
+.el-input /deep/ .el-input__suffix {
   right: 0
-.el-button.el-button--info.el-button--small.captcha
-  position: absolute
-  right: 0
-.success
-  position: absolute
-  bottom: 35px
-  color: $green
+}
+.el-button.el-button--info.el-button--small.captcha {
+  position: absolute;
+  right: 0;
+}
+.success {
+  position: absolute;
+  bottom: 35px;
+  color: $green;
+}
 </style>

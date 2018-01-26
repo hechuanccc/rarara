@@ -45,7 +45,7 @@
         </ul>
       </div>
       <div class="submit-button text-center">
-        <el-button class="submit" type="primary" :disabled="payeeError" @click="submit($event)">{{$t('action.submit')}}</el-button>
+        <el-button class="input-width" type="primary" :disabled="payeeError" @click="submit($event)">{{$t('action.submit')}}</el-button>
       </div>
     </el-form>
     <el-dialog
@@ -68,7 +68,7 @@
             </router-link>
           </el-col>
           <el-col :span="12" class="text-center">
-            <a :href="$store.state.common.customerServiceUrl" target="_blank">
+            <a :href="$store.state.systemConfig.customerServiceUrl" target="_blank">
               <el-button class="dialog-button" type="primary">在线客服</el-button>
             </a>
           </el-col>

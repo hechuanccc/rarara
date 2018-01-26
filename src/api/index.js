@@ -1,9 +1,9 @@
 import axios from 'axios'
 import qs from 'qs'
 import urls from './urls'
-import Vue from 'vue'
 
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded'
+let axiosChat = axios.create()
 
 export function login (user) {
   return axios.post(urls.login, qs.stringify(user))
@@ -57,8 +57,8 @@ export function fetchGames () {
 export function fetchUser () {
   return axios.get(urls.user)
 }
-export function updateUser (user) {
-  return axios.put(`${urls.user}${user.id}/`, user)
+export function updateUser (user, id) {
+  return axios.put(`${urls.user}${user.id ? user.id : id}/`, user)
 }
 
 export function updatePassword (password) {
@@ -103,15 +103,15 @@ export function fetchTransactionRecord (option) {
 }
 
 export function fetchBet (gameData) {
-  return axios.get(`${urls.betrecord}?opt_expand=play&game=${gameData.gameId}&schedule=${gameData.scheduleId}&status=ongoing`)
+  return axios.get(`${urls.betrecord}?game=${gameData.gameId}&schedule=${gameData.scheduleId}&status=ongoing`)
 }
 
 export function fetchWinBet () {
-  return axios.get(`${urls.betrecord}?opt_expand=play&status=win&latest=1`)
+  return axios.get(`${urls.betrecord}?status=win&latest=1`)
 }
 
 export function fetchBetHistory (option) {
-  let url = `${urls.betrecord}?opt_expand=play&limit=20`
+  let url = `${urls.betrecord}?limit=20`
   Object.keys(option).forEach(key => {
     if (option[key]) {
       url += `&${key}=${option[key]}`
@@ -195,10 +195,52 @@ export function fetchTransactionStatus (id) {
   return axios.get(`${urls.payment}?transaction_ids=${id}`)
 }
 
-export function chatRoomLogin (username) {
-  console.log('token')
-  console.log(Vue.cookie.get('access_token'))
-  let token = Vue.cookie.get('access_token')
+export function fetchArticle () {
+  return axios.get(urls.article)
+}
 
-  return axios.get(`${urls.chatRoomLogin}/chat/stream?token=${token}&username=${username}`)
+export function fetchChatEmoji () {
+  return axiosChat.get(`${urls.chatEmoji}`)
+}
+
+export function sendImgToChat (data) {
+  return axios.post(`${urls.sendImgToChat}`, data)
+}
+
+export function banChatUser (id, data) {
+  return axiosChat.put(`${urls.apiRoom}/${id}/`,
+    {
+      action: 'banned',
+      user: data.user,
+      banned_time: data.banned_time
+    })
+}
+
+export function unbanChatUser (id, data) {
+  return axiosChat.put(`${urls.apiRoom}/${id}/`,
+    {
+      action: 'unbanned',
+      user: data.user,
+      banned_time: data.banned_time
+    })
+}
+
+export function blockChatUser (id, data) {
+  return axiosChat.put(`${urls.apiRoom}/${id}/`,
+    {
+      action: 'block',
+      user: data.user,
+      block_time: 60
+    })
+}
+export function unblockChatUser (id, data) {
+  return axiosChat.put(`${urls.apiRoom}/${id}/`,
+    {
+      action: 'unblock',
+      user: data.user
+    })
+}
+
+export function getChatUser (id) {
+  return axiosChat.get(`${urls.apiRoom}/${id}/`)
 }
