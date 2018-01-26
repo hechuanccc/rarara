@@ -36,6 +36,9 @@ export default {
       commit('END_LOADING')
       return Promise.resolve(res)
     }, error => {
+      if (error.code === 9011) {
+        Vue.cookie.set('sessionid', error.data.sessionid)
+      }
       commit('END_LOADING')
       return Promise.reject(error)
     })
@@ -53,8 +56,6 @@ export default {
   },
   fetchUser: ({ commit, state }) => {
     return fetchUser().then(res => {
-      console.log('in fetchUser')
-      console.log(res)
       if (res.length > 0) {
         commit(types.SET_USER, {
           user: {
@@ -116,7 +117,7 @@ export default {
   setMessageCount: ({ commit }, count) => {
     commit(types.SET_MESSAGE_COUNT, count)
   },
-  setCommon: ({ commit }, data) => {
-    commit(types.SET_COMMON, data)
+  setSystemConfig: ({ commit }, data) => {
+    commit(types.SET_SYSTEM_CONFIG, data)
   }
 }

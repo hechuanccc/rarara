@@ -1,7 +1,7 @@
 <template>
-  <el-row class="remit-area">
+  <el-row>
     <el-tabs v-model="activeName" class="indented-tab" type="card" @tab-click="chooseRemitWay">
-      <el-tab-pane  :label="item.remit_type == 1 ? bankMap[String(item.bank)] : item.remit_type == 2 ? '微信' : '支付宝'" :name="String(item.id)" v-for="(item, index) in remitPayees" :key="index">
+      <el-tab-pane  v-if="item.payee_name||item.nickname" :label="item.payee_name||item.nickname" :name="String(item.id)" v-for="(item, index) in remitPayees" :key="index">
         <el-alert
           :title="limitAlert"
           type="info"
@@ -42,12 +42,11 @@
               <el-form-item :label="$t('user.remit_time')" prop="remit_info.deposited_at" class="input-width">
                 <el-date-picker
                   v-model="remitData.remit_info.deposited_at"
-                  style="width:270px"
                   type="datetime"
                   :placeholder="$t('common.select_date_time')"
                   format="yyyy-MM-dd HH:mm"
                   :id="String(index)"
-                  value-format="yyyy-MM-dd HH-mm">
+                  value-format="yyyy-MM-dd HH:mm">
                 </el-date-picker>
               </el-form-item>
               <el-form-item :label="$t('user.amount')" prop="amount">
@@ -57,7 +56,7 @@
                 <el-input clearable class="input-width" v-model="remitData.memo"></el-input>
               </el-form-item>
               <el-form-item>
-                <el-button class="m-r-lg" size="medium" type="primary" @click="submitRemitForm(item.id)">提交入款资料</el-button>
+                <el-button class="m-r-lg input-width" type="primary" :disabled="remiting" @click="submitRemitForm(item.id)">提交入款资料</el-button>
                 <router-link v-show="successPayeeId" to="/account/finance/payment_record">查看入款记录</router-link>
               </el-form-item>
             </el-form>
@@ -77,12 +76,11 @@
                 <el-date-picker
                   class="input-width"
                   v-model="remitData.remit_info.deposited_at"
-                  style="width:270px"
                   type="datetime"
                   :placeholder="$t('common.select_date_time')"
                   format="yyyy-MM-dd HH:mm"
                   :id="String(index)"
-                  value-format="yyyy-MM-dd HH-mm">
+                  value-format="yyyy-MM-dd HH:mm">
                 </el-date-picker>
               </el-form-item>
               <el-form-item :label="$t('user.amount')" prop="amount">
@@ -92,14 +90,12 @@
                 <el-input class="input-width" v-model="remitData.memo"></el-input>
               </el-form-item>
               <el-form-item>
-                <el-button class="m-r-lg" type="primary" @click="submitRemitForm(item.id)">提交入款资料</el-button>
+                <el-button class="m-r-lg input-width" type="primary" :disabled="remiting" @click="submitRemitForm(item.id)">提交入款资料</el-button>
                 <router-link v-show="successPayeeId" to="/account/finance/payment_record">查看入款记录</router-link>
               </el-form-item>
             </el-form>
           </el-col>
         </el-row>
-      </div>
-
       </el-tab-pane>
     </el-tabs>
   </el-row>
@@ -107,12 +103,8 @@
 <script>
 import { fetchRemitpayee, remit, fetchBank } from '../../api'
 import { msgFormatter, filtAmount } from '../../utils'
-import Tabs from '../../components/Tabs.vue'
 export default {
   name: 'Remit',
-  components: {
-    Tabs
-  },
   data () {
     let limitPass = (rule, value, callback) => {
       const lower = this.limit.lower ? parseFloat(this.limit.lower) : null
@@ -161,7 +153,8 @@ export default {
           label: 'QR Code',
           key: 'qrcode'
         }
-      ]
+      ],
+      remiting: false
     }
   },
   computed: {
@@ -206,6 +199,7 @@ export default {
     submitRemitForm (payeeId) {
       this.$refs[payeeId][0].validate((valid) => {
         if (valid) {
+          this.remiting = true
           remit(this.remitData).then(data => {
             this.successPayeeId = this.remitData.remit_info.remit_payee
             this.$message({
@@ -213,8 +207,10 @@ export default {
               message: this.$t('message.submit_success'),
               type: 'success'
             })
+            this.remiting = false
             this.$refs[payeeId][0].resetFields()
           }, errorMsg => {
+            this.remiting = false
             this.$message({
               showClose: true,
               message: msgFormatter(errorMsg),
@@ -237,14 +233,8 @@ export default {
 </script>
 
 <style scoped lang="scss">
-  .remit-area {
-    font-size: 14px;
-    .input-width {
-      width: 270px;
-    }
-    .text-info {
-      color: #31708f;
-    }
+  .text-info {
+    color: #31708f;
   }
   .text-muted {
     color: #777;
@@ -260,10 +250,14 @@ export default {
       border-top-left-radius: 4px;
       border-top-right-radius: 4px;
     }
+    .list-group-item:last-child {
+      border-bottom-left-radius: 4px;
+      border-bottom-right-radius: 4px;
+    }
     .list-group-item {
       position: relative;
       display: block;
-      padding: 10px 15px;
+      padding: 5px 15px;
       margin-bottom: -1px;
       background-color: #fff;
       border: 1px solid #ddd;
@@ -275,5 +269,8 @@ export default {
         font-weight: bold;
       }
     }
+  }
+  .info-tips {
+    color: #999;
   }
 </style>

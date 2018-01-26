@@ -12,16 +12,24 @@
     </header>
     <el-container class="container no-border">
       <div class="aside m-r-sm">
-          <AsideMenu @clicked="onClickChild" :items="menus ? menus : []" :defaultactive="currentPath" />
-        </div>
-        <div class="main m-b-xlg">
-          <router-view/>
-        </div>
+        <AsideMenu @clicked="onClickChild" :items="menus ? menus : []" :defaultActive="currentPath" />
+      </div>
+      <div class="main m-b-xlg">
+        <router-view/>
+      </div>
     </el-container>
   </div>
 </template>
 
 <script>
+import 'vue-awesome/icons/credit-card'
+import 'vue-awesome/icons/credit-card-alt'
+import 'vue-awesome/icons/file-text-o'
+import 'vue-awesome/icons/list-ul'
+import 'vue-awesome/icons/user'
+import 'vue-awesome/icons/envelope-o'
+import 'vue-awesome/icons/bullhorn'
+
 import urls from '../../api/urls'
 import style from '../../style'
 import Vue from 'vue'
@@ -40,37 +48,37 @@ export default {
         {
           display_name: this.$t('user.online_payment'),
           route: '/account/online_payment',
-          icon: 'el-icon-info'
+          leftIcon: 'credit-card'
         },
         {
           display_name: this.$t('user.remit'),
           route: '/account/remit',
-          icon: 'el-icon-info'
+          leftIcon: 'credit-card-alt'
         },
         {
           display_name: this.$t('user.withdraw'),
           route: '/account/withdraw',
-          icon: 'el-icon-info'
+          leftIcon: 'file-text-o'
         },
         {
           display_name: this.$t('user.finance'),
-          route: '/account/finance/payment_record',
-          icon: 'el-icon-info'
+          route: '/account/finance',
+          leftIcon: 'list-ul'
         },
         {
           display_name: this.$t('user.my_account'),
           route: '/account/my',
-          icon: 'el-icon-info'
+          leftIcon: 'user'
         },
         {
           display_name: this.$t('user.message'),
           route: '/account/message',
-          icon: 'el-icon-info'
+          leftIcon: 'envelope-o'
         },
         {
           display_name: this.$t('user.announcement'),
           route: '/account/announcement',
-          icon: 'el-icon-info'
+          leftIcon: 'bullhorn'
         }
       ]
     }
@@ -88,7 +96,7 @@ export default {
       const path = this.$route.path
       const paths = path.split('/')
       if (paths.length > 3) {
-        return `/${paths[1]}/${paths[2]}/${paths[3]}`
+        return `/${paths[1]}/${paths[2]}`
       } else {
         return path
       }
@@ -127,13 +135,11 @@ export default {
 .main {
   display: inline-block;
   box-sizing: border-box;
-  width: 1095px;
+  width: $main_width;
   min-height: 50vh;
-  max-height: 200vh;
-  overflow: scroll;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
   background-color: #ffffff;
-  padding: 20px;
+  padding: 10px 20px;
   @extend %text;
 }
 .el-main {

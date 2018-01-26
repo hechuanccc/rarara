@@ -1,48 +1,37 @@
 <template>
-  <div class="main-play">
+  <div>
     <div class="main">
-      <el-row class="info-panel">
-        <GameResult :gameid="$route.params.gameId" @refreshResult="fetchStatistic(currentGame.code)"/>
-        <div class="countdown-panel">
-          <div class="info-text" v-if="currentGame && schedule">
-            <p>{{currentGame.display_name}}</p>
-            <p>{{schedule.issue_number}}{{$t('navMenu.result_period')}}</p>
-          </div>
-          <div class="schedule" v-if="schedule && schedule.issue_number">
-            <div class="schedule-title">封盘</div>
-            <span v-if="!gameClosed" class="red countdown">
-              <span v-if="closeCountDown.days > 0">{{closeCountDown.days}}天 </span>
-              <span v-if="closeCountDown.hours > 0">{{closeCountDown.hours | complete}}:</span>{{closeCountDown.minutes | complete}}:{{closeCountDown.seconds | complete}}
-            </span>
-            <span v-else class="red countdown">已封盘</span>
-          </div>
-          <div class="schedule" v-if="schedule && schedule.issue_number">
-            <div class="schedule-title">开奖</div>
-            <span v-if="!ended" class="green countdown">
-              <span v-if="resultCountDown.days > 0">{{resultCountDown.days}}天 </span>
-              <span v-if="resultCountDown.hours > 0">{{resultCountDown.hours | complete}}:</span>{{resultCountDown.minutes | complete}}:{{resultCountDown.seconds | complete}}
-            </span>
-            <span v-else class="green countdown">已结束</span>
-          </div>
-        </div>
-      </el-row>
       <el-row class="game-container">
-        <router-view :key="$route.name + ($route.params.categoryId || '')" :game="currentGame" :scheduleId="schedule ? schedule.id : null" :gameClosed="gameClosed" />
+        <router-view
+          :key="$route.name + ($route.params.categoryId || '')"
+          :game="currentGame"
+          :scheduleId="schedule ? schedule.id : null"
+          :gameClosed="gameClosed" />
+        <Countdown
+          :schedule="schedule"
+          v-if="schedule.id"
+          :currentGame="currentGame"
+          :gameClosed="gameClosed"
+          :closeCountDown="closeCountDown"
+          :resultCountDown="resultCountDown"/>
       </el-row>
       <el-row class="m-b-xlg">
-        <GameStatistic v-if="currentGame&&currentGame.code!='hkl'" :gameCode="currentGame.code" :resultStatistic="resultStatistic"/>
+        <GameStatistic
+          v-if="currentGame&&currentGame.code!=='hkl'&&currentGame.code!=='fc3d'"
+          :gameCode="currentGame.code"
+          :resultStatistic="resultStatistic"/>
       </el-row>
     </div>
-    <div class="leaderBoard">
-      <div class="leaderBoard-title">
+    <div class="leader-board">
+      <div class="title">
         长龙排行榜
       </div>
-      <ul class="leaderBoard-menu">
-        <li class="leaderBoard-menu-item" v-for="(item,index) in sortedStatistic" :key="index">
+      <ul class="menu">
+        <li class="menu-item" v-for="(item,index) in sortedStatistic" :key="index">
           <span class="text">{{item.title}} - {{item.type | typeFilter}}</span>
           <span class="period">{{item.num}}期</span>
         </li>
-        <li v-if="sortedStatistic.length === 0" class="leaderBoard-menu-empty">暂无排行榜</li>
+        <li v-if="sortedStatistic.length === 0" class="menu-empty">暂无排行榜</li>
       </ul>
     </div>
   </div>
@@ -51,21 +40,17 @@
 <script>
 import { fetchSchedule, fetchStatistic } from '../../api'
 import gameTranslator from '../../utils/gameTranslator'
-import GameResult from '../../components/GameResult'
 import GameStatistic from '../../components/GameStatistic'
+import Countdown from '../../components/Countdown'
 import _ from 'lodash'
 
 export default {
   name: 'game',
   components: {
-    GameResult,
-    GameStatistic
+    GameStatistic,
+    Countdown
   },
   filters: {
-    complete (value) {
-      value = parseInt(value)
-      return value < 10 ? ('0' + value) : value
-    },
     typeFilter (val) {
       switch (val) {
         case 'dragon':
@@ -156,6 +141,14 @@ export default {
           return '尾大'
         case 'tailsmaller':
           return '尾小'
+        case 'tailprime':
+          return '尾质'
+        case 'tailcomposite':
+          return '尾合'
+        case 'prime':
+          return '质'
+        case 'composite':
+          return '合'
         default:
           return val
       }
@@ -189,10 +182,6 @@ export default {
       const c = this.closeCountDown
       return c.days + c.hours + c.minutes + c.seconds === 0
     },
-    ended () {
-      const r = this.resultCountDown
-      return r.hours + r.hours + r.seconds + r.minutes === 0
-    },
     currentGame () {
       return this.$store.getters.gameById(this.$route.params.gameId)
     },
@@ -211,18 +200,21 @@ export default {
         })
       }
     },
-    'currentGame': function (currentGame) {
-      this.fetchStatistic(currentGame.code)
+    'currentGame.code': function () {
+      this.fetchStatistic()
     }
   },
   created () {
+    this.$root.bus.$on('refreshResult', this.fetchStatistic)
+
     this.updateSchedule()
     const currentGame = this.$store.getters.gameById(this.$route.params.gameId)
     if (currentGame) {
-      this.fetchStatistic(currentGame.code)
+      this.fetchStatistic()
     }
   },
   beforeDestroy () {
+    this.$root.bus.$off('refreshResult', this.fetchStatistic)
     clearInterval(this.timer)
   },
   methods: {
@@ -273,7 +265,8 @@ export default {
         seconds
       }
     },
-    fetchStatistic (code) {
+    fetchStatistic () {
+      const code = this.currentGame.code
       fetchStatistic(code).then(result => {
         const translator = gameTranslator[code]
         const frequencyStats = result.frequency_stats
@@ -290,10 +283,13 @@ export default {
             return
           }
           type = type[0]
-          if (item[type] < 3) {
+          if (item[type] < 3) { // 只取連續三期以上
             return
           }
           let translated = translator(key)
+          if (!translated[0]) {
+            return
+          }
           statistic.push({
             title: translated[0],
             type: translated[1] ? translated[1] + type : type,
@@ -309,50 +305,44 @@ export default {
 
 <style scoped lang="scss">
 @import "../../style/vars.scss";
-.leaderBoard {
+.leader-board {
   float: right;
   width: 180px;
   background: #fff;
-  color: #9b9b9b;
-  font-size: 14px;
-}
-.leaderBoard-title {
-  font-weight: 200;
-  text-align: center;
-  height: 40px;
-  line-height: 40px;
-  border-bottom: 2px solid $pinkish-grey;
-}
-.leaderBoard-menu-empty {
-  color: $pinkish-grey;
-  text-align: center;
-  line-height: 30px;
-  height: 30px;
-  padding: 20px 0;
-  font-weight: 200;
-}
-.leaderBoard-menu-item {
-  padding: 0 5px;
-  height: 30px;
-  line-height: 30px;
-  font-size: 12px;
-  border-bottom: 1px solid $pinkish-grey;
-  .text {
-    color: #000;
+  font-size: 13px;
+  .title {
+    color: #9b9b9b;
+    text-align: center;
+    height: 32px;
+    line-height: 32px;
+    border-bottom: 1px solid $pinkish-grey;
   }
-  .period {
-    float: right;
-    color: $watermelon;
+  .menu-empty {
+    color: #ccc;
+    text-align: center;
+    line-height: 30px;
+    height: 30px;
+    padding: 10px 0;
+    font-weight: 200;
+  }
+  .menu-item {
+    padding: 0 10px;
+    height: 30px;
+    line-height: 30px;
+    font-size: 12px;
+    color: #666;
+    border-bottom: 1px solid $pinkish-grey;
+    .period {
+      float: right;
+      color: $watermelon;
+    }
   }
 }
 .main {
   float: left;
-  width: 840px;
+  width: 890px;
 }
 
-.main-play {
-  width: 1050px;
-}
 .current-game {
   position: absolute;
 }
@@ -362,48 +352,7 @@ export default {
 .game-container /deep/ .el-tabs__item {
   padding: 0 12px;
 }
-.schedule {
-  text-align: center;
-  padding: 0 20px;
-  float: right;
-  .schedule-title {
-    height: 30px;
-    line-height: 30px;
-  }
-}
-.info-panel {
-  text-align: justify;
-  &:after {
-    content: "";
-    display: inline-block;
-    width: 100%;
-  }
-}
-.countdown-panel {
-  width: 49%;
-  height: 55px;
-  float: right;
-  background: #fff;
-  border-left: 5px solid $marine-blue;
-}
-.info-text {
-  color: #4a4a4a;
-  padding-left: 20px;
-  float: left;
-  text-align: center;
-  margin-right: 30px;
-  p {
-    height: 27px;
-    line-height: 27px;
-    letter-spacing: 2px;
-  }
-}
-.issue-number {
-  display: inline-block;
-}
-.countdown {
-  font-size: 18px;
-}
+
 .el-tabs--top /deep/.el-tabs__nav-scroll {
   padding: 0;
 }

@@ -9,10 +9,10 @@
       :key="menu.icon">
       <span>{{menu.name}}</span>
     </router-link>
-    <a v-if="$store.state.common.customerServiceUrl"
-      class="online-service"
+    <a v-if="$store.state.systemConfig.customerServiceUrl"
+      class="online-service m-r"
       target="_blank"
-      :href="$store.state.common.customerServiceUrl ? $store.state.common.customerServiceUrl : '#'">
+      :href="$store.state.systemConfig.customerServiceUrl ? $store.state.systemConfig.customerServiceUrl : '#'">
       {{$t('navMenu.online_service')}}
     </a>
   </ul>
@@ -34,7 +34,7 @@ export default {
   methods: {
     getMenuClass (menu) {
       return {
-        'active': this.$route.path.split('/')[1] === menu.path,
+        'active': this.$route.path.split('/')[1] === menu.path.slice(1),
         [menu.class]: menu.class,
         'nav-link': true
       }
@@ -47,15 +47,17 @@ export default {
 <style lang="sass" scoped>
 @import "../style/vars.scss";
 .main-navs
-  display: inline-block
-  padding-right: 40px
+  float: right
 .nav-link
+  line-height: 60px
   display: inline-block
-  width: 127px
+  padding: 0 20px
   cursor: pointer
   text-align: center
-  color: $pinkish-grey
-  font-size: 18px
+  color: #666
+  font-size: 16px
+  &.active
+    color: $primary
 
 .online-service
   display: inline-block

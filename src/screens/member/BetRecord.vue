@@ -33,38 +33,55 @@
   </el-row>
   <el-row>
     <el-table v-loading="loading" :data="betRecords" stripe>
-      <el-table-column :label="$t('user.game_name')"
+      <el-table-column
+        :width="130"
+        :label="$t('user.game_name')"
         prop="game.display_name">
       </el-table-column>
       <el-table-column
+        :width="135"
         :label="$t('user.issue_number')"
         prop="issue_number">
       </el-table-column>
       <el-table-column
+        :width="130"
         :label="$t('user.betdate')"
         prop="created_at">
         <template slot-scope="scope">
           <span>{{ scope.row.created_at | moment("YYYY-MM-DD")}}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('user.play')">
+      <el-table-column
+        :min-width="150"
+        :label="$t('user.play')">
         <template slot-scope="scope">
           <span>{{ `${scope.row.play.playgroup} @ ${scope.row.play.display_name}`}}</span>
         </template>
       </el-table-column>
       <el-table-column
+        :width="135"
         :label="$t('user.bet_amount')">
         <template slot-scope="scope">
           <span>{{ scope.row.bet_amount | currency('￥')}}</span>
         </template>
       </el-table-column>
       <el-table-column
-        :label="$t('user.profit')">
+        :width="100"
+        :label="$t('gameIntro.return_rate')">
         <template slot-scope="scope">
-          <span :class="profitColor(scope.row.profit)">{{ scope.row.profit | currency('￥') | placeholder($t('user.unsettled'))}}</span>
+          <span>{{ scope.row.play.return_rate && scope.row.return_amount ? `${scope.row.return_amount}(${scope.row.play.return_rate}%)`: '0' }}</span>
         </template>
       </el-table-column>
       <el-table-column
+        :width="135"
+        :label="$t('user.profit')">
+        <template slot-scope="scope">
+          <span v-if="scope.row.profit === null">{{ scope.row.remarks | statusFilter}}</span>
+          <span v-else :class="profitColor(scope.row.profit)">{{ scope.row.profit | currency('￥')}}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+        :width="65"
         :label="$t('user.odd')"
         prop="odds">
       </el-table-column>
@@ -84,11 +101,23 @@
 <script>
 import { fetchBetHistory } from '../../api'
 import { msgFormatter } from '../../utils'
+import Vue from 'vue'
 export default {
   name: 'BetRecord',
   props: {
     lazyFetch: {
       type: Boolean
+    }
+  },
+  filters: {
+    statusFilter (value) {
+      if (value === 'no_draw') {
+        return Vue.t('user.no_draw')
+      } else if (value === 'cancelled') {
+        return Vue.t('user.cancelled')
+      } else {
+        return Vue.t('user.unsettled')
+      }
     }
   },
   data () {
@@ -109,7 +138,7 @@ export default {
   },
   created () {
     if (!this.lazyFetch) {
-      this.initFetchBetHistory()
+      this.initFetchBetHistory({status: 'win,lose,tie'})
       this.allGames = this.$store.state.state
       if (!this.allGames || this.allGames.length === 0) {
         this.$store.dispatch('fetchGames').then(games => {
@@ -123,7 +152,7 @@ export default {
       return {
         game: this.selectedGame,
         bet_date: this.selectedDate,
-        status: this.isUnsettled ? 'ongoing' : ''
+        status: this.isUnsettled ? 'ongoing,cancelled,no_draw' : 'win,lose,tie'
       }
     }
   },

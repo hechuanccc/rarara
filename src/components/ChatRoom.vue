@@ -1,541 +1,1159 @@
 <template>
-  <div class="container">
-    <el-container 
-      class="chat-box" 
-      v-loading="loading" 
-      element-loading-text="正在登陆聊天室"
+  <div class="container-chat">
+    <el-container
+      class="chat-box"
+      v-loading="loading"
+      id="chatBox"
+      element-loading-text="正在登录"
       v-if="isLogin && showChatRoom">
       <el-header class="title clearfix" height="40px">
-        <div class="l fl clearfix">
-          <icon class="font-home fl" name="home" scale="2"></icon>
-          <h3 class="fl" style="margin-left: 14px">聊天室</h3>
+        <div class="left fl clearfix">
+          <icon class="font-home fl" name="home" scale="1.4"></icon>
+          <h3 class="fl m-l">聊天室</h3>
         </div>
-        <div class="r fr">
-          <icon title="修改昵称" name="user-plus" scale="1.6" style="padding-top: 4px; cursor: pointer;" @click.native="showEditProfile = true"></icon>
-          <i class="el-icon-close close" title="关闭聊天室" @click="showChatRoom = false"></i>
+        <div class="right fr clearfix">
+          <icon v-if="personal_setting.manager" class="icon-user fl" name="cog" scale="1.4" @click.native="handleBlockPopupShow"></icon>
+          <icon class="icon-user fl" title="修改昵称" name="user" scale="1.4" @click.native="personal_setting.blocked && !user.account_type ? '' : showEditProfile = true"></icon>
+          <i class="el-icon-close close fl" title="关闭聊天室" @click="leaveRoom"></i>
         </div>
         <transition
           enter-class="profileFadeInEnter"
           leave-active-class="animated fadeOutUp"
           enter-active-class="animated fadeInDown">
           <div class="edit-profile" v-if="showEditProfile">
-            <div class="avatar" v-on:mouseover="swichAvatar = true" v-on:mouseout="swichAvatar = false">
-              <img src="../assets/avatar.png" v-if="!swichAvatar">
-              <label for="avatarUploadInput" class="upload-avatar" v-else>
-                <span class="el-icon-upload"></span>
-                <input type="file" id="avatarUploadInput" accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif" style="width: 0.1px; height: 0.1px; opacity: 0; position: absolute; top: -20px;">
-              </label>
+            <div
+              v-on:mouseover="swichAvatar = true"
+              v-on:mouseout="swichAvatar = false">
+              <el-upload
+                class="avatar"
+                style="overflow-y: hidden;"
+                :action="uploadUrl"
+                :show-file-list="false"
+                :on-success="handleAvatarSuccess"
+                :before-upload="beforeAvatarUpload">
+
+                <img v-if="user.avatar && !swichAvatar" :src="user.avatar" class="avatar">
+                <img v-else-if="!swichAvatar" src="../assets/avatar.png">
+                <label for="avatarUploadInput" class="upload-avatar" v-if="swichAvatar">
+                  <span class="el-icon-upload"></span>
+                </label>
+              </el-upload>
             </div>
-            <p style="{font-size: 12px; color: rgb(255, 127, 77);}">(您还未设置头像, 请点击头像上传)</p>
+
+            <p class="avatar-upload-tip">{{user.avatar ? '(如需更换头像请点击上方头像上传)' : '(您还未设置头像, 请点击头像上传)'}}</p>
             <p>
-              <span class="txt-nick">yayaya002</span>
-              <a href="#" style="{font-size: 20px}">
+              <span class="txt-nick">{{user.nickname || user.username}}</span>
+              <a href="javascript:void(0)" class="icon-edit" @click="showNickNameBox = true">
                 <span class="el-icon-edit-outline"></span>
               </a>
             </p>
             <div>
               <p>
-                <a href="javascript:void(0)" class="u-btn1" @click="showEditProfile = false">关闭</a>
+                <a href="javascript:void(0)" class="u-btn" @click="showEditProfile = false">关闭</a>
+              </p>
+            </div>
+          </div>
+        </transition>
+        <transition
+          enter-class="profileFadeInEnter"
+          leave-active-class="animated fadeOutUp"
+          enter-active-class="animated fadeInDown">
+          <div class="edit-profile" v-if="showCheckUser">
+            <div
+              class="avatar"
+              style="overflow-y: hidden;">
+              <img :src="checkUser.avatar_url || '../assets/avatar.png'" class="avatar">
+              <label for="avatarUploadInput" class="upload-avatar" v-if="swichAvatar">
+                <span class="el-icon-upload"></span>
+              </label>
+            </div>
+            <p class="avatar-upload-tip">{{checkUser.nickname || checkUser.username}}({{checkUser.level_name}})</p>
+            <div class="restraint-actions">
+              <el-button type="danger" size="mini" @click.native="ban(15)">禁言15分钟</el-button>
+              <el-button type="danger" size="mini" @click.native="ban(30)">禁言30分钟</el-button>
+              <el-button type="danger" size="mini" @click.native="block()">加入黑名单</el-button>
+            </div>
+            <div>
+              <p>
+                <a href="javascript:void(0)" class="u-btn" @click="showCheckUser = false">关闭</a>
               </p>
             </div>
           </div>
         </transition>
       </el-header>
-      <el-main class="content">
-        <div class="chat-announce">
+      <el-main class="content" id="chatBox">
+        <div class="chat-announce" v-if="announcement">
           <div class="ttl clearfix">
             <icon class="fl volume-up" name="volume-up"></icon>
             <span class="fl">公告:</span>
           </div>
           <div class="scroll">
-            <MarqueeTips content="我是一个短短的提示" :speed="Number(10)"></MarqueeTips>
+            <MarqueeTips :content="announcement" :speed="10"></MarqueeTips>
           </div>
         </div>
         <div class="controls">
-          <a class="listCtrl clearfix" href="javascript:void(0)">
+          <a class="list-ctrl clearfix" href="javascript:void(0)">
             <icon class="fl"  name="unsorted"></icon>
-            <span class="fl">滚屏</span>
+            <span class="fl" @click="$refs.msgEnd.scrollIntoView()">&nbsp;滚屏</span>
           </a>
-          <a class="listCtrl clearfix" href="javascript:void(0)">
+          <a class="list-ctrl clearfix" href="javascript:void(0)">
             <icon class="fl"  name="trash"></icon>
-            <span class="fl">清屏</span>
+            <span class="fl" @click="messages = []">&nbsp;清屏</span>
           </a>
         </div>
         <ul class="lay-scroll">
-          <li v-for="(item, index) in messages" class="clearfix item item-left">
-            <div class="lay-block">
-              <div class="avatar fl">
-                <img src="../assets/avatar.png">
+          <li v-for="(item, index) in messages"
+            :key="index"
+            :class="
+              ['clearfix',
+                'item',
+                item.sender && ((item.sender.nickname && item.sender.nickname === user.nickname) || user.username === item.sender.username) ? 'item-right' : 'item-left', item.type < 0 ? 'sys-msg' : ''
+              ]">
+            <div class="lay-block clearfix" v-if="item.type >= 0">
+              <div class="avatar">
+                <icon name="cog" class="font-cog" v-if="item.type == 4" scale="3"></icon>
+                <img @click="handleCheckUser(item)" :src="item.sender && item.sender.avatar_url ? item.sender.avatar_url : require('../assets/avatar.png')" v-else>
               </div>
-              <div class="lay-content fl">
+              <div class="lay-content">
                 <div class="msg-header">
-                  <h4 v-html="item.name"></h4>
-                  <span>
-                    <img src="../assets/icon_member01.gif" alt="普通会员">
+                  <h4 v-html="item.type === 4 ? '计划消息' : item.sender && item.sender.username === user.username && user.nickname ? user.nickname : item.sender && (item.sender.nickname || item.sender.username)"></h4>
+                  <span class="common-member" v-if="item.type !== 4">
+                    {{item.sender && item.sender.level_name && item.sender.level_name.indexOf('管理员') !== -1 ? '管理员' : '普通会员'}}
                   </span>
-                  <span class="msg-time">16:32:22</span>
+                  <span class="msg-time">{{item.created_at | moment('HH:mm:ss')}}</span>
                 </div>
-                <div class="bubble">
+                <div :class="['bubble', 'bubble' + item.type]">
                   <p>
-                    <span v-html="item.cnt"></span>
+                    <span v-if="item.type === 0 || item.type === 4" v-html="item.content"></span>
+                    <img @click="showImageMsg = true; showImageMsgUrl = item.content" v-else-if="item.type === 1" :src="item.content">
                   </p>
                 </div>
               </div>
             </div>
+            <div class="inner" v-else-if="item.type === -1">
+              <p>以上是历史消息</p>
+            </div>
+            <div v-else-if="user.account_type && (item.type === -2 || item.type === -3)" class="inner type-warning">
+              <p>
+                <span v-if="item.type === -2">您可以设置昵称啦, 点击 <a href="javascript:void(0)" class="btn-here" @click="item.type === -3 ? showEditProfile = true : showNickNameBox = true">这里</a>设置昵称</span>
+                <span v-else>您可以上传自己的头像啦, 点击 <a href="javascript:void(0)" class="btn-here" @click="item.type === -3 ? showEditProfile = true : showNickNameBox = true">这里</a>设置</span>
+              </p>
+            </div>
           </li>
+          <li v-if="personal_setting.block" class="block-user-info">您已被管理员拉黑，请联系客服。<li>
+          <li ref="msgEnd" id="msgEnd" class="msgEnd"></li>
         </ul>
-        <span ref="msgEnd"></span>
       </el-main>
-      <el-footer class="footer">
+      <el-footer class="footer" height="100">
         <div class="control-bar">
-          <a href="javascript:void(0)" title="发送表情" class="btn-control">
-            <icon  name="smile-o"></icon>
+          <el-popover
+            ref="popover4"
+            placement="top-start"
+            width="260"
+            trigger="click">
+            <div class="emoji-container">
+              <a href="javascript:void(0)"
+                v-for="(item, index) in emojis.people.slice(0, 42)"
+                :key="index"
+                class="emoji"
+                @click="personal_setting.chat.status ? msgCnt = msgCnt + item.emoji + ' ' : ''">
+                {{item.emoji}}
+              </a>
+            </div>
+
+          </el-popover>
+          <a v-popover:popover4 href="javascript:void(0)" title="发送表情" class="btn-control btn-smile">
+            <icon scale="1.3" name="smile-o"></icon>
           </a>
-          <label for="imgUploadInput">
-            <span title="上传图片" class="btn-control">
-              <i class="el-icon-picture"></i>
-              <input type="file" id="imgUploadInput" accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif" style="width: 0.1px; height: 0.1px; opacity: 0; position: absolute; top: -20px;">
-            </span>
-          </label>
+          <a href="javascript:void(0)" class="btn-control btn-smile">
+            <label for="imgUploadInput">
+              <span title="上传图片">
+                <i class="el-icon-picture"></i>
+                <input disabled="personal_setting.chat.status" @change="sendMsgImg" type="file" ref="fileImgSend" class="img-upload-input" id="imgUploadInput" accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif">
+              </span>
+            </label>
+          </a>
         </div>
         <div class="typing">
-          <div class="txtinput el-textarea is-disabled">
-            <textarea placeholder="发言条件：前两天充值不少于0元；打码量不少于10元" disabled="disabled" type="textarea" rows="2" autocomplete="off" validateevent="true" class="el-textarea_inner" style="height: 54px"></textarea>
+          <div :class="['txtinput', 'el-textarea', !personal_setting.chat.status ? 'is-disabled' : '']">
+            <textarea  @keyup.enter="sendMsg"
+              :placeholder="personal_setting.chat.status ? '' : sendMsgCondition"
+              type="textarea" rows="2"
+              autocomplete="off"
+              validateevent="true"
+              class="el-textarea-inner"
+              v-model="msgCnt"
+              :disabled="personal_setting.chat.status ? false : true">
+            </textarea>
           </div>
           <div class="sendbtn fr">
-            <a href="javascript:void(0)" class="u-btn1">发送</a>
+            <a href="javascript:void(0)" class="u-btn" @click="sendMsg">发送</a>
           </div>
         </div>
       </el-footer>
     </el-container>
-    <div class="chat-guide" @click="joinChatRoom"></div>
+    <el-dialog title="修改昵称"
+      :visible.sync="showNickNameBox"
+      width="400px"
+      custom-class="changeNickNameBox"
+      append-to-body>
+      <el-form>
+        <el-form-item label="请输入昵称">
+          <el-input auto-complete="off" v-model="nickname"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="showNickNameBox = false">取 消</el-button>
+        <el-button type="primary" @click="submitNickName">确 定</el-button>
+      </div>
+    </el-dialog>
+    <el-dialog :visible.sync="showImageMsg"
+      width="640px"
+      custom-class="show-image-msg text-center"
+      append-to-body>
+      <img :src="showImageMsgUrl">
+    </el-dialog>
+    <el-dialog :visible.sync="errMsg" width="400px" custom-class="showImageMsg" append-to-body>
+      <p>{{errMsgCnt}}</p>
+    </el-dialog>
+    <div 
+      v-if="isLogin && showEntry" 
+      class="chat-guide text-center"
+      @click="joinChatRoom">
+      <icon class="font-wechat" name="wechat" scale="1.7"></icon>
+      <ul class="text-center">
+        <li>聊</li>
+        <li>天</li>
+        <li>室</li>
+      </ul>
+    </div>
+
+    <el-dialog :visible.sync="errMsg"
+      width="400px"
+      custom-class="showImageMsg"
+      append-to-body>
+      <p>{{errMsgCnt}}</p>
+    </el-dialog>
+
+    <el-dialog
+      :visible.sync="showBlockPopup"
+      width="700px"
+      :modal-append-to-body="true"
+      :append-to-body="true"
+      center>
+      <el-menu :default-active="'0'" class="m-b-xlg" mode="horizontal">
+        <el-menu-item v-for="(tab, index) in restraintTabs"
+          :key="index"
+          :index="index + ''"
+          @click.native="switchBlockTab(index)">{{tab.display}}</el-menu-item>
+      </el-menu>
+      <el-table
+        :data="nowRestraintTab === '1' ? formattedBannedUsers : blockedUsers"
+        style="width: 100%">
+        <el-table-column
+          prop="username"
+          label="帐号"
+          :width="nowRestraintTab === '0' ? 322 : 215">
+        </el-table-column>
+        <el-table-column
+          v-if="nowRestraintTab === '1'"
+          prop="banned_time"
+          label="时间(min)"
+          width="215">
+        </el-table-column>
+        <el-table-column
+          label="操作"
+          :width="nowRestraintTab === '0' ? 322 : 215">
+          <template slot-scope="scope">
+            <el-button v-if="nowRestraintTab === '1'" size="mini" type="danger" @click.native="unban(scope.row.username)">解除</el-button>
+            <el-button v-else size="mini" type="danger" @click.native="unblock(scope.row.username)">解除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
   </div>
- 
+
 </template>
 
 <script>
-
 import MarqueeTips from 'vue-marquee-tips'
-// import { chatRoomLogin } from '../api'
+import urls from '../api/urls'
+import { msgFormatter, getCookie } from '../utils'
+import { updateUser, fetchChatEmoji, sendImgToChat, banChatUser, blockChatUser, unblockChatUser, unbanChatUser, getChatUser } from '../api'
+import config from '../../config'
+const WSHOST = config.chatHost
+const RECEIVER = 1
 
 export default {
+  props: {
+    showEntry: {
+      type: Boolean,
+      default: false
+    }
+  },
   data () {
     return {
+      ws: null,
       showChatRoom: false,
-      messages: [{
-        name: '不是输就是赢了',
-        userImage: '',
-        cnt: '@残狼 去吧~~狼是晚上活动的动物'
-      }, {
-        name: '不是输就是赢了',
-        userImage: '',
-        cnt: '@残狼 去吧~~狼是晚上活动的动物'
-      }, {
-        name: '不是输就是赢了',
-        userImage: '',
-        cnt: '@残狼 去吧~~狼是晚上活动的动物'
-      }, {
-        name: '不是输就是赢了',
-        userImage: '',
-        cnt: '@残狼 去吧~~狼是晚上活动的动物'
-      }, {
-        name: '不是输就是赢了',
-        userImage: '',
-        cnt: '@残狼 去吧~~狼是晚上活动的动物'
-      }, {
-        name: '不是输就是赢了',
-        userImage: '',
-        cnt: '@残狼 去吧~~狼是晚上活动的动物'
-      }, {
-        name: '不是输就是赢了',
-        userImage: '',
-        cnt: '@残狼 去吧~~狼是晚上活动的动物'
-      }, {
-        name: '不是输就是赢了',
-        userImage: '',
-        cnt: '@残狼 去吧~~狼是晚上活动的动物'
-      }, {
-        name: '不是输就是赢了',
-        userImage: '',
-        cnt: '@残狼 去吧~~狼是晚上活动的动物'
-      }, {
-        name: '不是输就是赢了',
-        userImage: '',
-        cnt: '@残狼 去吧~~狼是晚上活动的动物'
-      }, {
-        name: '不是输就是赢了',
-        userImage: '',
-        cnt: '@残狼 去吧~~狼是晚上活动的动物'
-      }, {
-        name: '不是输就是赢了',
-        userImage: '',
-        cnt: '@残狼 去吧~~狼是晚上活动的动物'
-      }],
-      loading: false,
+      messages: [],
       showEditProfile: false,
-      swichAvatar: false
+      swichAvatar: false,
+      msgCnt: '',
+      showNickNameBox: false,
+      errMsg: false,
+      errMsgCnt: '',
+      uploadUrl: urls.user,
+      nickname: this.$store.state.user.nickname,
+      showImageMsg: false,
+      showImageMsgUrl: '',
+      loading: false,
+      emojis: {
+        people: []
+      },
+      announcement: '',
+      personal_setting: {
+        chat: {
+          reasons: []
+        }
+      },
+      showCheckUser: false,
+      checkUser: {},
+      welcome: '',
+      chatLoading: true,
+      showBlockPopup: false,
+      nowRestraintTab: '0',
+      bannedUsers: [],
+      blockedUsers: [],
+      restraintTabs: [
+        {
+          display: '黑名单'
+        },
+        {
+          display: '禁言'
+        }
+      ]
     }
   },
   components: {
     MarqueeTips
   },
+  watch: {
+    'showEntry': function (val, oldVal) {
+      if (!val && this.showChatRoom && this.isLogin) {
+        this.leaveRoom()
+      }
+    }
+  },
   computed: {
     isLogin () {
-      return this.$store.state.user.logined
+      return this.$store.state.user.logined && this.$route.name !== 'Home'
     },
     user () {
       return this.$store.state.user
-    }
-  },
-  created () {
-  },
-  sockets: {
-    connect: function () {
-      console.log('socket connected')
     },
-    customEmit: function (val) {
-      console.log('this method was fired by the socket server. eg: io.emit("customEmit", data)')
+    sendMsgCondition () {
+      let condition = JSON.parse(this.$store.state.systemConfig.global_preferences.send_chat_conditions)
+      if (condition.length) {
+        return `发言条件：前${condition[0]['value']}天充值不少于${condition[1]['value']}元；投注打码量不少于${condition[2]['value']}元`
+      }
+      return ''
+    },
+    formattedBannedUsers () {
+      let result = []
+      if (this.bannedUsers.length) {
+        this.bannedUsers.forEach((item) => {
+          result.push({
+            username: item.username,
+            banned_time: this.$moment(item.banned_time).format('mm')
+          })
+        })
+        return result
+      }
     }
   },
   methods: {
-    async joinChatRoom () {
+    joinChatRoom () {
       this.showChatRoom = true
-      // chatRoomLogin(this.user.username).then(result => {
-      //   console.log('result')
-      //   console.log(result)
-      // })
+      let token = getCookie('access_token')
+      this.loading = true
+      this.ws = new WebSocket(`${WSHOST}/chat/stream?username=${this.$store.state.user.username}&token=${token}`)
+      this.ws.onopen = () => {
+        this.handleMsg()
+      }
+      this.ws.onclose = () => {
+        this.ws = null
+      }
+      setTimeout(() => {
+        if ((!this.ws || (this.ws && this.ws.readyState !== 1)) && this.showChatRoom) {
+          this.joinChatRoom()
+        } else {
+          if (!this.emojis.people.length) {
+            fetchChatEmoji().then((resData) => {
+              this.emojis = resData.data
+            }).catch(err => console.log(err))
+          }
+        }
+      }, 2000)
+    },
+    handleMsg () {
+      this.loading = false
+      this.ws.send(JSON.stringify({
+        'command': 'join',
+        'receivers': [RECEIVER]
+      }))
+      this.ws.onmessage = (resData) => {
+        if (!this.showChatRoom || !this.showEntry) { return }
+        let data
+        if (typeof resData.data === 'string') {
+          try {
+            data = JSON.parse(resData.data)
+            if (!data.error_type) {
+              if (data.latest_message) {
+                if (data.latest_message[data.latest_message.length - 1].type === 3) {
+                  let annouce = data.latest_message.pop()
+                  this.announcement = annouce.content
+                }
+                this.messages = this.messages.concat(data.latest_message.reverse())
+                this.messages = this.messages.concat([{
+                  type: -1
+                }, {
+                  type: -2
+                }, {
+                  type: -3
+                }])
+                this.$nextTick(() => {
+                  this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
+                })
+                return
+              } else if (data.personal_setting) {
+                this.personal_setting = data.personal_setting
+              } else {
+                switch (data.type) {
+                  case 2:
+                    if (this.showChatRoom && this.isLogin) {
+                      if (data.command === 'banned') {
+                        this.errMsg = true
+                        this.errMsgCnt = data.content
+                      } else if (data.command === 'unblock') {
+                        this.personal_setting.blocked = false
+                        this.joinChatRoom()
+                      } else if (data.command === 'unbanned') {
+                        this.personal_setting.chat.status = 1
+                      }
+                      this.$notify({
+                        message: data.content,
+                        offset: 100,
+                        type: 'success',
+                        duration: 2200,
+                        customClass: 'top-right-msg',
+                        showClose: false
+                      })
+                    }
+                    return
+                  case 3:
+                    this.announcement = data.content
+                    return
+                  default:
+                    this.messages.push(data)
+                }
+
+                let chatBox = document.getElementById('chatBox')
+                if (chatBox) {
+                  let h = chatBox.clientHeight
+                  let sh = chatBox.scrollHeight || chatBox.offsetHeigth
+                  let st = chatBox.scrollTop || document.documentElement.scrollTop || document.body.scrollTop
+                  if (h + st + 100 >= sh || (data.sender && data.sender.username === this.user.username)) {
+                    this.$nextTick(() => {
+                      this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
+                    })
+                  }
+                }
+              }
+            } else {
+              if (data.error_type !== 2 && data.error_type !== 3) {
+                this.errMsg = true
+                switch (data.error_type) {
+                  case 4:
+                    this.errMsgCnt = '您已被聊天室管理员禁言，在' + this.$moment(data.msg).format('YYYY-MM-DD HH:mm:ss') + '后才可以发言。'
+                    this.personal_setting.banned = true
+                    this.personal_setting.chat.status = 0
+                    break
+                  case 5:
+                    this.messages = []
+                    this.personal_setting.block = true
+                    this.personal_setting.chat.status = 0
+                    this.errMsgCnt = data.msg
+                    break
+                  default:
+                    this.errMsgCnt = data.msg
+                }
+              }
+            }
+          } catch (e) {
+            console.log(e)
+          }
+        }
+      }
+      setTimeout(() => {
+        this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
+      }, 1000)
+    },
+    handleAvatarSuccess (res, file) {
+      this.$store.commit('SET_USER', {
+        user: {
+          avatar: URL.createObjectURL(file.raw)
+        }
+      })
+    },
+    beforeAvatarUpload (file) {
+      let formData = new FormData()
+      formData.append('avatar', file)
+      updateUser(formData, this.user.id).then((data) => {
+        this.$store.commit('SET_USER', {
+          user: data
+        })
+        this.messages = this.messages.filter((item) => item.type !== -3)
+      }, errorMsg => {
+        this.$message({
+          showClose: true,
+          message: msgFormatter(errorMsg),
+          type: 'error'
+        })
+      })
+    },
+    sendMsgImg (e) {
+      let fileInp = this.$refs.fileImgSend
+      let file = fileInp.files[0]
+      if (!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(fileInp.value) || !this.personal_setting.chat.status) {
+        this.errMsgCnt = '文件格式不正确或您目前尚不符合发言条件'
+        this.errMsg = true
+        return false
+      }
+      if (file.size > 1024 * 1024) {
+        this.errMsg = true
+        this.errMsgCnt = '图片尺寸太大，请选择较小尺寸的图片。'
+        return
+      }
+      console.log(23233223)
+      let formData = new FormData()
+      formData.append('receivers', RECEIVER)
+      formData.append('image', file)
+      sendImgToChat(formData).then((data) => {
+        fileInp.value = ''
+      })
+    },
+    sendMsg () {
+      if (!this.msgCnt.trim()) { return false }
+      this.ws.send(JSON.stringify({
+        'command': 'send',
+        'receivers': [RECEIVER],
+        'type': 0,
+        'content': this.msgCnt
+      }))
+      this.msgCnt = ''
+    },
+    submitNickName () {
+      updateUser({nickname: this.nickname, id: this.user.id}).then((data) => {
+        this.$store.commit('SET_USER', {
+          user: data
+        })
+        this.showNickNameBox = false
+        this.messages = this.messages.filter((item) => item.type !== -2)
+      }, errorMsg => {
+        this.$message({
+          showClose: true,
+          message: msgFormatter(errorMsg),
+          type: 'error'
+        })
+      })
+    },
+    leaveRoom () {
+      this.showChatRoom = false
+      this.messages = []
+      this.ws.send(JSON.stringify({
+        'command': 'leave',
+        'receivers': [RECEIVER]
+      }))
+      if (this.ws) {
+        this.ws.close()
+      }
+    },
+    handleCheckUser (data) {
+      if (!this.personal_setting.manager || data.sender.level_name.indexOf('管理员') !== -1) {
+        return false
+      }
+      this.checkUser = data.sender
+      this.showCheckUser = true
+    },
+    ban (mins) {
+      banChatUser(RECEIVER, {
+        user: this.checkUser.username,
+        banned_time: mins
+      }).then((data) => {
+        this.showCheckUser = false
+      }, errorMsg => {
+        this.$message({
+          showClose: true,
+          message: errorMsg,
+          type: 'error'
+        })
+      })
+    },
+    unban (user) {
+      unbanChatUser(RECEIVER, {
+        user: user
+      }).then((data) => {
+        this.getUser()
+        this.$message({
+          showClose: true,
+          message: data.data.status,
+          type: 'error'
+        })
+      }, errorMsg => {
+        this.$message({
+          showClose: true,
+          message: errorMsg,
+          type: 'error'
+        })
+      })
+    },
+    block () {
+      blockChatUser(RECEIVER, {
+        user: this.checkUser.username
+      }).then((data) => {
+        this.showCheckUser = false
+      }, errorMsg => {
+        this.$message({
+          showClose: true,
+          message: errorMsg,
+          type: 'error'
+        })
+      })
+    },
+    unblock (user) {
+      unblockChatUser(RECEIVER, {
+        user: user
+      }).then((data) => {
+        this.getUser()
+        this.$message({
+          showClose: true,
+          message: data.data.status,
+          type: 'error'
+        })
+      }, errorMsg => {
+        this.$message({
+          showClose: true,
+          message: errorMsg,
+          type: 'error'
+        })
+      })
+    },
+    getUser () {
+      this.loading = true
+      getChatUser(1).then(response => {
+        let data = response.data
+        this.bannedUsers = data.banned_users
+        this.blockedUsers = data.block_users
+        this.loading = false
+      })
+    },
+    switchBlockTab (index) {
+      this.nowRestraintTab = index + ''
+    },
+    handleBlockPopupShow () {
+      this.showBlockPopup = true
+      this.getUser()
     }
+  },
+  created () {
+    this.getUser()
   }
 }
 </script>
-
 <style lang="scss" scoped>
-  .chat-box {
-    position: fixed;
-    right: 0;
-    top: 0;
-    width: 380px;
-    overflow-x: hidden;
-    height: 100%;
-    background: url('../assets/chatbg.jpg') no-repeat right bottom;
-    background-attachment: fixed;
-    border-left: 3px solid #006bb3;
-    border-bottom: 1px solid #006bb3;
-    z-index: 1;
-    .title {
-      line-height: 40px;
-      position: relative;
-      background-color: #006bb3;
-      color: #fff;
-      padding: 0 10px;
-      .font-home {
-        padding-top: 4px;
-      }
-      h3 {
-        font-size: 16px;
-        color: #fff;
-      }
-      .close {
-        color: #fff;
-        font-size: 20px;
-        cursor: pointer;
-      }
-      .r {
-        padding-top: 4px;
-        font-size: 14px;
-      }
-    }
-    .content {
-      padding: 4px;
+@import '../style/vars.scss';
 
-
-      .chat-announce {
-        position: absolute;
-        top: 43px;
-        left: 5px;
-        right: 5px;
-        background: rgba(237,244,254,.91);
-        border: 1px solid #c2cfe2;
-        border-radius: 5px;
-        padding-right: 10px;
-        height: 29px;
-        overflow: hidden;
-        z-index: 999;
-        .ttl {
-          display: block;
-          float: left;
-          background: #e1edfd;
-          color: red;
-          padding: 6px 8px 5px 15px;
-          padding-top: 0;
-          padding-bottom: 0;
-          line-height: 29px;
-          .volume-up {
-            padding-top: 5px;
-            margin-right: 4px;
-          }
-        }
-        .scroll {
-          display: block;
-          margin-left: 72px;
-          padding-top: 5px;
-        }
-      }
-      .controls {
-        position: absolute;
-        top: 78px;
-        left: 0;
-        width: 100%;
-        text-align: center;
-        z-index: 999;
-        .listCtrl {
-          margin: 0 5px;
-          display: inline-block;
-          background: #fff;
-          border: 1px solid #e2e2e2;
-          padding: 1px 9px;
-          padding-left: 7px;
-          border-radius: 15px;
-          color: #a5a5a5;
-          height: 17px;
-        }
-      }
-      .lay-scroll {
-        .item {
-          margin-top: 15px;
-          padding: 5px 10px;
-          .lay-block {
-            .avatar {
-              width: 48px;
-              height: 48px;
-              cursor: pointer;
-              img {
-                display: block;
-                width: 100%;
-                height: 100%;
-                border-radius: 7px;
-              }
-            }
-            .lay-content {
-              margin-left: 18px;
-              .msg-header {
-                overflow: hidden;
-                h4 {
-                  display: inline-block;
-                  font-size: 12px;
-                  color: #4f77ab;
-                  display: inline-block;
-                  font-weight: 400;
-                  cursor: pointer;
-                }
-                span {
-                  display: inline-block;
-                  margin: 0 2px;
-                  img {
-                    vertical-align: middle;
-                  }
-                  &.msg-time {
-                    background: rgba(70,70,70,.12);
-                    color: #a0a0a0;
-                    padding: 0 6px;
-                    border-radius: 10px;
-                    font-weight: 400;
-                    font-size: 10px;
-                  }
-                }
-              }
-              .bubble {
-                background: linear-gradient(to right, rgb(25, 158, 216), rgb(25, 158, 216)); 
-                border-left-color: rgb(25, 158, 216); 
-                border-right-color: rgb(25, 158, 216); 
-                color: rgb(255, 255, 255);
-                margin-top: 3px;
-                position: relative;
-                border-radius: 5px;
-                padding: 6px 9px;
-                font-size: 13px;
-                line-height: 1.2;
-                display: inline-block;
-                text-shadow: 0 0 1px #35406d;
-                p {
-                  span {
-                    white-space: pre-wrap; 
-                    word-break: break-all;
-                  }
-                }
-              }
-              .bubble:after {
-                content: '';
-                position: absolute;
-                top: 14px;
-                width: 0;
-                height: 0;
-                border: 9px solid transparent;
-                border-top: 0;
-                margin-top: -7px;
-                left: 0;
-                margin-left: -9px;
-                border-left: 0;
-                border-right-color: rgb(25, 158, 216);
-              }
-            }
-          }
-        }
-      }
-    }
-    .footer {
-      padding: 0;
-      .control-bar {
-        height: 32px;
-        background: #f0f0f0;
-        border: 1px solid #adadad;
-        border-left: 0;
-        border-right: 0;
-        position: relative;
-        z-index: 100;
-        overflow: hidden;
-      }
-      .typing {
-        position: relative;
-        padding: 5px;
-        .txtinput {
-          display: block;
-          width: auto;
-          margin-right: 58px;
-        }
-        .el-textarea {
-          vertical-align: bottom;
-        }
-        .is-disabled {
-          .el-textarea_inner {
-            background-color: #eef1f6;
-            border-color: #d1dbe5;
-            color: #bbb;
-            cursor: not-allowed;
-          }
-        }
-        .el-textarea_inner {
-          display: block;
-          resize: vertical;
-          padding: 5px 7px;
-          line-height: 1.5;
-          width: 100%;
-          font-size: 14px;
-          color: #1f2d3d;
-          background-color: #fff;
-          border: 1px solid #bfcbd9;
-          border-radius: 4px;
-          transition: border-color .2s cubic-bezier(.645,.045,.355,1);
-          box-sizing: border-box;
-          background-image: none;
-        }
-      }
-
-      .btn-control {
-        display: inline-block;
-        padding: 0 12px;
-        line-height: 32px;
-        background: #e5e5e5;
-        color: #717171;
-        margin-right: 1px;
-        cursor: pointer;
-        padding-top: 4px;
-        .el-icon-picture {
-          font-size: 18px;
-        }
-      }
-      .sendbtn {
-        position: absolute;
-        right: 5px;
-        bottom: 5px;
-      }
-    }
-    .edit-profile {
-      max-width: 310px;
-      border-radius: 5px;
-      background: rgba(255,255,255,.93);
-      margin: 50px auto 0;
-      position: relative;
-      min-height: 200px;
-      border: 1px solid #c8d4e4;
-      text-align: center;
-      padding: 20px 0;
-      width: 90%;
-      z-index: 999;
-      color: #4f77ab;
-      .avatar {
-        display: inline-block;
-        border-radius: 50%;
-        width: 90px;
-        height: 90px;
-        border: 1px solid #c8d4e4;
-        overflow: hidden;
-        cursor: pointer;
-        img {
-          display: block;
-          width: 100%;
-          height: 100%;
-        }
-        label {
-          display: block;
-          position: absolute;
-          top: 38px;
-          left: 0;
-          width: 100%;
-          text-align: center;
-          color: #fff;
-          font-size: 50px;
-          color: #909090;
-          cursor: pointer;
-        }
-      }
-      .txt-nick {
-        font-size: 20px;
-      }
-      p {
-        margin-top: 5px;
-        cursor: pointer;
-      }
-      .u-btn1 {
-        width: 56px;
-        height: 20px;
-        font-size: 12px;
-        line-height: 20px;
-      }
-      .el-icon-edit-outline {
-        font-size: 20px;
-      }
-    }
-
-    .u-btn1 {
-      display: inline-block;
-      text-align: center;
-      vertical-align: bottom;
-      border-radius: 3px;
-      margin-left: 3px;
-      width: 51px;
-      height: 51px;
-      font-size: 14px;
-      line-height: 51px;
-      background: #5b8ac7;
-      background: -moz-linear-gradient(top,#5b8ac7 0,#2765b5 100%);
-      background: -webkit-linear-gradient(top,#5b8ac7 0,#2765b5 100%);
-      background: linear-gradient(to bottom,#5b8ac7 0,#2765b5 100%);
-      border: 1px solid #1e57a0;
-      color: #fff;
+.container-chat {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 380px;
+}
+.chat-box {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 340px;
+  overflow-x: hidden;
+  height: 100%;
+  border-left: 3px solid #006bb3;
+  border-bottom: 1px solid #006bb3;
+  z-index: 1;
+}
+.title {
+  line-height: 40px;
+  position: relative;
+  background-color: #006bb3;
+  color: #fff;
+  padding: 0 10px;
+  .font-home {
+    margin-top: 8px;
+  }
+  h3 {
+    font-size: 16px;
+    color: #fff;
+  }
+  .close {
+    color: #fff;
+    font-size: 20px;
+    cursor: pointer;
+    margin: 8px 10px 0 0;
+  }
+  .right {
+    font-size: 14px;
+    .icon-user {
+      cursor: pointer;
+      margin: 8px 10px;
       cursor: pointer;
     }
   }
+}
+
+.content {
+  background: url('../assets/chatbg.jpg') no-repeat right bottom;
+  background-attachment: fixed;
+  background-size: cover;
+  padding: 4px 0;
+}
+
+.chat-announce {
+  position: absolute;
+  top: 43px;
+  left: 5px;
+  right: 5px;
+  background: rgba(237,244,254,.91);
+  border: 1px solid #c2cfe2;
+  border-radius: 5px;
+  padding-right: 10px;
+  height: 29px;
+  overflow: hidden;
+  z-index: 999;
+  .ttl {
+    display: block;
+    float: left;
+    background: #e1edfd;
+    color: red;
+    padding: 6px 8px;
+    padding-top: 0;
+    padding-bottom: 0;
+    line-height: 29px;
+    .volume-up {
+      padding-top: 5px;
+      margin-right: 4px;
+    }
+  }
+  .scroll {
+    display: block;
+    margin-left: 72px;
+    padding-top: 5px;
+  }
+}
+.controls {
+  position: absolute;
+  top: 78px;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  z-index: 999;
+  .list-ctrl {
+    margin: 0 5px;
+    display: inline-block;
+    background: #fff;
+    border: 1px solid #e2e2e2;
+    padding: 1px 9px;
+    padding-left: 7px;
+    border-radius: 15px;
+    color: #a5a5a5;
+    height: 17px;
+  }
+}
+.lay-scroll {
+  padding-top: 36px;
+  .block-user-info {
+    text-align: center;
+    padding-top: 100px;
+    font-size: 16px;
+    color: red;
+  }
+}
+.item {
+  margin-top: 15px;
+  padding: 5px;
+  &.sys-msg {
+    text-align: center;
+    margin-top: 0px;
+    .inner {
+      color: #999;
+      display: inline-block;
+      background: #efefef;
+      border-radius: 8px;
+      border: 1px solid #dddddc;
+      padding: 5px 10px;
+    }
+    .type-warning {
+      color: #f60;
+      .btn-here {
+        color: rgb(25, 158, 216);
+      }
+    }
+  }
+  &.item-left {
+    .lay-block {
+      .lay-content {
+        .bubble:after {
+          left: 0;
+          border-left: 0;
+          margin-left: -9px;
+          border-right-color: inherit;
+        }
+      }
+    }
+  }
+  &.item-right {
+    .lay-block {
+      .avatar {
+        float: right;
+      }
+      .lay-content {
+        float: right;
+        margin-right: 15px;
+        .msg-header {
+          h4 {
+            text-align: right;
+            float: right;
+            padding-top: 2px;
+          }
+
+          span {
+            float: right;
+          }
+        }
+        .bubble {
+          float: right;
+        }
+        .bubble:after {
+          right: 0;
+          border-right: 0;
+          margin-right: -9px;
+          border-left-color: inherit;
+        }
+      }
+    }
+  }
+}
+.lay-block {
+  .avatar {
+    width: 42px;
+    height: 42px;
+    cursor: pointer;
+    float: left;
+    .font-cog {
+      color: #7285d6;
+    }
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 7px;
+    }
+  }
+}
+
+.common-member {
+  display: inline-block;
+  margin: 0 2px;
+  background: #cb9b64;
+  color: #fff;
+  padding: 0 6px;
+  border-radius: 10px;
+  font-weight: 400;
+  font-size: 10px;
+}
+
+
+.lay-content {
+  margin-left: 18px;
+  float: left;
+  max-width: 75%;
+}
+.msg-header {
+  overflow: hidden;
+  h4 {
+    display: inline-block;
+    font-size: 12px;
+    color: #4f77ab;
+    display: inline-block;
+    font-weight: 400;
+    cursor: pointer;
+    max-width: 73px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    line-height: 12px;
+  }
+
+  .msg-time {
+    display: inline-block;
+    color: #666;
+    margin: 0 2px;
+  }
+}
+.bubble {
+  background: linear-gradient(to right, $primary, rgb(25, 158, 216));
+  border-left-color: rgb(25, 158, 216);
+  border-right-color: $primary;
+  color: rgb(255, 255, 255);
+  margin-top: 3px;
+  position: relative;
+  border-radius: 5px;
+  padding: 5px 8px;
+  font-size: 13px;
+  display: inline-block;
+  p {
+    width: 100%;
+  }
+  &.bubble1 {
+    width: 55%;
+  }
+  &.bubble4 {
+    background: #ab47bc;
+    background: linear-gradient(to right,#ab47bc,#5169DE);
+    border-left-color: #5169de;
+    border-right-color: #ab47bc;
+  }
+  p {
+    display: inline-block;
+    span {
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    img {
+      width: 100%;
+      min-height: 50px;
+      cursor: pointer;
+    }
+  }
+}
+.bubble:after {
+  content: '';
+  position: absolute;
+  top: 14px;
+  width: 0;
+  height: 0;
+  border: 9px solid transparent;
+  border-top: 0;
+  margin-top: -7px;
+}
+.footer {
+  background: #f5f5f5;
+  padding: 0;
+  width: 100%;
+  .control-bar {
+    height: 32px;
+    background: #f5f5f5;
+    border: 1px solid #ccc;
+    border-left: 0;
+    border-right: 0;
+    position: relative;
+    overflow: hidden;
+    .btn-smile {
+      .img-upload-input {
+        width: 0.1px;
+        height: 0.1px;
+        opacity: 0;
+        position: absolute;
+        top: -20px;
+      }
+    }
+    .btn-smile:hover {
+      background: #ffd4c0;
+    }
+  }
+  .typing {
+    position: relative;
+    padding: 5px;
+    .txtinput {
+      display: block;
+      width: auto;
+      margin-right: 58px;
+    }
+    .el-textarea {
+      vertical-align: bottom;
+    }
+    .is-disabled {
+      .el-textarea-inner {
+        background-color: #eef1f6;
+        border-color: #d1dbe5;
+        color: #bbb;
+        cursor: not-allowed;
+        height: 54px;
+        resize: none;
+      }
+    }
+    .el-textarea-inner {
+      display: block;
+      resize: vertical;
+      padding: 5px 7px;
+      line-height: 1.5;
+      width: 100%;
+      font-size: 14px;
+      color: #1f2d3d;
+      background-color: #fff;
+      border: 1px solid #bfcbd9;
+      border-radius: 4px;
+      transition: border-color .2s cubic-bezier(.645,.045,.355,1);
+      box-sizing: border-box;
+      background-image: none;
+    }
+  }
+
+  .btn-control {
+    float: left;
+    display: inline-block;
+    padding: 4px 12px;
+    line-height: 32px;
+    margin-right: 1px;
+    background: #e5e5e5;
+    color: #666;
+    cursor: pointer;
+    .el-icon-picture {
+      cursor: pointer;
+      font-size: 20px;
+    }
+  }
+  .sendbtn {
+    position: absolute;
+    right: 5px;
+    bottom: 5px;
+  }
+}
+.edit-profile {
+  max-width: 310px;
+  border-radius: 5px;
+  background: rgba(255,255,255,.93);
+  margin: 50px auto 0;
+  position: relative;
+  min-height: 200px;
+  border: 1px solid #c8d4e4;
+  text-align: center;
+  padding: 20px 0;
+  width: 90%;
+  z-index: 9999;
+  color: #4f77ab;
+  .avatar-upload-tip {
+    font-size: 12px;
+    color: rgb(255, 127, 77);
+  }
+  .icon-edit {
+    font-size: 20px;
+  }
+  .avatar {
+    display: inline-block;
+    border-radius: 50%;
+    width: 90px;
+    height: 90px;
+    border: 1px solid #c8d4e4;
+    overflow: hidden;
+    cursor: pointer;
+    img {
+      display: block;
+      width: 100%;
+    }
+    label {
+      display: block;
+      position: absolute;
+      top: 38px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      color: #fff;
+      font-size: 50px;
+      color: #909090;
+      cursor: pointer;
+    }
+  }
+  .txt-nick {
+    font-size: 20px;
+  }
+  p {
+    margin-top: 5px;
+    cursor: pointer;
+  }
+  .u-btn {
+    width: 56px;
+    height: 20px;
+    font-size: 12px;
+    line-height: 20px;
+  }
+  .el-icon-edit-outline {
+    color: $primary;
+    font-size: 20px;
+  }
+}
+
+.u-btn {
+  display: inline-block;
+  text-align: center;
+  border-radius: 3px;
+  margin-left: 3px;
+  width: 52px;
+  height: 52px;
+  font-size: 14px;
+  line-height: 52px;
+  background: $primary;
+  color: #fff;
+  cursor: pointer;
+}
+
   .chat-guide {
     position: fixed;
-    right: 10px;
+    right: 0;
     top: 50%;
     width: 40px;
-    height: 152px;
+    height: 122px;
     margin-top: -76px;
-    background: url('../assets/chat_float_blue.png') no-repeat;
     background-size: 100%;
     cursor: pointer;
     z-index: 0;
+    background: #1e72df;
+    border-radius: 8px 0 0 8px;
+    padding-top: 14px;
+    .font-wechat {
+      color: #d1e6fe;
+    }
+    ul {
+      font-size: 18px;
+      color: #fff;
+      li {
+        text-align: center;
+        padding: 4px 0;
+      }
+    }
   }
+
+  .emoji-container {
+    overflow-y: scroll;
+    .emoji {
+      padding: 2px 6px 0 4px;
+      display: inline-block;
+      cursor: pointer;
+      position: relative;
+      font-size: 18px;
+      text-align: center;
+      border: 2px solid transparent;
+    }
+    .emoji:hover {
+      border-color: #ff5a00;
+    }
+  }
+
 </style>

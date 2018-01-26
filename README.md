@@ -1,6 +1,6 @@
-# rico
+# Caracal
 
-> PC website of Chatroom 
+> A Vue.js project
 
 ## Build Setup
 

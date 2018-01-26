@@ -1,24 +1,23 @@
 <template>
   <div class="footer text-center">
-
     <div class="quick-info">
-      <div class="sub-menu">
+      <div :class="['sub-menu', 'm-b-xlg', {'container': notHomePage}]">
         <router-link class="link"
           v-for="(item, index) in subMenu"
           :key="index"
-          :to="item.route">
-          {{item.option}}
-        </router-link>
+          :to="item.route">{{item.option}}</router-link>
       </div>
-      <div class="advice">
-        <p>理性购彩，未满 18 周岁未成年人禁止购彩及兑奖</p>
-        <p>健康游戏忠告：抵制黑平台不良游戏，拒绝盗版小平台游戏。注意自我保护，谨防受骗上当。</p>
-        <p>温馨提示您适度游戏益脑，沉迷游戏伤身。合理安排时间，享受健康生活。</p>
+      <div class="advice block-center">
+        <div :class="[{'container': notHomePage}]">
+          <p>理性购彩，未满 18 周岁未成年人禁止购彩及兑奖</p>
+          <p>健康游戏忠告：抵制黑平台不良游戏，拒绝盗版小平台游戏。注意自我保护，谨防受骗上当。</p>
+          <p>温馨提示您适度游戏益脑，沉迷游戏伤身。合理安排时间，享受健康生活。</p>
+        </div>
       </div>
     </div>
-
-    <div class="copyright">Copyright © Reserved</div>
-
+    <div class="copyright">
+      <div :class="['text',{'container': notHomePage}]">Copyright © Reserved</div>
+    </div>
   </div>
 </template>
 
@@ -47,7 +46,7 @@ export default {
         },
         {
           option: '关于我们',
-          route: '/'
+          route: '/faq'
         },
         {
           option: '最新优惠',
@@ -55,16 +54,19 @@ export default {
         }
       ]
     }
+  },
+  computed: {
+    notHomePage () {
+      return this.$route.name !== 'Home'
+    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
 @import '../style/vars.scss';
-@mixin text ($line-height, $color) {
-  letter-spacing: 1.3px;
-  font-size: 12px;
-  font-weight: 500;
+@mixin text ($line-height, $color, $sz) {
+  font-size:  $sz;
   line-height: $line-height;
   color: $color;
 }
@@ -74,34 +76,32 @@ export default {
 }
 
 .quick-info {
-  @include block(200px, $dark-slate-blue);
+  @include block(200px, #f1f1f1);
 }
 
 .sub-menu {
-  padding-top: 36px;
-  padding-bottom: 40px;
-  height: 22px;
+  padding-top: 35px;
   .link {
-    color:  #ffffff;
-    text-decoration: none;
-    font-size: 14px;
-    letter-spacing: 1.6px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    &:nth-child(n + 2):before {
-      content: '|';
+    padding: 0 20px;
+    border-right: 1px solid #ccc;
+    @include text(1, #666, 14px);
+    &:last-child {
+      border: none
+    }
+    &:hover {
+      color: $primary
     }
   }
 }
 
 .advice {
-  margin: 0 auto;
-  width: 638px;
-  height: 66px;
-  @include text(1.83, $pinkish-grey);
+  @include text(1.8, #999, 12px);
 }
 
 .copyright {
   @include block(34px, #2f2f2f);
-  @include text(34px, #ffffff);
+  .text {
+    @include text(34px, #ccc, 12px);
+  }
 }
 </style>

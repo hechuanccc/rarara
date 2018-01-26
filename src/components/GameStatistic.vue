@@ -1,15 +1,14 @@
 <template>
 <div class="main">
   <Tabs
-    :class="statistics.length>10?'small-font':''"
     v-if="statistics.length>0"
     :items="statistics"
     @clicked="changeActiveName" />
   <table class="table" v-if="currentTab" width="100%" >
     <tr>
-      <td :width="tableWidth" v-for="num in currentTableSetting" :key="num">
+      <th :width="tableWidth" v-for="num in currentTableSetting" :key="num">
         {{num}}
-      </td>
+      </th>
     </tr>
     <tr>
       <td v-for="num in currentTableSetting" :key="num">
@@ -20,12 +19,12 @@
   <Tabs v-if="currentHistoryTag.length>0" :items="currentHistoryTag" @clicked="changeActiveHistoryTag" ref="historyTab"/>
   <table class="table" width="100%" >
     <tr v-if="cumulative">
-      <td  colspan="25">
+      <th  colspan="25">
         <template v-for="(item, index) in cumulative">
           <span>{{item.key | typeFilter}}:</span>
           <span>{{item.value || 0}} </span>
         </template>
-      </td>
+      </th>
     </tr>
     <tr>
       <td v-for="(datas, groupIndex) in currentHistory" :key="groupIndex" width="4%">
@@ -179,7 +178,12 @@ export default {
           dragonTigerSpecial = '龙虎'
         }
 
-        const translator = gameTranslator[this.gameCode]
+        let translator
+        if (this.gameCode === 'auluck8') {
+          translator = gameTranslator['auluck8Statistic']
+        } else {
+          translator = gameTranslator[this.gameCode]
+        }
         let keys = Object.keys(resultSingleStatistic)
         const statisticsMap = {}
         const statistic = []
@@ -383,10 +387,7 @@ export default {
 .main {
   box-sizing: border-box;
   background: #fff;
-  padding: 20px;
-}
-.tabs.small-font {
-  font-size: 12px;
+  padding: 10px;
 }
 .table {
   width: 100%;
@@ -394,9 +395,13 @@ export default {
   border-spacing: 0;
   text-align: center;
   margin-bottom: 20px;
-  td {
-    padding: 10px 0;
-    border: 1px solid #ccc;
+  th {
+    font-weight: bold;
+    background: #ecf5ff;
+  }
+  td, th {
+    padding: 6px 0;
+    border: 1px solid #e0e0e0;
   }
 }
 </style>

@@ -1,7 +1,9 @@
 <template>
   <div v-loading.fullscreen="$store.state.loading" element-loading-text="加载中...">
     <Top />
-    <router-view/>
+    <div :style="{minHeight: bodyHeight + 'px'}">
+      <router-view/>
+    </div>
     <Bottom v-if="!$route.params.gameId"/>
     <el-dialog
       :title="$t('navMenu.pop_title')"
@@ -20,7 +22,7 @@
       center>
       <BetRecord v-if="showBetRecordDialog" :lazyFetch="!showBetRecordDialog"/>
     </el-dialog>
-    <chat-room></chat-room>
+    <chat-room :showEntry="showEntry"></chat-room>
   </div>
 </template>
 
@@ -45,7 +47,8 @@ export default {
   data () {
     return {
       timer: '',
-      getMessageInterval: ''
+      getMessageInterval: '',
+      bodyHeight: ~~(document.documentElement.clientHeight - 330)
     }
   },
   components: {
@@ -86,7 +89,7 @@ export default {
       }
       fetchMessageCount().then(res => {
         this.$store.dispatch('setMessageCount', res.message_count)
-      })
+      }).catch(() => {})
     }
   },
   computed: {
@@ -95,15 +98,17 @@ export default {
     },
     showBetRecordDialog () {
       return this.$store.state.betRecordDialogVisible
+    },
+    showEntry () {
+      let name = this.$route.name
+      return name === 'Gameintro' || name === 'GameDetail' || name === 'GameHistory' || name === 'Game' || name === 'Schedules'
     }
   },
   created () {
     if (this.$cookie.get('access_token')) {
       this.$store.dispatch('fetchUser').then(() => {
         this.getMessageCount()
-      }).catch(error => {
-        Promise.resolve(error)
-      })
+      }).catch(() => {})
     }
 
     this.getMessageInterval = window.setInterval(() => {
@@ -121,6 +126,11 @@ export default {
   beforeDestroy () {
     clearTimeout(this.timer)
     window.clearInterval(this.getMessageInterval)
+  },
+  watch: {
+    '$store.state.systemConfig.homePageLogo': function (homePageLogo) {
+      document.getElementById('favicon').href = homePageLogo
+    }
   }
 }
 </script>

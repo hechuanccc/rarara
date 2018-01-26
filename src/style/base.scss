@@ -4,19 +4,9 @@
   font-size: 14px;
   line-height: 2.0;
   font-weight: 500;
-  letter-spacing: 2px;
   color: #5f5f5f;
 }
 
-%fat-button {
-  width: $form_width;
-  height: 40px;
-}
-
-%form-label {
-  font-size: 12px;
-  color: #4a4a4a;
-}
 html{
   height: 100%;
 }
@@ -124,19 +114,7 @@ body {
 .input-width {
   width: $form_width;
 }
-.el-input /deep/ .el-input__inner{
-  height: 25px;
-  border: solid 1px #c8c8c8;
-}
-.el-form-item /deep/ .el-form-item__label {
-  @extend %form-label;
-}
 
-.submit {
-  @extend %fat-button;
-  font-size: 14px;
-  background-color: $azul;
-}
 /*breadcrumb & the line*/
 .row-bg{
   border-top: 1px solid #ededed
@@ -144,7 +122,7 @@ body {
 
 .el-breadcrumb{
   margin: 20px 0;
-  padding-left: 40px;
+  padding-left: 10px;
 }
 
 .fr {
@@ -163,4 +141,12 @@ body {
 }
 a {
   text-decoration: none;
+}
+.top-right-msg {
+  padding-top: 3px;
+  padding-bottom: 3px;
+  width: 220px;
+}
+.show-image-msg .el-dialog__body img {
+  width: 80%;
 }

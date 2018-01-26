@@ -1,33 +1,32 @@
 <template>
   <div id="app">
-    <el-container>
-      <el-main class="container" v-if="isHome">
+      <el-main v-if="isHome">
         <el-carousel indicator-position="inside" height="500px">
           <el-carousel-item v-for="banner in banners" :key="banner.id">
-            <img :src="banner.image" :alt="banner.image" />
+            <div class="banner-img" :style="{backgroundImage: `url(${banner.image})`}"></div>
           </el-carousel-item>
         </el-carousel>
-        <el-row class="container">
-          <div class="announcement">
-            <div class="left">
-              <icon class="speaker m-l-xlg" scale="1.25" name="bullhorn"></icon>
-              <span class="text m-l">{{$t('announcement.speaker')}}</span>
+        <el-row class="announcement-wp">
+          <div class="announcement container" @click="announcementDialogVisible = true">
+            <div class="title">
+              <icon class="speaker" color="#666" scale="1" name="bullhorn"></icon>
+              <span class="text">{{$t('announcement.speaker')}}</span>
             </div>
-            <div class="right text-center">
-              <span class="content text-center"
-                v-if="announcements.length"
+            <div class="content">
+              <span class="text"
                 :style="{
-                  'opacity': nowAnnouncement.transition.opacity,
-                  'transform': `translateY(${nowAnnouncement.transition.translateY}px)`
+                  'opacity': announcementStyle.opacity,
+                  'transform': `translateY(${announcementStyle.translateY}px)`
                 }">
-                {{announcements[nowAnnouncement.index].announcement}}
+                {{currentAnnouncement}}
               </span>
             </div>
           </div>
         </el-row>
-        <el-row class="game-area">
-          <ul>
-            <li v-for="(game, index) in games" :key="game.id" v-if="game.icon && index < 9" @click="navigate(game)" class="game-bg" :style="
+        <el-row class="game-area container">
+          <h2>热门游戏</h2>
+          <ul class="clearfix">
+            <li v-for="(game, index) in games" :key="game.id" v-if="game.icon && index < 8" @click="navigate(game)" class="game-bg" :style="
                 {
                   backgroundImage: game.bg_icon ? `url('${game.bg_icon}')` :''
                 }
@@ -37,8 +36,11 @@
               </div>
             </li>
           </ul>
+          <div class="action">
+            <el-button round type="primary" size="large" @click.native="$router.push('/game/')">更多游戏 &raquo;</el-button>
+          </div>
         </el-row>
-        <el-row class="ads">
+       <el-row class="ads container">
           <el-col
             v-for="(item, index) in descriptions"
             class="ad"
@@ -50,7 +52,7 @@
               <img :src="item.header_image" :alt="item.id" />
             </div>
             <div :class="[`ad-content${descriptions.length}`]">
-              <img class="content-img" :src="item.main_image" v-if="item.main_image" />
+              <img :src="item.main_image" v-if="item.main_image" />
               <p class="content-text" v-if="item.main_description" v-html="formattedText(item.main_description)"></p>
             </div>
           </el-col>
@@ -59,10 +61,29 @@
       <el-main v-else>
         <router-view/>
       </el-main>
-    </el-container>
+    <el-dialog
+      :title="$t('announcement.speaker')"
+      :visible.sync="announcementDialogVisible"
+      :width="'600px'"
+      @close="showCurrentAnnouncementInPopup = true"
+      center>
+      <el-carousel :height="'200px'"
+        @change="showCurrentAnnouncementInPopup = false"
+        class="announcement-popup"
+        :initial-index="currentAnnouncementIndex">
+        <el-carousel-item v-for="item in announcements"
+          :key="item.rank">
+          <p v-if="showCurrentAnnouncementInPopup && announcements[currentAnnouncementIndex]" class="text-center" key="announcement">
+            {{announcements[currentAnnouncementIndex].announcement || ''}}
+          </p>
+          <p class="text-center" key="announcement" v-else>
+            {{ item.announcement }}
+          </p>
+        </el-carousel-item>
+      </el-carousel>
+    </el-dialog>
   </div>
 </template>
-
 
 <script>
 import { getBanner, getAnnouncements, fetchGames, getDescription } from '../api'
@@ -76,13 +97,13 @@ export default {
       announcements: [],
       games: '',
       descriptions: '',
-      nowAnnouncement: {
-        index: 0,
-        transition: {
-          opacity: 1,
-          translateY: 0
-        }
-      }
+      announcementStyle: {
+        opacity: 1,
+        translateY: 0
+      },
+      currentAnnouncementIndex: 0,
+      announcementDialogVisible: false,
+      showCurrentAnnouncementInPopup: true
     }
   },
   computed: {
@@ -96,29 +117,31 @@ export default {
       } else {
         return 24 / length
       }
+    },
+    currentAnnouncement () {
+      if (this.announcements[this.currentAnnouncementIndex]) {
+        return this.announcements[this.currentAnnouncementIndex].announcement
+      } else {
+        return ''
+      }
     }
   },
   methods: {
-    announcementTransition () {
-      if (this.announcements) {
-        this.interval = setInterval(() => {
-          if (this.nowAnnouncement.index >= this.announcements.length) this.nowAnnouncement.index = 0
-
-          this.nowAnnouncement.transition.opacity = 1
-          this.nowAnnouncement.transition.translateY = 0
-
+    animate () {
+      setTimeout(() => {
+        if (this.announcementStyle.opacity <= 0) {
+          this.currentAnnouncementIndex = (this.currentAnnouncementIndex + 1) % this.announcements.length
+          this.announcementStyle.opacity = 1
+          this.announcementStyle.translateY = 0
           setTimeout(() => {
-            this.transitionInterval = setInterval(() => {
-              this.nowAnnouncement.transition.opacity -= 0.1
-              this.nowAnnouncement.transition.translateY -= 1
-              if (this.nowAnnouncement.transition.opacity < 0) {
-                this.nowAnnouncement.index++
-                clearInterval(this.transitionInterval)
-              }
-            }, 100)
-          }, 3000)
-        }, 5000)
-      }
+            this.animate()
+          }, 5000)
+        } else {
+          this.announcementStyle.opacity -= 0.05
+          this.announcementStyle.translateY -= 1
+          this.animate()
+        }
+      }, 100)
     },
     navigate (game) {
       if (this.$store.state.user.logined) {
@@ -155,11 +178,14 @@ export default {
           }
         })
 
-        this.announcements.sort((a, b) => {
-          return a.rank - b.rank
-        })
-
-        this.announcementTransition()
+        if (this.announcements.length > 0) {
+          this.announcements.sort((a, b) => {
+            return a.rank - b.rank
+          })
+          setTimeout(() => {
+            this.animate()
+          }, 5000)
+        }
       }
     )
     fetchGames().then(
@@ -179,40 +205,44 @@ export default {
 
 <style lang="scss" scoped>
 /* banner */
-.el-carousel__item img {
+.el-carousel__item .banner-img {
   width: 100%;
   height: 100%;
+  background-size: cover;
+  background-position: center center;
 }
 
-/* announcement */
+.announcement-wp {
+  background: #fff;
+}
 .announcement {
-  display: inline-block;
+  margin: auto;
+  overflow: hidden;
   height: 36px;
   line-height: 36px;
   font-size: 14px;
-  letter-spacing: 1.6px;
   color: #4a4a4a;
-  background-color: #f9f9f9;
-  .left {
-    display: inline;
-  }
-  .right {
-    display: inline;
-    .content {
-      position: absolute;
-      top: 0;
+  cursor: pointer;
+  .title {
+    display: inline-block;
+    float: left;
+    .text {
+      color: #666;
       display: inline-block;
-      box-sizing: border-box;
-      padding-left: 140px;
+      margin-left: 5px;
+      font-size: 13px;
+    }
+  }
+  .content {
+    display: inline-block;
+    .text {
+      padding-left: 20px;
       width: 100%;
       overflow: hidden;
     }
   }
   .speaker {
     vertical-align: text-bottom;
-  }
-  .text {
-    display: inline-block;
   }
 }
 
@@ -240,14 +270,28 @@ export default {
   color: #ffffff;
 }
 
-.game-area li {
-  cursor: pointer;
-  float: left;
-  width: 25%;
-  height: 360px;
-  line-height: 360px;
-  position: relative;
-  text-align: center;
+.game-area {
+  margin: 0 auto;
+  h2 {
+    text-align: center;
+    font-size: 16px;
+    color: #333;
+    padding: 20px 0;
+  }
+  li {
+    cursor: pointer;
+    float: left;
+    overflow: hidden;
+    width: 25%;
+    height: 320px;
+    line-height: 320px;
+    position: relative;
+    text-align: center;
+  }
+  .action {
+    text-align: center;
+    padding: 20px 0 0;
+  }
 }
 
 .game-bg {
@@ -274,9 +318,7 @@ export default {
   height: 150px;
 }
 
-/*advertisement*/
 .ads {
-  width: 1060px;
   text-align: center;
   margin: 80px auto;
 }
@@ -291,40 +333,25 @@ export default {
   text-align: center;
 }
 
-.ad-title img {
-  width: 100%;
-  height: 100%;
-}
-
-.ad-content4 {
-  height: 300px;
-}
-
-.ad-content3 {
-  height: 300px;
-}
-
-.ad-content2 {
-  height: 400px;
-}
-
 .content-text {
   font-size: 12px;
   font-weight: 500;
   line-height: 2;
-  letter-spacing: 0.5px;
   text-align: left;
   color: #878787;
   height: 100%;
   overflow: hidden;
 }
 
-.content-img {
-  width: 100%;
-}
-
-/* lay over the default padding */
 .el-main {
   padding: 0;
 }
+
+.el-carousel.announcement-popup /deep/ .el-carousel__button {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: black;
+}
+
 </style>

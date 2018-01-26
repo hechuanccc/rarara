@@ -18,7 +18,7 @@
   }
   @for $i from 1 through 11 {
     .gd11x5_pg_wc_wc_#{$i},
-    .gd11x5_pg_seq_seq_#{$i}{
+    .gd11x5_pg_seq_seq_#{$i} {
       @extend %gd11x5ball;
     }
   }
@@ -102,6 +102,17 @@ $sscgames: tjssc, xjssc, cqssc, jsssc;
   }
 }
 @include ssc-num;
+
+@mixin fc3d-num{
+  @for $i from 0 through 9 {
+    .fc3d_pg_2df_#{$i}, .fc3d_pg_3df_#{$i} {
+      @extend %sscball;
+      background-position: 0 (-27px * $i);
+    }
+  }
+}
+
+@include fc3d-num;
 
 
 $hk6_playgroups: spc, poscnum, poscspcnump1, poscspcnump2, poscspcnump3, poscspcnump4, poscspcnump5, poscspcnump6, shxiao_spczdc, withcode, ntinfvr_num ,'5elmnts',clrwvs_color, txiao_spczdc, shawzdc, pxxmzdc, exl;
@@ -228,23 +239,48 @@ $hk6_plays: spcb, spca, posc, poscspcnump1;
 }
 
 @include bjkl8-num;
+
+@mixin auluck8-num {
+  .auluck8_pg_pc_pc{
+    display: inline-block;
+    background: url(../assets/ball_5_small.png) repeat-x;
+    width: 21px;
+    text-indent: -9999px;
+    height: 23px;
+    line-height: 23px;
+  }
+  @for $i from 1 through 80 {
+    .auluck8_pl_pc_pc_#{$i} {
+      background-position: 0 (-23px * ($i - 1));
+    }
+  }
+}
+
+@include auluck8-num;
+
+
 %cqlfball{
   display: inline-block;
   background: url(../assets/ball_nc_top.png) repeat-x;
-  width: 32px;
+  background-size: (32px * 0.95) (659px *0.95);
+  width: 30px;
   text-indent: -9999px;
-  height: 33px;
-  line-height: 33px;
+  height: 30px;
+  line-height: 30px;
 }
 @mixin cqlf-num {
   @for $j from 1 through 20 {
     .cqlf_pg_wc_wc_#{$j} {
-      background-position: 0 (-33px * ($j - 1));
+      background-position: 0 (-33px * ($j - 1)) * 0.95;
+      @extend %cqlfball;
+    }
+    .cqlf_pl_pc_pc_#{$j} {
+      background-position: 0 (-33px * ($j - 1)) * 0.95;
       @extend %cqlfball;
     }
     @for $i from 1 through 8 {
       .cqlf_pl_sbssb#{$i}_sb_#{$j} {
-        background-position: 0 (-33px * ($j - 1));
+        background-position: 0 (-33px * ($j - 1)) * 0.95;
         @extend %cqlfball;
       }
     }

@@ -24,7 +24,8 @@ export default {
     result_period: 'Period',
     total: 'Total',
     no_result: "There's no result now",
-    online_service: 'Service'
+    online_service: 'Service',
+    register_now: 'Register Now'
   },
   agent: {
     register: 'Register',
@@ -114,6 +115,7 @@ export default {
     failed: 'Failed',
     ongoing: 'Ongoing',
     cancelled: 'Cancelled',
+    no_draw: 'No Draw',
     declined: 'Declined',
     finance: 'Financing',
     message: 'Message',
@@ -130,7 +132,11 @@ export default {
     visitor: 'Visitor',
     min_amount: 'Min Amount',
     max_amount: 'Max Amount',
-    unread_email: 'Unread Email'
+    unread_email: 'Unread Email',
+    read_status: 'status',
+    read: 'read',
+    unread: 'unread',
+    agreement: 'Agreement'
   },
   gameIntro: {
     gameinfo: 'Game Info:',
@@ -178,7 +184,8 @@ export default {
     min_amount_validate: 'must higher than min deposit amount',
     max_withdraw_amount_validate: 'must lower than max withdraw amount',
     min_withdraw_amount_validate: 'must higher than min withdraw amount',
-    date_range_validate: 'start date must before end date'
+    date_range_validate: 'start date must before end date',
+    agreement_validate: 'Please accept the agreement first'
   },
   message: {
     save_success: 'Save Success',

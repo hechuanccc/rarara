@@ -30,6 +30,7 @@ import Promotions from '@/screens/promotion/Promotions'
 import Faq from '@/screens/faq/FaqsHome'
 import Gameintro from '@/screens/gameintro/Gameintros'
 import GameHistory from '@/screens/gamehistory/GameHistory'
+import SchedulesTable from '@/screens/gamehistory/SchedulesTable'
 
 Vue.use(Router)
 
@@ -163,8 +164,15 @@ export default new Router({
       path: '/gamehistory',
       name: 'GameHistory',
       meta: { requiresAuth: true },
-      component: GameHistory
-
+      component: GameHistory,
+      children: [
+        {
+          path: ':gameCode',
+          name: 'Schedules',
+          meta: { requiresAuth: true },
+          component: SchedulesTable
+        }
+      ]
     },
     {
       path: '/game',
@@ -178,7 +186,8 @@ export default new Router({
           children: [
             {
               path: ':categoryId',
-              component: GameCategory
+              component: GameCategory,
+              name: 'GameDetail'
             }
           ]
         }

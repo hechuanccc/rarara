@@ -1,9 +1,11 @@
+'use strict'
 const config = require('../../config')
 const env = process.env.NODE_ENV === 'development' ? config.dev.env : config.build.env
 const host = env.HOST.replace(/"/g, '')
 const prefix = host + '/member'
 const apiv1 = host + '/v1/member'
-const apiChat = env.chatHost
+const apiChat = env.chatApi.replace(/"/g, '')
+const apiRoom = apiChat + '/v1/room'
 
 export default {
   domain: host,
@@ -42,5 +44,9 @@ export default {
   messageCount: apiv1 + '/message/count/',
   gamehistory: apiv1 + '/history/',
   statistic: apiv1 + '/statistic/',
-  chatRoomLogin: apiChat + '/chat/'
+  chatRoomLogin: apiChat + '/chat/',
+  article: apiv1 + '/website/franchising-program-page',
+  chatEmoji: apiChat + '/v1/emoji/',
+  sendImgToChat: host + '/v1/manage/attachment/',
+  apiRoom
 }
