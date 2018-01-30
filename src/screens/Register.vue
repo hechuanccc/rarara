@@ -11,7 +11,7 @@
             <div class="login-mid">
               <div class="rectangle-14"><router-link to="/login">已有账号，立即登录</router-link></div>
             </div>
-            <el-form :model="user" status-icon ref="user">
+            <el-form :model="user" status-icon :rules="rules2" ref="user">
               <el-form-item prop="username" label="用户名*"  label-width="75px">
                 <el-input v-model="user.username"
                           @keyup.enter.native="register"
