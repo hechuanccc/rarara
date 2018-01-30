@@ -1,4 +1,3 @@
-import _ from 'lodash'
 import axios from 'axios'
 import Vue from 'vue'
 
@@ -8,9 +7,7 @@ import {
   login,
   logout,
   fetchUser,
-  updateUser,
-  fetchGames,
-  fetchCategories
+  updateUser
 } from '../../api'
 
 export default {
@@ -83,41 +80,10 @@ export default {
       })
     })
   },
-  fetchGames: ({ commit, state }) => {
-    return fetchGames().then(res => {
-      commit(types.SET_GAMES, {
-        games: res
-      })
-    })
-  },
-  fetchCategories: ({ commit, state }, gameId) => {
-    return fetchCategories(gameId).then(res => {
-      const categories = _.map(res, item => {
-        item['game_id'] = gameId
-        return item
-      })
-      commit(types.SET_CATEGORIES, {
-        categories
-      })
-      return categories
-    })
-  },
-  openBetRecordDialog: ({ commit, state }) => {
-    commit(types.OPEN_BETRECORD_DIALOG)
-  },
-  closeBetRecordDialog: ({ commit, state }) => {
-    commit(types.CLOSE_BETRECORD_DIALOG)
-  },
   startLoading: ({ commit }) => {
     commit(types.START_LOADING)
   },
   endLoading: ({ commit }) => {
     commit(types.END_LOADING)
-  },
-  setMessageCount: ({ commit }, count) => {
-    commit(types.SET_MESSAGE_COUNT, count)
-  },
-  setSystemConfig: ({ commit }, data) => {
-    commit(types.SET_SYSTEM_CONFIG, data)
   }
 }

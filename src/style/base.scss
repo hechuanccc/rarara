@@ -107,23 +107,8 @@ body {
 .p-t {
   padding-top: 10px;
 }
-.block-center {
-  margin: 0 auto;
-}
-
-.input-width {
-  width: $form_width;
-}
 
 /*breadcrumb & the line*/
-.row-bg{
-  border-top: 1px solid #ededed
-}
-
-.el-breadcrumb{
-  margin: 20px 0;
-  padding-left: 10px;
-}
 
 .fr {
   float: right;
@@ -133,20 +118,40 @@ body {
   float: left;
 }
 
-.el-message-box__title {
-  padding-right: 10px;
+.aside {
+  .el-tabs--border-card {
+    background: transparent;
+    border: none;
+  }
+  .el-tabs__header {
+    background-color: transparent;
+    border-bottom: none;
+  }
+  .el-tabs__nav {
+    width: 100%;
+  }
+  .el-tabs--border-card>.el-tabs__header .el-tabs__item {
+    border: none;
+    width: 50%;
+    padding: 0;
+    text-align: center;
+    color: #d8d4d4;
+    margin: 0;
+    background: #3d4650;
+  }
+  .el-tabs--border-card>.el-tabs__header .el-tabs__item.is-active {
+    background-color: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: #fff;
+  }
 }
-.el-message-box {
-  word-break: break-all;
+
+.inp-search {
+  input {
+    background: #686c76;
+    border: none;
+    color: #fff;
+  }
 }
-a {
-  text-decoration: none;
-}
-.top-right-msg {
-  padding-top: 3px;
-  padding-bottom: 3px;
-  width: 220px;
-}
-.show-image-msg .el-dialog__body img {
-  width: 80%;
-}
+
+
