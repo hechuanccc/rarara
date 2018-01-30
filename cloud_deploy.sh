@@ -10,6 +10,7 @@ export static_container=static
 rm -rf dist
 
 npm install
+npm rebuild node-sass --force
 npm run build
 
 # Take note that the format URL for the storage account is {storage-url}/{blob-container} and $root is the only way to avoid the "blob container" format and the other static holders need to be declared as blobs to maintain the folder structure
