@@ -4,103 +4,8 @@
       class="chat-box"
       v-loading="loading"
       id="chatBox"
-      element-loading-text="正在登录"
-      v-if="isLogin && showChatRoom">
-      <el-header class="title clearfix" height="40px">
-        <div class="left fl clearfix">
-          <icon class="font-home fl" name="home" scale="1.4"></icon>
-          <h3 class="fl m-l">聊天室</h3>
-        </div>
-        <div class="right fr clearfix">
-          <icon v-if="personal_setting.manager" class="icon-user fl" name="cog" scale="1.4" @click.native="handleBlockPopupShow"></icon>
-          <icon class="icon-user fl" title="修改昵称" name="user" scale="1.4" @click.native="personal_setting.blocked && !user.account_type ? '' : showEditProfile = true"></icon>
-          <i class="el-icon-close close fl" title="关闭聊天室" @click="leaveRoom"></i>
-        </div>
-        <transition
-          enter-class="profileFadeInEnter"
-          leave-active-class="animated fadeOutUp"
-          enter-active-class="animated fadeInDown">
-          <div class="edit-profile" v-if="showEditProfile">
-            <div
-              v-on:mouseover="swichAvatar = true"
-              v-on:mouseout="swichAvatar = false">
-              <el-upload
-                class="avatar"
-                style="overflow-y: hidden;"
-                :action="uploadUrl"
-                :show-file-list="false"
-                :on-success="handleAvatarSuccess"
-                :before-upload="beforeAvatarUpload">
-
-                <img v-if="user.avatar && !swichAvatar" :src="user.avatar" class="avatar">
-                <img v-else-if="!swichAvatar" src="../assets/avatar.png">
-                <label for="avatarUploadInput" class="upload-avatar" v-if="swichAvatar">
-                  <span class="el-icon-upload"></span>
-                </label>
-              </el-upload>
-            </div>
-
-            <p class="avatar-upload-tip">{{user.avatar ? '(如需更换头像请点击上方头像上传)' : '(您还未设置头像, 请点击头像上传)'}}</p>
-            <p>
-              <span class="txt-nick">{{user.nickname || user.username}}</span>
-              <a href="javascript:void(0)" class="icon-edit" @click="showNickNameBox = true">
-                <span class="el-icon-edit-outline"></span>
-              </a>
-            </p>
-            <div>
-              <p>
-                <a href="javascript:void(0)" class="u-btn" @click="showEditProfile = false">关闭</a>
-              </p>
-            </div>
-          </div>
-        </transition>
-        <transition
-          enter-class="profileFadeInEnter"
-          leave-active-class="animated fadeOutUp"
-          enter-active-class="animated fadeInDown">
-          <div class="edit-profile" v-if="showCheckUser">
-            <div
-              class="avatar"
-              style="overflow-y: hidden;">
-              <img :src="checkUser.avatar_url || '../assets/avatar.png'" class="avatar">
-              <label for="avatarUploadInput" class="upload-avatar" v-if="swichAvatar">
-                <span class="el-icon-upload"></span>
-              </label>
-            </div>
-            <p class="avatar-upload-tip">{{checkUser.nickname || checkUser.username}}({{checkUser.level_name}})</p>
-            <div class="restraint-actions">
-              <el-button type="danger" size="mini" @click.native="ban(15)">禁言15分钟</el-button>
-              <el-button type="danger" size="mini" @click.native="ban(30)">禁言30分钟</el-button>
-              <el-button type="danger" size="mini" @click.native="block()">加入黑名单</el-button>
-            </div>
-            <div>
-              <p>
-                <a href="javascript:void(0)" class="u-btn" @click="showCheckUser = false">关闭</a>
-              </p>
-            </div>
-          </div>
-        </transition>
-      </el-header>
+      element-loading-text="正在登录计划聊天室">
       <el-main class="content" id="chatBox">
-        <div class="chat-announce" v-if="announcement">
-          <div class="ttl clearfix">
-            <icon class="fl volume-up" name="volume-up"></icon>
-            <span class="fl">公告:</span>
-          </div>
-          <div class="scroll">
-            <MarqueeTips :content="announcement" :speed="10"></MarqueeTips>
-          </div>
-        </div>
-        <div class="controls">
-          <a class="list-ctrl clearfix" href="javascript:void(0)">
-            <icon class="fl"  name="unsorted"></icon>
-            <span class="fl" @click="$refs.msgEnd.scrollIntoView()">&nbsp;滚屏</span>
-          </a>
-          <a class="list-ctrl clearfix" href="javascript:void(0)">
-            <icon class="fl"  name="trash"></icon>
-            <span class="fl" @click="messages = []">&nbsp;清屏</span>
-          </a>
-        </div>
         <ul class="lay-scroll">
           <li v-for="(item, index) in messages"
             :key="index"
@@ -112,7 +17,7 @@
             <div class="lay-block clearfix" v-if="item.type >= 0">
               <div class="avatar">
                 <icon name="cog" class="font-cog" v-if="item.type == 4" scale="3"></icon>
-                <img @click="handleCheckUser(item)" :src="item.sender && item.sender.avatar_url ? item.sender.avatar_url : require('../assets/avatar.png')" v-else>
+                <img :src="item.sender && item.sender.avatar_url ? item.sender.avatar_url : require('../assets/avatar.png')" v-else>
               </div>
               <div class="lay-content">
                 <div class="msg-header">
@@ -132,12 +37,6 @@
             </div>
             <div class="inner" v-else-if="item.type === -1">
               <p>以上是历史消息</p>
-            </div>
-            <div v-else-if="user.account_type && (item.type === -2 || item.type === -3)" class="inner type-warning">
-              <p>
-                <span v-if="item.type === -2">您可以设置昵称啦, 点击 <a href="javascript:void(0)" class="btn-here" @click="item.type === -3 ? showEditProfile = true : showNickNameBox = true">这里</a>设置昵称</span>
-                <span v-else>您可以上传自己的头像啦, 点击 <a href="javascript:void(0)" class="btn-here" @click="item.type === -3 ? showEditProfile = true : showNickNameBox = true">这里</a>设置</span>
-              </p>
             </div>
           </li>
           <li v-if="personal_setting.block" class="block-user-info">您已被管理员拉黑，请联系客服。<li>
@@ -160,7 +59,6 @@
                 {{item.emoji}}
               </a>
             </div>
-
           </el-popover>
           <a v-popover:popover4 href="javascript:void(0)" title="发送表情" class="btn-control btn-smile">
             <icon scale="1.3" name="smile-o"></icon>
@@ -169,7 +67,7 @@
             <label for="imgUploadInput">
               <span title="上传图片">
                 <i class="el-icon-picture"></i>
-                <input disabled="personal_setting.chat.status" @change="sendMsgImg" type="file" ref="fileImgSend" class="img-upload-input" id="imgUploadInput" accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif">
+                <input :disabled="!personal_setting.chat.status" @change="sendMsgImg" type="file" ref="fileImgSend" class="img-upload-input" id="imgUploadInput" accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif">
               </span>
             </label>
           </a>
@@ -177,7 +75,7 @@
         <div class="typing">
           <div :class="['txtinput', 'el-textarea', !personal_setting.chat.status ? 'is-disabled' : '']">
             <textarea  @keyup.enter="sendMsg"
-              :placeholder="personal_setting.chat.status ? '' : sendMsgCondition"
+              placeholder="请文明发言"
               type="textarea" rows="2"
               autocomplete="off"
               validateevent="true"
@@ -192,156 +90,60 @@
         </div>
       </el-footer>
     </el-container>
-    <el-dialog title="修改昵称"
-      :visible.sync="showNickNameBox"
-      width="400px"
-      custom-class="changeNickNameBox"
-      append-to-body>
-      <el-form>
-        <el-form-item label="请输入昵称">
-          <el-input auto-complete="off" v-model="nickname"></el-input>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="showNickNameBox = false">取 消</el-button>
-        <el-button type="primary" @click="submitNickName">确 定</el-button>
-      </div>
-    </el-dialog>
     <el-dialog :visible.sync="showImageMsg"
       width="640px"
       custom-class="show-image-msg text-center"
       append-to-body>
       <img :src="showImageMsgUrl">
     </el-dialog>
-    <el-dialog :visible.sync="errMsg" width="400px" custom-class="showImageMsg" append-to-body>
-      <p>{{errMsgCnt}}</p>
-    </el-dialog>
-    <div 
-      v-if="isLogin && showEntry" 
-      class="chat-guide text-center"
-      @click="joinChatRoom">
-      <icon class="font-wechat" name="wechat" scale="1.7"></icon>
-      <ul class="text-center">
-        <li>聊</li>
-        <li>天</li>
-        <li>室</li>
-      </ul>
-    </div>
-
     <el-dialog :visible.sync="errMsg"
       width="400px"
       custom-class="showImageMsg"
       append-to-body>
       <p>{{errMsgCnt}}</p>
     </el-dialog>
-
-    <el-dialog
-      :visible.sync="showBlockPopup"
-      width="700px"
-      :modal-append-to-body="true"
-      :append-to-body="true"
-      center>
-      <el-menu :default-active="'0'" class="m-b-xlg" mode="horizontal">
-        <el-menu-item v-for="(tab, index) in restraintTabs"
-          :key="index"
-          :index="index + ''"
-          @click.native="switchBlockTab(index)">{{tab.display}}</el-menu-item>
-      </el-menu>
-      <el-table
-        :data="nowRestraintTab === '1' ? formattedBannedUsers : blockedUsers"
-        style="width: 100%">
-        <el-table-column
-          prop="username"
-          label="帐号"
-          :width="nowRestraintTab === '0' ? 322 : 215">
-        </el-table-column>
-        <el-table-column
-          v-if="nowRestraintTab === '1'"
-          prop="banned_time"
-          label="时间(min)"
-          width="215">
-        </el-table-column>
-        <el-table-column
-          label="操作"
-          :width="nowRestraintTab === '0' ? 322 : 215">
-          <template slot-scope="scope">
-            <el-button v-if="nowRestraintTab === '1'" size="mini" type="danger" @click.native="unban(scope.row.username)">解除</el-button>
-            <el-button v-else size="mini" type="danger" @click.native="unblock(scope.row.username)">解除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </el-dialog>
   </div>
 
 </template>
 
 <script>
-import MarqueeTips from 'vue-marquee-tips'
-import urls from '../api/urls'
-import { msgFormatter, getCookie } from '../utils'
-import { updateUser, fetchChatEmoji, sendImgToChat, banChatUser, blockChatUser, unblockChatUser, unbanChatUser, getChatUser } from '../api'
+// import urls from '../api/urls'
+import Icon from 'vue-awesome/components/Icon'
+import 'vue-awesome/icons/cog'
+import 'vue-awesome/icons/smile-o'
+import { fetchChatEmoji, sendImgToChat } from '../api'
+// import { getCookie } from '../utils'
 import config from '../../config'
 const WSHOST = config.chatHost
 const RECEIVER = 1
 
 export default {
-  props: {
-    showEntry: {
-      type: Boolean,
-      default: false
-    }
+  components: {
+    Icon
   },
   data () {
     return {
       ws: null,
-      showChatRoom: false,
       messages: [],
-      showEditProfile: false,
-      swichAvatar: false,
       msgCnt: '',
-      showNickNameBox: false,
       errMsg: false,
       errMsgCnt: '',
-      uploadUrl: urls.user,
-      nickname: this.$store.state.user.nickname,
       showImageMsg: false,
       showImageMsgUrl: '',
       loading: false,
       emojis: {
         people: []
       },
-      announcement: '',
       personal_setting: {
         chat: {
           reasons: []
         }
-      },
-      showCheckUser: false,
-      checkUser: {},
-      welcome: '',
-      chatLoading: true,
-      showBlockPopup: false,
-      nowRestraintTab: '0',
-      bannedUsers: [],
-      blockedUsers: [],
-      restraintTabs: [
-        {
-          display: '黑名单'
-        },
-        {
-          display: '禁言'
-        }
-      ]
+      }
     }
   },
-  components: {
-    MarqueeTips
-  },
   watch: {
-    'showEntry': function (val, oldVal) {
-      if (!val && this.showChatRoom && this.isLogin) {
-        this.leaveRoom()
-      }
+    'user.showChatRoom' (val, oldVal) {
+      this.leaveRoom()
     }
   },
   computed: {
@@ -350,33 +152,16 @@ export default {
     },
     user () {
       return this.$store.state.user
-    },
-    sendMsgCondition () {
-      let condition = JSON.parse(this.$store.state.systemConfig.global_preferences.send_chat_conditions)
-      if (condition.length) {
-        return `发言条件：前${condition[0]['value']}天充值不少于${condition[1]['value']}元；投注打码量不少于${condition[2]['value']}元`
-      }
-      return ''
-    },
-    formattedBannedUsers () {
-      let result = []
-      if (this.bannedUsers.length) {
-        this.bannedUsers.forEach((item) => {
-          result.push({
-            username: item.username,
-            banned_time: this.$moment(item.banned_time).format('mm')
-          })
-        })
-        return result
-      }
     }
+  },
+  created () {
+    this.joinChatRoom()
   },
   methods: {
     joinChatRoom () {
-      this.showChatRoom = true
-      let token = getCookie('access_token')
+      // let token = getCookie('access_token')
       this.loading = true
-      this.ws = new WebSocket(`${WSHOST}/chat/stream?username=${this.$store.state.user.username}&token=${token}`)
+      this.ws = new WebSocket(`${WSHOST}/chat/stream?username=yayaya&token=5a24f52d893c64d72397f7ce7aa91beb`)
       this.ws.onopen = () => {
         this.handleMsg()
       }
@@ -384,7 +169,7 @@ export default {
         this.ws = null
       }
       setTimeout(() => {
-        if ((!this.ws || (this.ws && this.ws.readyState !== 1)) && this.showChatRoom) {
+        if ((!this.ws || (this.ws && this.ws.readyState !== 1))) {
           this.joinChatRoom()
         } else {
           if (!this.emojis.people.length) {
@@ -397,12 +182,12 @@ export default {
     },
     handleMsg () {
       this.loading = false
+      if (!this.ws) { return false }
       this.ws.send(JSON.stringify({
         'command': 'join',
         'receivers': [RECEIVER]
       }))
       this.ws.onmessage = (resData) => {
-        if (!this.showChatRoom || !this.showEntry) { return }
         let data
         if (typeof resData.data === 'string') {
           try {
@@ -416,10 +201,6 @@ export default {
                 this.messages = this.messages.concat(data.latest_message.reverse())
                 this.messages = this.messages.concat([{
                   type: -1
-                }, {
-                  type: -2
-                }, {
-                  type: -3
                 }])
                 this.$nextTick(() => {
                   this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
@@ -498,29 +279,6 @@ export default {
         this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
       }, 1000)
     },
-    handleAvatarSuccess (res, file) {
-      this.$store.commit('SET_USER', {
-        user: {
-          avatar: URL.createObjectURL(file.raw)
-        }
-      })
-    },
-    beforeAvatarUpload (file) {
-      let formData = new FormData()
-      formData.append('avatar', file)
-      updateUser(formData, this.user.id).then((data) => {
-        this.$store.commit('SET_USER', {
-          user: data
-        })
-        this.messages = this.messages.filter((item) => item.type !== -3)
-      }, errorMsg => {
-        this.$message({
-          showClose: true,
-          message: msgFormatter(errorMsg),
-          type: 'error'
-        })
-      })
-    },
     sendMsgImg (e) {
       let fileInp = this.$refs.fileImgSend
       let file = fileInp.files[0]
@@ -534,7 +292,6 @@ export default {
         this.errMsgCnt = '图片尺寸太大，请选择较小尺寸的图片。'
         return
       }
-      console.log(23233223)
       let formData = new FormData()
       formData.append('receivers', RECEIVER)
       formData.append('image', file)
@@ -552,121 +309,16 @@ export default {
       }))
       this.msgCnt = ''
     },
-    submitNickName () {
-      updateUser({nickname: this.nickname, id: this.user.id}).then((data) => {
-        this.$store.commit('SET_USER', {
-          user: data
-        })
-        this.showNickNameBox = false
-        this.messages = this.messages.filter((item) => item.type !== -2)
-      }, errorMsg => {
-        this.$message({
-          showClose: true,
-          message: msgFormatter(errorMsg),
-          type: 'error'
-        })
-      })
-    },
-    leaveRoom () {
-      this.showChatRoom = false
+    leaveRoom (n) {
       this.messages = []
-      this.ws.send(JSON.stringify({
+      this.ws && this.ws.send(JSON.stringify({
         'command': 'leave',
         'receivers': [RECEIVER]
       }))
       if (this.ws) {
         this.ws.close()
       }
-    },
-    handleCheckUser (data) {
-      if (!this.personal_setting.manager || data.sender.level_name.indexOf('管理员') !== -1) {
-        return false
-      }
-      this.checkUser = data.sender
-      this.showCheckUser = true
-    },
-    ban (mins) {
-      banChatUser(RECEIVER, {
-        user: this.checkUser.username,
-        banned_time: mins
-      }).then((data) => {
-        this.showCheckUser = false
-      }, errorMsg => {
-        this.$message({
-          showClose: true,
-          message: errorMsg,
-          type: 'error'
-        })
-      })
-    },
-    unban (user) {
-      unbanChatUser(RECEIVER, {
-        user: user
-      }).then((data) => {
-        this.getUser()
-        this.$message({
-          showClose: true,
-          message: data.data.status,
-          type: 'error'
-        })
-      }, errorMsg => {
-        this.$message({
-          showClose: true,
-          message: errorMsg,
-          type: 'error'
-        })
-      })
-    },
-    block () {
-      blockChatUser(RECEIVER, {
-        user: this.checkUser.username
-      }).then((data) => {
-        this.showCheckUser = false
-      }, errorMsg => {
-        this.$message({
-          showClose: true,
-          message: errorMsg,
-          type: 'error'
-        })
-      })
-    },
-    unblock (user) {
-      unblockChatUser(RECEIVER, {
-        user: user
-      }).then((data) => {
-        this.getUser()
-        this.$message({
-          showClose: true,
-          message: data.data.status,
-          type: 'error'
-        })
-      }, errorMsg => {
-        this.$message({
-          showClose: true,
-          message: errorMsg,
-          type: 'error'
-        })
-      })
-    },
-    getUser () {
-      this.loading = true
-      getChatUser(1).then(response => {
-        let data = response.data
-        this.bannedUsers = data.banned_users
-        this.blockedUsers = data.block_users
-        this.loading = false
-      })
-    },
-    switchBlockTab (index) {
-      this.nowRestraintTab = index + ''
-    },
-    handleBlockPopupShow () {
-      this.showBlockPopup = true
-      this.getUser()
     }
-  },
-  created () {
-    this.getUser()
   }
 }
 </script>
@@ -674,19 +326,14 @@ export default {
 @import '../style/vars.scss';
 
 .container-chat {
-  position: fixed;
-  right: 0;
-  top: 0;
-  width: 380px;
+  width: 100%;
+  height: 100%;
 }
 .chat-box {
-  position: fixed;
-  right: 0;
-  top: 0;
-  width: 340px;
+  width: 100%;
   overflow-x: hidden;
   height: 100%;
-  border-left: 3px solid #006bb3;
+  border: 3px solid #006bb3;
   border-bottom: 1px solid #006bb3;
   z-index: 1;
 }
@@ -720,10 +367,9 @@ export default {
 }
 
 .content {
-  background: url('../assets/chatbg.jpg') no-repeat right bottom;
   background-attachment: fixed;
   background-size: cover;
-  padding: 4px 0;
+  padding: 4px 20px;
 }
 
 .chat-announce {
@@ -778,7 +424,7 @@ export default {
   }
 }
 .lay-scroll {
-  padding-top: 36px;
+  padding-top: 10px;
   .block-user-info {
     text-align: center;
     padding-top: 100px;
@@ -832,6 +478,7 @@ export default {
             text-align: right;
             float: right;
             padding-top: 2px;
+            color: #fff;
           }
 
           span {
@@ -871,7 +518,7 @@ export default {
 
 .common-member {
   display: inline-block;
-  margin: 0 2px;
+  margin: 0 8px;
   background: #cb9b64;
   color: #fff;
   padding: 0 6px;
@@ -888,10 +535,11 @@ export default {
 }
 .msg-header {
   overflow: hidden;
+  margin-bottom: 10px;
   h4 {
     display: inline-block;
     font-size: 12px;
-    color: #4f77ab;
+    color: #fff;
     display: inline-block;
     font-weight: 400;
     cursor: pointer;
@@ -903,7 +551,7 @@ export default {
 
   .msg-time {
     display: inline-block;
-    color: #666;
+    color: #999;
     margin: 0 2px;
   }
 }
@@ -1155,5 +803,4 @@ export default {
       border-color: #ff5a00;
     }
   }
-
 </style>
