@@ -3,13 +3,13 @@ const config = require('../../config')
 const env = process.env.NODE_ENV === 'development' ? config.dev.env : config.build.env
 const host = env.HOST.replace(/"/g, '')
 const prefix = host + '/member'
-const apiv1 = host + '/v1/member'
+const apiv1 = host + '/v1'
 const apiChat = env.chatApi.replace(/"/g, '')
 const apiRoom = apiChat + '/v1/room'
 
 export default {
   domain: host,
-  login: prefix + '/login/',
+  login: host + '/login/',
   register: apiv1 + '/register/',
   user: apiv1 + '/profile/',
   password: prefix + '/password/',
