@@ -72,7 +72,7 @@
       <el-main class="chat-area">
         <chat-room></chat-room>
       </el-main>
-      <el-aside width="300px" class="aside-right">
+      <el-aside width="300px" height="100%" class="aside-right">
         right area1
       </el-aside>
     </el-container>

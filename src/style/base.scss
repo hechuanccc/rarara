@@ -154,4 +154,18 @@ body {
   }
 }
 
+.el-notification.top-right-msg {
+  right: 320px;
+  width: 250px;
+}
+
+.el-notification.top-right-msg {
+  p {
+    width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
 

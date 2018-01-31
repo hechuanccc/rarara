@@ -41,6 +41,7 @@ axios.interceptors.response.use(res => {
   if (!responseData.error) {
     return responseData
   } else {
+    toHomeAndLogin(router)
     return Promise.reject(responseData)
   }
 }, (error) => {
@@ -56,14 +57,8 @@ axios.interceptors.response.use(res => {
 const toHomeAndLogin = function (router) {
   store.commit('RESET_USER')
   router.push({
-    path: '/',
-    query: {
-      login: 1,
-      next: router.path
-    }
+    path: '/login'
   })
-
-  store.commit('SHOW_LOGIN_DIALOG')
 }
 
 router.beforeEach((to, from, next) => {

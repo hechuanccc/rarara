@@ -81,7 +81,7 @@
               validateevent="true"
               class="el-textarea-inner"
               v-model="msgCnt"
-              :disabled="personal_setting.chat.status ? false : true">
+              :disabled="!personal_setting.chat.status">
             </textarea>
           </div>
           <div class="sendbtn fr">
@@ -161,24 +161,24 @@ export default {
     joinChatRoom () {
       // let token = getCookie('access_token')
       this.loading = true
-      this.ws = new WebSocket(`${WSHOST}/chat/stream?username=yayaya&token=5a24f52d893c64d72397f7ce7aa91beb`)
+      this.ws = new WebSocket(`${WSHOST}/chat/stream?username=member1&token=wBs9lF7VpqiYQTZwiXoeH0NYWPuDdc`)
       this.ws.onopen = () => {
+        if (!this.emojis.people.length) {
+          fetchChatEmoji().then((resData) => {
+            resData.people = resData.people.reverse()
+            this.emojis = resData
+          }).catch(err => {
+            console.log(err)
+          })
+        }
         this.handleMsg()
       }
       this.ws.onclose = () => {
         this.ws = null
       }
-      setTimeout(() => {
-        if ((!this.ws || (this.ws && this.ws.readyState !== 1))) {
-          this.joinChatRoom()
-        } else {
-          if (!this.emojis.people.length) {
-            fetchChatEmoji().then((resData) => {
-              this.emojis = resData.data
-            }).catch(err => console.log(err))
-          }
-        }
-      }, 2000)
+      this.ws.onerror = (err) => {
+        console.log(err)
+      }
     },
     handleMsg () {
       this.loading = false
@@ -192,6 +192,7 @@ export default {
         if (typeof resData.data === 'string') {
           try {
             data = JSON.parse(resData.data)
+            console.log(data)
             if (!data.error_type) {
               if (data.latest_message) {
                 if (data.latest_message[data.latest_message.length - 1].type === 3) {
@@ -211,25 +212,23 @@ export default {
               } else {
                 switch (data.type) {
                   case 2:
-                    if (this.showChatRoom && this.isLogin) {
-                      if (data.command === 'banned') {
-                        this.errMsg = true
-                        this.errMsgCnt = data.content
-                      } else if (data.command === 'unblock') {
-                        this.personal_setting.blocked = false
-                        this.joinChatRoom()
-                      } else if (data.command === 'unbanned') {
-                        this.personal_setting.chat.status = 1
-                      }
-                      this.$notify({
-                        message: data.content,
-                        offset: 100,
-                        type: 'success',
-                        duration: 2200,
-                        customClass: 'top-right-msg',
-                        showClose: false
-                      })
+                    if (data.command === 'banned') {
+                      this.errMsg = true
+                      this.errMsgCnt = data.content
+                    } else if (data.command === 'unblock') {
+                      this.personal_setting.blocked = false
+                      this.joinChatRoom()
+                    } else if (data.command === 'unbanned') {
+                      this.personal_setting.chat.status = 1
                     }
+                    this.$notify({
+                      message: data.content,
+                      offset: 100,
+                      type: 'success',
+                      duration: 2200,
+                      customClass: 'top-right-msg',
+                      showClose: false
+                    })
                     return
                   case 3:
                     this.announcement = data.content
@@ -293,7 +292,7 @@ export default {
         return
       }
       let formData = new FormData()
-      formData.append('receivers', RECEIVER)
+      formData.append('receiver', RECEIVER)
       formData.append('image', file)
       sendImgToChat(formData).then((data) => {
         fileInp.value = ''
