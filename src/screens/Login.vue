@@ -11,25 +11,24 @@
               <div class="login-mid">
                 <router-link to="/register"><el-button class="rectangle-14">立即注册</el-button></router-link>
               </div>
-              <el-form :model="user" status-icon ref="user">
-                <el-form-item prop="username" label="用户名"  label-width="60px">
+              <el-form :model="user" status-icon ref="user" :rules="rules">
+                <el-form-item prop="username" label="用户名"  label-width="65px">
                   <el-input v-model="user.username"
-                            @keyup.enter.native="login"
                             :autofocus="true"
                             class="inp"
                             ref="username">
                   </el-input>
                 </el-form-item>
-                <el-form-item prop="password" label="密码" label-width="60px">
+                <el-form-item prop="password" label="密码" label-width="65px">
                   <el-input v-model="user.password"
                             type="password"
-                            class="inp"
-                            @keyup.enter.native="login">
+                            ref="password"
+                            class="inp">
                   </el-input>
                 </el-form-item>
                 <div class="login-actions">
                   <el-form-item>
-                    <el-button type="primary" @click="login">登录</el-button>
+                    <el-button type="primary" @click="submit">登录</el-button>
                   </el-form-item>
                   <div class="forgot-password">
                     <a  target="_blank" >忘记密码?</a>
@@ -55,20 +54,29 @@ export default {
         username: '',
         password: ''
       },
+      rules: {
+        username: [
+          { required: true, message: '该栏位必须输入', trigger: 'blur' }
+        ],
+        password: [
+          { required: true, message: '该栏位必须输入', trigger: 'blur' }
+        ]
+      },
       errorMsg: ''
     }
   },
   methods: {
-    login () {
-      login({
-        username: this.user.username,
-        password: this.user.password
-      }).then(response => {
+    submit () {
+      if (!this.user.username || !this.user.password) {
+        this.$refs.username && this.$refs.username.focus()
+        return
+      }
+      login(this.user).then(response => {
         this.$router.push({name: 'Home'})
       })
-        .catch(err => {
-          this.errorMsg = err
-        })
+      .catch(err => {
+        this.errorMsg = err.response.data
+      })
     }
   }
 }
