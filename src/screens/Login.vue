@@ -1,51 +1,57 @@
 <template>
-    <div class="bg-container" style="height: calc(100% - 68px);">
+  <div class="box" style="height: 100%">
+    <div class="bg-container" :style="{height: clientH - 68 + 'px'}">
       <div class="login-container">
-        <el-container>
-          <el-header class="login-head">
-            <div class="title">会员登录 <span>Login</span></div>
-            <el-button type="warning" class="kf">客服中心</el-button>
-          </el-header>
-          <el-main>
-            <div class="login">
-              <div class="login-mid">
-                <router-link to="/register"><el-button class="rectangle-14">立即注册</el-button></router-link>
-              </div>
-              <el-form :model="user" status-icon ref="user" :rules="rules">
-                <el-form-item prop="username" label="用户名"  label-width="65px">
-                  <el-input v-model="user.username"
-                            :autofocus="true"
-                            class="inp"
-                            ref="username">
-                  </el-input>
-                </el-form-item>
-                <el-form-item prop="password" label="密码" label-width="65px">
-                  <el-input v-model="user.password"
-                            type="password"
-                            ref="password"
-                            class="inp">
-                  </el-input>
-                </el-form-item>
-                <div class="login-actions">
-                  <el-form-item>
-                    <el-button type="primary" @click="submit">登录</el-button>
-                  </el-form-item>
-                  <div class="forgot-password">
-                    <a  target="_blank" >忘记密码?</a>
-                  </div>
-                </div>
-              </el-form>
-              <transition name="el-fade-in">
-                <span class="error" v-if="errorMsg">{{errorMsg}}</span>
-              </transition>
-            </div>
-          </el-main>
-        </el-container>
-       </div>
-   </div>
+         <el-container>
+           <el-header class="login-head">
+             <div class="title">会员登录 <span>Login</span></div>
+             <el-button type="warning" class="kf">客服中心</el-button>
+           </el-header>
+           <el-main>
+             <div class="login">
+               <div class="login-mid">
+                 <router-link to="/register"><el-button class="rectangle-14">立即注册</el-button></router-link>
+               </div>
+               <el-form :model="user" status-icon ref="user" :rules="rules">
+                 <el-form-item prop="username" label="用户名"  label-width="65px">
+                   <el-input v-model="user.username"
+                             :autofocus="true"
+                             class="inp"
+                             ref="username">
+                   </el-input>
+                 </el-form-item>
+                 <el-form-item prop="password" label="密码" label-width="65px">
+                   <el-input v-model="user.password"
+                             type="password"
+                             ref="password"
+                             class="inp">
+                   </el-input>
+                 </el-form-item>
+                 <div class="login-actions">
+                   <el-form-item>
+                     <el-button type="primary" @click="submit">登录</el-button>
+                   </el-form-item>
+                   <div class="forgot-password">
+                     <a  target="_blank" >忘记密码?</a>
+                   </div>
+                 </div>
+               </el-form>
+               <transition name="el-fade-in">
+                 <span class="error" v-if="errorMsg">{{errorMsg}}</span>
+               </transition>
+             </div>
+           </el-main>
+         </el-container>
+      </div>
+    </div>
+    <div class="footer">
+      <p class="p1">投资有风险，入市须谨慎</p>
+      <p>©2017 至尊开奖直播版权所有</p>
+    </div>
+  </div>
+   
 </template>
 <script>
-import { login } from '../api'
 export default {
   name: 'login',
   data () {
@@ -62,7 +68,8 @@ export default {
           { required: true, message: '该栏位必须输入', trigger: 'blur' }
         ]
       },
-      errorMsg: ''
+      errorMsg: '',
+      clientH: document.documentElement.clientHeight || document.body.clientHeight
     }
   },
   methods: {
@@ -71,17 +78,27 @@ export default {
         this.$refs.username && this.$refs.username.focus()
         return
       }
-      login(this.user).then(response => {
-        this.$router.push({name: 'Home'})
-      })
-      .catch(err => {
-        this.errorMsg = err.response.data
+      this.$store.dispatch('login', {
+        user: {
+          username: this.user.username,
+          password: this.user.password
+        }
+      }).then(result => {
+        const next = this.$route.query.next
+        this.$router.push(next || '/')
+      }, errorMsg => {
+        this.errorMsg = errorMsg.response.data.error
       })
     }
+  },
+  components: {
   }
 }
 </script>
 <style lang="less" scoped>
+.box {
+  background: #4a4a4a;
+}
 .bg-container {
     background-image: url('../images/loginBG.jpg');
     background-size: cover;
@@ -137,7 +154,7 @@ export default {
 }
 .login-mid {
   margin-bottom: 20px;
-  padding-left: 60px;
+  padding-left: 65px;
   .rectangle-14 {
     width: 223px;
     height: 40px;
@@ -167,12 +184,21 @@ export default {
 }
 
 .login-actions {
-  padding-left: 60px;
+  padding-left: 65px;
 }
 .error {
   display: block;
   font-size: 13px;
   text-align: center;
   color: red;
+}
+.footer {
+  p {
+    text-align: center;
+    color: #fff;
+  }
+  .p1 {
+    padding-top: 14px;
+  }
 }
 </style>

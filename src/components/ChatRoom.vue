@@ -159,9 +159,9 @@ export default {
   },
   methods: {
     joinChatRoom () {
-      // let token = getCookie('access_token')
+      let token = this.$cookie.get('access_token')
       this.loading = true
-      this.ws = new WebSocket(`${WSHOST}/chat/stream?username=member1&token=wBs9lF7VpqiYQTZwiXoeH0NYWPuDdc`)
+      this.ws = new WebSocket(`${WSHOST}/chat/stream?token=${token}`)
       this.ws.onopen = () => {
         if (!this.emojis.people.length) {
           fetchChatEmoji().then((resData) => {
@@ -192,13 +192,12 @@ export default {
         if (typeof resData.data === 'string') {
           try {
             data = JSON.parse(resData.data)
-            console.log(data)
             if (!data.error_type) {
               if (data.latest_message) {
-                if (data.latest_message[data.latest_message.length - 1].type === 3) {
-                  let annouce = data.latest_message.pop()
-                  this.announcement = annouce.content
-                }
+                // if (data.latest_message[data.latest_message.length - 1].type === 3) {
+                //   let annouce = data.latest_message.pop()
+                //   this.announcement = annouce.content
+                // }
                 this.messages = this.messages.concat(data.latest_message.reverse())
                 this.messages = this.messages.concat([{
                   type: -1
@@ -209,6 +208,8 @@ export default {
                 return
               } else if (data.personal_setting) {
                 this.personal_setting = data.personal_setting
+                this.$emit('receiveMember', data.personal_setting.user)
+                this.$store.commit('SET_USER', data.personal_setting.user)
               } else {
                 switch (data.type) {
                   case 2:
@@ -230,9 +231,9 @@ export default {
                       showClose: false
                     })
                     return
-                  case 3:
-                    this.announcement = data.content
-                    return
+                  // case 3:
+                  //   this.announcement = data.content
+                  //   return
                   default:
                     this.messages.push(data)
                 }
