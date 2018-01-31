@@ -7,7 +7,7 @@ const apiv1 = host + '/v1/member'
 export default {
   domain: host,
   login: host + '/login/',
-  register: apiv1 + '/register/',
+  register: host + '/v1/register/',
   user: host + '/v1/user/my',
   logout: host + '/logout/',
   chatEmoji: host + '/v1/emoji/',

@@ -24,11 +24,13 @@
             </div>
           </div>
         </el-col>
-        <el-col class="head-col head-right clearfix" :span="4"><div>
-          <img class="fl" :src="user.avatar_url ? user.avatar_url : require('../assets/avatar.png')" width="25">
-          <span class="fl username">{{user.username}}</span>
-          <span class="fl">退出</span>
-        </div></el-col>
+        <el-col class="head-col head-right clearfix" :span="4">
+          <div class="user-info">
+            <img class="fl" :src="user.avatar_url ? user.avatar_url : require('../assets/avatar.png')" width="25">
+            <span class="fl username">{{user.username}}</span>
+            <span class="fl" @click="logout">退出</span>
+          </div>
+        </el-col>
       </el-row>
     </el-header>
     <el-container>
@@ -288,6 +290,12 @@ export default {
     },
     receiveMember (user) {
       this.user = user
+    },
+    logout () {
+      this.$store.dispatch('logout')
+        .then(() => {
+          this.$router.push('/login')
+        })
     }
   }
 }
@@ -458,5 +466,8 @@ export default {
     height: 8px;
     border-radius: 50%;
     background-color: black;
+  }
+  .user-info {
+    cursor: pointer;
   }
 </style>
