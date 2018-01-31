@@ -51,3 +51,7 @@ export function fetchChatEmoji () {
 export function sendImgToChat (data) {
   return axios.post(`${urls.sendImgToChat}`, data)
 }
+
+export function fetchAnnouce () {
+  return axios.get(`${urls.annoucement}`)
+}

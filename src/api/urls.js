@@ -8,8 +8,9 @@ export default {
   domain: host,
   login: host + '/login/',
   register: apiv1 + '/register/',
-  user: apiv1 + '/profile/',
+  user: host + '/v1/user/my',
   logout: host + '/logout/',
   chatEmoji: host + '/v1/emoji/',
-  sendImgToChat: host + '/v1/image/'
+  sendImgToChat: host + '/v1/image/',
+  annoucement: apiv1 + '/announcement/'
 }

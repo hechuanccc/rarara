@@ -8,19 +8,25 @@
           <a class="fl" href="javascript:;">手机聊天室</a>
         </el-col>
         <el-col class="head-col head-center" :span="16">
-          <div class="annouce-box clearfix">
+          <div class="annouce-box clearfix" @click="announcementDialogVisible = true">
             <div class="annouce-l clearfix fl">
               <span class="fl">公告</span>
               <icon class="volume-up fl" name="volume-up" scale="1"></icon>
             </div>
             <div class="scroll fl">
-              <MarqueeTips :content="chatAnnounce" :speed="20"></MarqueeTips>
+              <span class="text"
+                :style="{
+                  'opacity': announcementStyle.opacity,
+                  'transform': `translateY(${announcementStyle.translateY}px)`
+                }">
+                {{currentAnnouncement}}
+              </span>
             </div>
           </div>
         </el-col>
         <el-col class="head-col head-right clearfix" :span="4"><div>
-          <img class="fl" src="../assets/avatar.png" width="25">
-          <span class="fl username">山东桃酥</span>
+          <img class="fl" :src="user.avatar_url ? user.avatar_url : require('../assets/avatar.png')" width="25">
+          <span class="fl username">{{user.username}}</span>
           <span class="fl">退出</span>
         </div></el-col>
       </el-row>
@@ -70,11 +76,28 @@
         </el-tabs>
       </el-aside>
       <el-main class="chat-area">
-        <chat-room></chat-room>
+        <chat-room @receiveMember="receiveMember"></chat-room>
       </el-main>
       <el-aside width="300px" height="100%" class="aside-right">
         right area1
       </el-aside>
+      <el-dialog
+        title="最新消息"
+        :visible.sync="announcementDialogVisible"
+        :width="'600px'"
+        center>
+        <el-carousel :height="'200px'"
+          v-if="announcementDialogVisible"
+          class="announcement-popup"
+          :initial-index="currentAnnouncementIndex">
+          <el-carousel-item v-for="item in announcements"
+            :key="item.rank">
+            <p class="text-center" key="announcement">
+              {{ item.content }}
+            </p>
+          </el-carousel-item>
+        </el-carousel>
+      </el-dialog>
     </el-container>
 
   </el-container>
@@ -88,6 +111,7 @@ import 'vue-awesome/icons/comments'
 import 'vue-awesome/icons/search'
 import MarqueeTips from 'vue-marquee-tips'
 import ChatRoom from '../components/ChatRoom'
+import { fetchAnnouce } from '../api'
 export default {
   name: 'home',
   components: {
@@ -97,8 +121,15 @@ export default {
   },
   data () {
     return {
+      user: {},
       searchStr: '',
-      chatAnnounce: '欢迎来到至尊计划聊天室。',
+      announcementStyle: {
+        opacity: 1,
+        translateY: 0
+      },
+      announcements: [],
+      currentAnnouncementIndex: 0,
+      announcementDialogVisible: false,
       chatList: [{
         username: 'h2545454',
         type: 1,
@@ -206,11 +237,58 @@ export default {
   computed: {
     isHome () {
       return ''
+    },
+    currentAnnouncement () {
+      if (this.announcements[this.currentAnnouncementIndex]) {
+        return this.announcements[this.currentAnnouncementIndex].content
+      } else {
+        return ''
+      }
     }
   },
-  methods: {
-  },
   created () {
+    this.getAnnouce()
+  },
+  methods: {
+    animate () {
+      setTimeout(() => {
+        if (this.announcementStyle.opacity <= 0) {
+          this.currentAnnouncementIndex = (this.currentAnnouncementIndex + 1) % this.announcements.length
+          this.announcementStyle.opacity = 1
+          this.announcementStyle.translateY = 0
+          setTimeout(() => {
+            this.animate()
+          }, 5000)
+        } else {
+          this.announcementStyle.opacity -= 0.05
+          this.announcementStyle.translateY -= 1
+          this.animate()
+        }
+      }, 100)
+    },
+    getAnnouce () {
+      fetchAnnouce().then(result => {
+        result.forEach((item) => {
+          if (item.platform !== 0) {
+            this.announcements.push(item)
+          }
+        })
+
+        if (this.announcements.length > 0) {
+          this.announcements.sort((a, b) => {
+            return a.rank - b.rank
+          })
+          setTimeout(() => {
+            this.animate()
+          }, 5000)
+        }
+      }).catch(err => {
+        console.log(err)
+      })
+    },
+    receiveMember (user) {
+      this.user = user
+    }
   }
 }
 </script>
@@ -236,6 +314,9 @@ export default {
         .scroll {
           padding-top: 20px;
           width: calc(100% - 60px);
+          .text {
+            padding-left: 60px;
+          }
         }
         .annouce-box {
           height: 60px;
@@ -371,5 +452,11 @@ export default {
   }
   .search-form {
     width: 100%;
+  }
+  .el-carousel.announcement-popup .el-carousel__button {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: black;
   }
 </style>
