@@ -619,7 +619,7 @@ export default {
       }
     }
     .btn-smile:hover {
-      background: #ffd4c0;
+      background: #ccc;
     }
   }
   .typing {
