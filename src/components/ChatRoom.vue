@@ -333,8 +333,6 @@ export default {
   width: 100%;
   overflow-x: hidden;
   height: 100%;
-  border: 3px solid #006bb3;
-  border-bottom: 1px solid #006bb3;
   z-index: 1;
 }
 .title {
@@ -367,9 +365,11 @@ export default {
 }
 
 .content {
+  background-color: rgba(255, 255, 255, .3);
   background-attachment: fixed;
   background-size: cover;
-  padding: 4px 20px;
+  padding: 10px;
+  margin-bottom: 10px;
 }
 
 .chat-announce {
@@ -424,7 +424,6 @@ export default {
   }
 }
 .lay-scroll {
-  padding-top: 10px;
   .block-user-info {
     text-align: center;
     padding-top: 100px;
@@ -551,7 +550,7 @@ export default {
 
   .msg-time {
     display: inline-block;
-    color: #999;
+    color: #ccc;
     margin: 0 2px;
   }
 }
@@ -602,15 +601,12 @@ export default {
   margin-top: -7px;
 }
 .footer {
-  background: #f5f5f5;
+  background: rgba(0, 0, 0, .3);
   padding: 0;
   width: 100%;
   .control-bar {
     height: 32px;
-    background: #f5f5f5;
-    border: 1px solid #ccc;
-    border-left: 0;
-    border-right: 0;
+    border: 1px solid #999;
     position: relative;
     overflow: hidden;
     .btn-smile {
@@ -627,8 +623,9 @@ export default {
     }
   }
   .typing {
+    border: 1px solid #999;
+    border-top: none;
     position: relative;
-    padding: 5px;
     .txtinput {
       display: block;
       width: auto;
@@ -648,15 +645,17 @@ export default {
       }
     }
     .el-textarea-inner {
+      outline: none;
       display: block;
       resize: vertical;
       padding: 5px 7px;
       line-height: 1.5;
       width: 100%;
+      height: 80px;
       font-size: 14px;
-      color: #1f2d3d;
-      background-color: #fff;
-      border: 1px solid #bfcbd9;
+      color: #fff;
+      background-color: transparent;
+      border: none;
       border-radius: 4px;
       transition: border-color .2s cubic-bezier(.645,.045,.355,1);
       box-sizing: border-box;
@@ -667,10 +666,7 @@ export default {
   .btn-control {
     float: left;
     display: inline-block;
-    padding: 4px 12px;
-    line-height: 32px;
-    margin-right: 1px;
-    background: #e5e5e5;
+    padding: 5px 12px;
     color: #666;
     cursor: pointer;
     .el-icon-picture {
@@ -680,8 +676,8 @@ export default {
   }
   .sendbtn {
     position: absolute;
-    right: 5px;
-    bottom: 5px;
+    right: 0;
+    bottom: 0;
   }
 }
 .edit-profile {
@@ -751,56 +747,53 @@ export default {
 .u-btn {
   display: inline-block;
   text-align: center;
-  border-radius: 3px;
-  margin-left: 3px;
-  width: 52px;
-  height: 52px;
+  width: 80px;
   font-size: 14px;
-  line-height: 52px;
+  line-height: 80px;
   background: $primary;
   color: #fff;
   cursor: pointer;
 }
 
-  .chat-guide {
-    position: fixed;
-    right: 0;
-    top: 50%;
-    width: 40px;
-    height: 122px;
-    margin-top: -76px;
-    background-size: 100%;
-    cursor: pointer;
-    z-index: 0;
-    background: #1e72df;
-    border-radius: 8px 0 0 8px;
-    padding-top: 14px;
-    .font-wechat {
-      color: #d1e6fe;
-    }
-    ul {
-      font-size: 18px;
-      color: #fff;
-      li {
-        text-align: center;
-        padding: 4px 0;
-      }
-    }
+.chat-guide {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  width: 40px;
+  height: 122px;
+  margin-top: -76px;
+  background-size: 100%;
+  cursor: pointer;
+  z-index: 0;
+  background: #1e72df;
+  border-radius: 8px 0 0 8px;
+  padding-top: 14px;
+  .font-wechat {
+    color: #d1e6fe;
   }
-
-  .emoji-container {
-    overflow-y: scroll;
-    .emoji {
-      padding: 2px 6px 0 4px;
-      display: inline-block;
-      cursor: pointer;
-      position: relative;
-      font-size: 18px;
+  ul {
+    font-size: 18px;
+    color: #fff;
+    li {
       text-align: center;
-      border: 2px solid transparent;
-    }
-    .emoji:hover {
-      border-color: #ff5a00;
+      padding: 4px 0;
     }
   }
+}
+
+.emoji-container {
+  overflow-y: scroll;
+  .emoji {
+    padding: 2px 6px 0 4px;
+    display: inline-block;
+    cursor: pointer;
+    position: relative;
+    font-size: 18px;
+    text-align: center;
+    border: 2px solid transparent;
+  }
+  .emoji:hover {
+    border-color: #ff5a00;
+  }
+}
 </style>

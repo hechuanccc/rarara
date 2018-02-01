@@ -1,34 +1,31 @@
 <template>
   <el-container class="chat-box">
-    <el-header class="header">
-      <el-row class="head-cnt">
-        <el-col :span="4" class="head-col head-left logo clearfix">
-          <h1 class="fl">彩票计划聊天室</h1>
-          <icon class="mobile-phone fl" name="mobile-phone" scale="1.8"></icon>
-          <a class="fl" href="javascript:;">手机聊天室</a>
+    <el-header class="header" height="50px">
+      <el-row>
+        <el-col :span="4" class="logo clearfix">
         </el-col>
-        <el-col class="head-col head-center" :span="16">
+        <el-col :span="16">
           <div class="annouce-box clearfix" @click="announcementDialogVisible = true">
-            <div class="annouce-l clearfix fl">
-              <span class="fl">公告</span>
-              <icon class="volume-up fl" name="volume-up" scale="1"></icon>
+            <div class="title clearfix fl">
+              <span>公告</span>
+              <icon class="volume-up" name="volume-up" scale="1"></icon>
             </div>
-            <div class="scroll fl">
-              <span class="text"
+            <div class="content">
+              <p class="text"
                 :style="{
                   'opacity': announcementStyle.opacity,
                   'transform': `translateY(${announcementStyle.translateY}px)`
                 }">
                 {{currentAnnouncement}}
-              </span>
+              </p>
             </div>
           </div>
         </el-col>
-        <el-col class="head-col head-right clearfix" :span="4">
+        <el-col class="head-right" :span="4">
           <div class="user-info">
-            <img class="fl" :src="user.avatar_url ? user.avatar_url : require('../assets/avatar.png')" width="25">
-            <span class="fl username">{{user.username}}</span>
-            <span class="fl" @click="logout">退出</span>
+            <img :src="user.avatar_url ? user.avatar_url : require('../assets/avatar.png')" width="25">
+            <span class="username">{{user.username}}</span>
+            <a @click="logout">退出</a>
           </div>
         </el-col>
       </el-row>
@@ -275,54 +272,19 @@ export default {
   background: url('../assets/chat_bg.jpg') 0px 0px / 100% 100% no-repeat scroll rgb(64, 128, 128);
 }
 .header {
-  height: 60px;
-  background: url('../assets/head_bg.png');
-  margin-bottom: 5px;
+  height: 50px;
+  background: rgba(0,0,0,.3);
+  margin-bottom: 10px;
   color: #fff;
   .head-cnt {
     height: 100%;
     .head-col {
       height: 100%;
     }
-    .head-center {
-      width: calc(100% - 350px - 400px);
-      .scroll {
-        padding-top: 20px;
-        width: calc(100% - 60px);
-        .text {
-          padding-left: 60px;
-        }
-      }
-      .annouce-box {
-        height: 60px;
-      }
-      .annouce-l {
-        width: 60px;
-        height: 40px;
-        background: rgba(0, 0, 0, 0.6);
-        padding-top: 20px;
-        span {
-          padding-right: 3px;
-          padding-left: 9px;
-        }
-      }
-    }
-    .head-right {
-      width: 400px;
-      padding-top: 17px;
-      padding-left: 60px;
-      span {
-        padding: 4px 0;
-      }
-      .username {
-        padding: 4px 10px;
-      }
-    }
   }
   .logo {
-    background: url('../assets/logo_chat.png') no-repeat;
-    width: 350px;
-    padding-top: 13px;
+    background: url('../assets/logo_chat.png') no-repeat 0 center;
+    height: 50px;
     h1 {
       text-indent: -999px;
     }
@@ -336,10 +298,58 @@ export default {
     }
   }
 }
+
+.annouce-box {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  .text {
+    cursor: pointer;
+  }
+  .title {
+    width: 60px;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+    align-self: flex-start;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.6);
+    span {
+      margin-right: 5px;
+    }
+  }
+  .content {
+    margin-left: 10px;
+    max-width: 500px;
+  }
+}
+
+.mobile-link {
+  float: left;
+}
+.head-right {
+  line-height: 50px;
+  vertical-align: middle;
+  .username {
+    padding: 0 10px;
+  }
+  img {
+    vertical-align: middle;
+    display: inline-block;
+  }
+  .user-info {
+    float: right;
+    cursor: pointer;
+  }
+}
 .aside {
-  padding: 0 5px;
+  padding: 0 10px 10px;
+  overflow-y: hidden;
   /deep/ .el-tabs {
     height: 100%;
+    background: rgba(255, 255, 255, .2);
   }
   /deep/ .el-tabs__content {
     padding: 10px;
@@ -349,7 +359,7 @@ export default {
   }
 }
 .chat-area {
-  padding: 0 10px;
+  padding: 0 10px 10px 0;
 }
 .members{
   max-height: 500px;
@@ -406,8 +416,5 @@ export default {
   height: 8px;
   border-radius: 50%;
   background-color: black;
-}
-.user-info {
-  cursor: pointer;
 }
 </style>
