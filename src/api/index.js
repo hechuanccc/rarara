@@ -18,6 +18,9 @@ export function register (user) {
 export function fetchUser () {
   return axios.get(urls.user)
 }
+export function fetchOnlineMembers (limit, page) {
+  return axios.get(`${urls.member}?logined=True&offset=${page * limit}&limit=${limit}`)
+}
 export function updateUser (user, id) {
   return axios.put(`${urls.user}${user.id ? user.id : id}/`, user)
 }

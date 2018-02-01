@@ -9,6 +9,7 @@ export default {
   login: host + '/login/',
   register: host + '/v1/register/',
   user: host + '/v1/user/my',
+  member: host + '/v1/user/',
   logout: host + '/logout/',
   chatEmoji: host + '/v1/emoji/',
   sendImgToChat: host + '/v1/image/',
