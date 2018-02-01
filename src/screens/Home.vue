@@ -72,8 +72,9 @@
       <el-main class="chat-area">
         <chat-room></chat-room>
       </el-main>
-      <el-aside width="300px" class="aside-right">
-        right area1
+      <el-aside width="375px" class="aside-right">
+        <component :is="'Result'"></component>
+        <!-- <iframe scrolling="auto" :src="iframe.resultPage" width="100%" height="100%"></iframe> -->
       </el-aside>
     </el-container>
 
@@ -88,16 +89,23 @@ import 'vue-awesome/icons/comments'
 import 'vue-awesome/icons/search'
 import MarqueeTips from 'vue-marquee-tips'
 import ChatRoom from '../components/ChatRoom'
+import Result from '../components/Result'
+// import {fetchResult} from '../api'
+
 export default {
   name: 'home',
   components: {
     Icon,
     MarqueeTips,
-    ChatRoom
+    ChatRoom,
+    Result
   },
   data () {
+    const resultPage = this.$router.resolve({name: 'Results'})
+
     return {
       searchStr: '',
+      latestResult: '',
       chatAnnounce: '欢迎来到至尊计划聊天室。',
       chatList: [{
         username: 'h2545454',
@@ -200,7 +208,10 @@ export default {
         type: 2,
         lastMessage: '今晚吃什么好吃的呀? 我快啦微微刘恺威一小很清澈哒哒哒的哈哈哈哈啊哈哈哈yes',
         status: 1
-      }]
+      }],
+      iframe: {
+        resultPage: resultPage.href
+      }
     }
   },
   computed: {
@@ -209,8 +220,6 @@ export default {
     }
   },
   methods: {
-  },
-  created () {
   }
 }
 </script>
@@ -357,7 +366,7 @@ export default {
     }
     dd {
       height: 22px;
-      
+
       .list-center {
         padding-top: 3px;
       }
@@ -372,4 +381,7 @@ export default {
   .search-form {
     width: 100%;
   }
+.aside-right {
+  background-color: rgba(0, 0, 0, .2);
+}
 </style>

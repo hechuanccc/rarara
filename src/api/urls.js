@@ -23,7 +23,7 @@ export default {
   schedule: apiv1 + '/game/schedule/',
   playSetting: apiv1 + '/game/playset/',
   agent_register: apiv1 + '/agentapplication/',
-  game_result: apiv1 + '/result/',
+  game_result: host + '/latest_results/',
   promotions: apiv1 + '/promotion/',
   banner: apiv1 + '/banners/',
   website: apiv1 + '/website/',
