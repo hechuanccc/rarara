@@ -146,12 +146,25 @@ body {
   }
 }
 
-.inp-search {
-  input {
-    background: #686c76;
-    border: none;
-    color: #fff;
+.el-notification.top-right-msg {
+  right: 320px;
+  width: 250px;
+}
+
+.el-notification.top-right-msg {
+  p {
+    width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
+}
+
+.el-carousel.announcement-popup .el-carousel__button {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: black;
 }
 
 

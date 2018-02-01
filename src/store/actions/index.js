@@ -12,7 +12,6 @@ import {
 
 export default {
   login: ({ commit, state }, { user }) => {
-    commit('START_LOADING')
     return login(user).then(res => {
       let expires = new Date(res.expires_in)
       if (res.access_token && res.refresh_token) {
@@ -30,13 +29,11 @@ export default {
           logined: true
         }
       })
-      commit('END_LOADING')
       return Promise.resolve(res)
     }, error => {
       if (error.code === 9011) {
         Vue.cookie.set('sessionid', error.data.sessionid)
       }
-      commit('END_LOADING')
       return Promise.reject(error)
     })
   },
@@ -45,7 +42,6 @@ export default {
       res => {
         Vue.cookie.delete('access_token')
         Vue.cookie.delete('refresh_token')
-        commit(types.RESET_MESSAGE_COUNT)
         commit(types.RESET_USER)
       },
       errRes => Promise.reject(errRes)
