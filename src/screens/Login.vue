@@ -28,9 +28,6 @@
                    <el-form-item>
                      <el-button type="primary" @click="submit">登录</el-button>
                    </el-form-item>
-                   <div class="forgot-password">
-                     <a  target="_blank" >忘记密码?</a>
-                   </div>
                  </div>
                </el-form>
                <div class="register">
@@ -48,7 +45,7 @@
     </div>
     <div class="footer">
       <p class="p1">投资有风险，入市须谨慎</p>
-      <p>©2017 至尊开奖直播版权所有</p>
+      <p>©2018 版权所有</p>
     </div>
   </div>
 

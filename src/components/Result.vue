@@ -112,8 +112,6 @@ export default {
             clearInterval(this[`timer-${game.code}`])
             if (this.$moment().isBefore(game.next_draw_time)) {
               this.issueInterval = setInterval(() => {
-                console.log('interval')
-                console.log('clear')
                 this.startCountdown(game)
               }, 1000)
             }
