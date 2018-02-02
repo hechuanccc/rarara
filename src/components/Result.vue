@@ -27,7 +27,7 @@
 
 <script>
 // todo: 正在更新中（gamecode api/）
-import { fetchGames } from '../api'
+
 import urls from '../api/urls'
 import _ from 'lodash'
 const jsonp = require('jsonp')
@@ -39,7 +39,6 @@ export default {
       latestResult: [],
       resultsMap: {},
       countdownMap: {},
-      games: [],
       codes: []
     }
   },
@@ -138,7 +137,7 @@ export default {
             // add code in latestResult & start countdown
 
             _.each(formatted, (game, index) => {
-              game.code = this.games[index].code
+              game.code = this.codes[index].code
 
               this.resultsMap[game.code] = {
                 oldIssue: game.issue_number,
@@ -151,10 +150,18 @@ export default {
         })
       })
     },
-    fetchGames () {
-      return fetchGames().then(res => {
-        this.games = res.data
-        this.codes = _.map(this.games, game => { return {code: game.code, display_name: game.display_name} })
+    fetchGames (value) {
+      return new Promise((resolve, reject) => {
+        jsonp(urls.game_codes, null, (err, data) => {
+          if (err) {
+            console.log(err, 'err')
+            reject(err)
+          } else {
+            let formatted = JSON.parse(data)
+            this.codes = formatted
+            resolve(formatted)
+          }
+        })
       })
     }
   },
