@@ -34,8 +34,13 @@
 
     <el-container>
       <el-aside width="250px" class="aside">
-        <el-tabs type="border-card">
-          <el-tab-pane :label="'在线会员(' + onlineMembers.length + ')'">
+        <el-tabs
+          v-model="activeTab"
+          type="border-card"
+          @tab-click="switchTab">
+          <el-tab-pane
+            :label="'在线会员(' + onlineMembers.length + ')'"
+            name="members">
             <div class="search-form">
               <el-form>
                 <el-form-item >
@@ -44,32 +49,46 @@
                 </el-form-item>
               </el-form>
             </div>
+
             <ul class="members" v-if="onlineMembers.length">
-              <li v-for="(member, index) in onlineMembers">
-                <img :src="member.avatar_url" class="avatar" v-if="member.avatar_url"/>
-                <img :src="require('../assets/avatar.png')" v-else class="avatar" />
-                {{ member.nickname || '会员' }}
+              <li v-for="(member, index) in onlineMembers" @click="popoverMember=member" slot="reference">
+                <el-popover
+                  :ref="'popover' + member.id"
+                  placement="right"
+                  :title="member.nickname || '会员'"
+                  width="150"
+                  trigger="click"
+                  content="这是一段内容,这是一段内容,这是一段内容,这是一段内容。">
+                  <ul class="member-actions">
+                    <li @click="privateChat(member)">私聊</li>
+                  </ul>
+                  <div slot="reference">
+                    <img :src="member.avatar_url" class="avatar" v-if="member.avatar_url"/>
+                    <img :src="require('../assets/avatar.png')" v-else class="avatar" />
+                    {{ member.nickname || '会员' }}
+                  </div>
+                </el-popover>
               </li>
               <li v-if="!onlineMembersEnded" class="load-more" @click="fillOnlineMembers">{{ onlineMemberLoading ? '正在加载...' : '查看更多' }}</li>
             </ul>
             <div v-else class="empty">暂无在线会员</div>
           </el-tab-pane>
-          <el-tab-pane label="聊天列表">
+          <el-tab-pane
+            label="聊天列表"
+            name="rooms">
             <div class="chat-list">
-              <div class="default-room">
-                <icon class="volume-up" name="comments" scale="1.8"></icon>
-                聊天室大厅
-              </div>
-              <div v-for="(item, index) in chatList">
-                <ul class="clearfix">
-                  <li :class="['fl', 'member-level', 'member-level-' + item.type]">{{item.type === 1 ? '客' : '会'}}</li>
-                  <li class="fl list-center">
-                    <div class="username">{{item.username}}</div>
-                    <p>{{item.lastMessage}}</p>
-                  </li>
-                  <li :class="['fl', 'round', 'round-' + item.status]"></li>
-                </ul>
-              </div>
+              <ul class="rooms">
+                <li v-for="(room, index) in roomList" :class="{
+                  active: activeRoomIndex === index,
+                  public: room.type === 1
+                }">
+                  <div class="meta">
+                    <icon class="volume-up" name="comments" scale="1.5" v-if="room.type === 1"></icon>
+                    <span class="title">{{ room.title}}</span>
+                  </div>
+                  <div v-if="room.last_message">{{room.last_message.content | truncate(25)}}</div>
+                </li>
+              </ul>
             </div>
           </el-tab-pane>
         </el-tabs>
@@ -111,12 +130,15 @@
           </el-carousel-item>
         </el-carousel>
       </el-dialog>
-    </el-container>
 
+
+    </el-container>
   </el-container>
 </template>
 
 <script>
+import Vue from 'vue'
+import _ from 'lodash'
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/volume-up'
 import 'vue-awesome/icons/mobile-phone'
@@ -125,7 +147,11 @@ import 'vue-awesome/icons/search'
 import MarqueeTips from 'vue-marquee-tips'
 import ChatRoom from '../components/ChatRoom'
 // import Result from '../components/Result'
-import { fetchAnnouce, fetchOnlineMembers } from '../api'
+import { fetchAnnouce, fetchOnlineMembers, createRoom, fetchMemberRoom } from '../api'
+
+Vue.filter('truncate', function (text, stop) {
+  return text.slice(0, stop) + (stop < text.length ? '...' : '')
+})
 
 export default {
   name: 'home',
@@ -138,6 +164,9 @@ export default {
   data () {
     return {
       user: {},
+      activeRoomIndex: 0,
+      popoverMember: {},
+      activeTab: 'members',
       nickname_q: '',
       announcementStyle: {
         opacity: 1,
@@ -146,62 +175,16 @@ export default {
       announcements: [],
       currentAnnouncementIndex: 0,
       announcementDialogVisible: false,
-      limit: 20,
-      page: 0,
+      memberLimit: 20,
+      memberPage: 0,
+      roomLimit: 40,
+      roomPage: 0,
       onlineMemberLoading: false,
-      onlineMembers: [],
       onlineMembersEnded: false,
-      chatList: [{
-        username: 'h2545454',
-        type: 1,
-        lastMessage: '您好请问有什么问题吗?',
-        status: 1
-      }, {
-        username: 'h2545454',
-        type: 1,
-        lastMessage: '您好请问有什么问题吗?',
-        status: 1
-      }, {
-        username: 'h2545454',
-        type: 1,
-        lastMessage: '您好请问有什么问题吗?',
-        status: 0
-      }, {
-        username: 'h2545454',
-        type: 1,
-        lastMessage: '您好请问有什么问题吗?',
-        status: 1
-      }, {
-        username: 'h2545454',
-        type: 2,
-        lastMessage: '您好请问有什么问题吗?',
-        status: 1
-      }, {
-        username: 'h2545454',
-        type: 2,
-        lastMessage: '您好请问有什么问题吗?',
-        status: 0
-      }, {
-        username: 'h2545454',
-        type: 2,
-        lastMessage: '今晚吃什么好吃的呀? 我快啦微微刘恺威一小很清澈哒哒哒的哈哈哈哈啊哈哈哈yes',
-        status: 1
-      }, {
-        username: 'h2545454',
-        type: 2,
-        lastMessage: '今晚吃什么好吃的呀? 我快啦微微刘恺威一小很清澈哒哒哒的哈哈哈哈啊哈哈哈yes',
-        status: 1
-      }, {
-        username: 'h2545454',
-        type: 2,
-        lastMessage: '今晚吃什么好吃的呀? 我快啦微微刘恺威一小很清澈哒哒哒的哈哈哈哈啊哈哈哈yes',
-        status: 1
-      }, {
-        username: 'h2545454',
-        type: 2,
-        lastMessage: '今晚吃什么好吃的呀? 我快啦微微刘恺威一小很清澈哒哒哒的哈哈哈哈啊哈哈哈yes',
-        status: 1
-      }]
+      roomLoading: false,
+      roomEnded: false,
+      onlineMembers: [],
+      roomList: []
     }
   },
   computed: {
@@ -221,18 +204,53 @@ export default {
     this.fillOnlineMembers()
   },
   methods: {
+    privateChat (member) {
+      createRoom([member.id, this.user.id])
+        .then((res) => {
+          this.$set(this.$refs['popover' + member.id][0], 'showPopper', false)
+          this.activeTab = 'rooms'
+          this.roomPage = 0
+          this.roomEnded = false
+          this.fillMemberRooms()
+            .then(() => {
+              this.activeRoomIndex = _.findIndex(this.roomList, room => room.id === res.room.id)
+            })
+        })
+    },
     fillOnlineMembers () {
       if (this.onlineMembersEnded || this.onlineMemberLoading) {
         return
       }
       this.onlineMemberLoading = true
-      fetchOnlineMembers(this.limit, this.page)
+      return fetchOnlineMembers(this.memberLimit, this.memberPage)
         .then(res => {
           this.onlineMembersCount = res.count
-          this.onlineMembers = this.page === 0 ? res.results : this.onlineMembers.concat(res.results)
-          this.onlineMembersEnded = this.limit * (this.page + 1) > this.onlineMembers.length
-          this.page += 1
+          this.onlineMembers = this.memberPage === 0 ? res.results : this.onlineMembers.concat(res.results)
+          this.onlineMembersEnded = this.memberLimit * (this.memberPage + 1) > this.onlineMembers.length
+          this.memberPage += 1
           this.onlineMemberLoading = false
+        })
+    },
+    switchTab (tab) {
+      switch (tab.index) {
+        case '0':
+          return this.fillOnlineMembers()
+        case '1':
+          return this.fillMemberRooms()
+        default:;
+      }
+    },
+    fillMemberRooms () {
+      if (this.roomEnded || this.roomLoading) {
+        return
+      }
+      this.roomLoading = true
+      return fetchMemberRoom(this.roomLimit, this.roomPage)
+        .then(res => {
+          this.roomList = this.roomPage === 0 ? res.results : this.roomList.concat(res.results)
+          this.roomEnded = this.roomLimit * (this.roomPage + 1) > this.roomList.length
+          this.roomPage += 1
+          this.roomLoading = false
         })
     },
     animate () {
@@ -371,30 +389,66 @@ export default {
     background: rgba(255, 255, 255, .2);
   }
   /deep/ .el-tabs__content {
-    padding: 10px;
+    padding: 0;
   }
   /deep/ .el-form-item--small.el-form-item {
-    margin-bottom: 10px;
+    margin-bottom: 0;
   }
 }
 .chat-area {
   padding: 0 0px 10px 0;
 }
 .members{
-  max-height: 500px;
+  height: calc(100vh - 163px);
   overflow-y: scroll;
-  border-top: 1px solid #999;
   li {
     color: #ccc;
     cursor: pointer;
-    padding: 5px 0;
-    border-bottom: 1px solid #999;
+    padding: 5px 10px;
     .avatar {
       width: 28px;
       height: 28px;
       margin-right: 10px;
       vertical-align: middle;
     }
+    &:hover {
+      background: rgba(255, 255, 255, .2);
+    }
+  }
+}
+.member-actions {
+  li {
+    cursor: pointer;
+    border-top: 1px solid #f0f0f0;
+    padding: 10px 0;
+  }
+}
+.rooms {
+  margin-top: 10px;
+  height: calc(100vh - 163px);
+  overflow-y: scroll;
+  border-top: 1px solid rgba(255, 255, 255, .2);
+  .fa-icon {
+    vertical-align: middle;
+    fill: #fff;
+  }
+  .title {
+    color: #fff;
+    font-size: 13px;
+    vertical-align: middle;
+  }
+  .public .title {
+    font-size: 14px;
+  }
+  li {
+    color: #ccc;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, .2);
+  }
+  .active {
+    background: #FFB74D;
+    color: #fff;
   }
 }
 .load-more {
@@ -420,7 +474,7 @@ export default {
   color: #fff;
 }
 .search-form {
-  width: 100%;
+  padding: 10px;
 }
 .chat-list {
   color: #ccc;

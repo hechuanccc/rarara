@@ -4,14 +4,11 @@
       <div class="login-container">
          <el-container>
            <el-header class="login-head">
-             <div class="title">会员登录 <span>Login</span></div>
+             <div class="title">会员登录</div>
              <el-button type="warning" class="kf">客服中心</el-button>
            </el-header>
            <el-main>
              <div class="login">
-               <div class="login-mid">
-                 <router-link to="/register"><el-button class="rectangle-14">立即注册</el-button></router-link>
-               </div>
                <el-form :model="user" status-icon ref="user" :rules="rules">
                  <el-form-item prop="username" label="用户名"  label-width="65px">
                    <el-input v-model="user.username"
@@ -36,6 +33,11 @@
                    </div>
                  </div>
                </el-form>
+               <div class="register">
+                <div class="tip">还没有账号？</div>
+                <router-link to="/register"><el-button type="primary" plain>立即注册</el-button></router-link>  
+               </div>
+               
                <transition name="el-fade-in">
                  <span class="error" v-if="errorMsg">{{errorMsg}}</span>
                </transition>
@@ -84,6 +86,7 @@ export default {
           password: this.user.password
         }
       }).then(result => {
+        this.$store.dispatch('fetchUser')
         const next = this.$route.query.next
         this.$router.push(next || '/')
       }, errorMsg => {
@@ -106,7 +109,6 @@ export default {
 }
 .login-container {
    width: 500px;
-   height: 450px;
    border-radius: 4px;
    background-color: #ffffff;
    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
@@ -114,14 +116,6 @@ export default {
    top:50%;
    left:50%;
    transform:translate(-50%,-50%);
-  & /deep/ .inp {
-    .el-input__inner {
-      height: 40px;
-    }
-  }
-  & /deep/ .el-form-item__label {
-    line-height: 40px;
-  }
 }
 
 .login-head {
@@ -152,16 +146,15 @@ export default {
     width: 220px;
   }
 }
-.login-mid {
-  margin-bottom: 20px;
-  padding-left: 65px;
-  .rectangle-14 {
-    width: 223px;
-    height: 40px;
-    border-radius: 2px;
-    color: #4a90e2;
-    border: solid 1px #4a90e2;
+.register {
+  .tip {
+    color: #999;
+    width: 220px;
+    text-align: center;
+    margin: 20px 0 10px;
   }
+  margin-bottom: 30px;
+  padding-left: 65px;
 }
 .el-input {
   width: 223px;

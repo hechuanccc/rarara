@@ -45,49 +45,16 @@ axios.interceptors.response.use(res => {
     return Promise.reject(responseData)
   }
 }, (error) => {
-  Vue.prototype.$message({
-    showClose: true,
-    message: '系统发生了错误, 请联系客服',
-    type: 'error'
-  })
   toHomeAndLogin(router)
   return Promise.reject(error)
 })
 
 const toHomeAndLogin = function (router) {
-  store.commit('RESET_USER')
+  // store.commit('RESET_USER')
   router.push({
     path: '/login'
   })
 }
-
-// router.beforeEach((to, from, next) => {
-//   // fisrMacthed might be the top-level parent route of others
-//   const firstMatched = to.matched.length ? to.matched[0] : null
-//   if ((firstMatched || to).meta.requiresAuth) {
-//     if (from && from.matched[0] && from.matched[0].path === to.matched[0].path) {
-//       next()
-//     } else {
-//       store.dispatch('fetchUser')
-//         .then(res => {
-//           // got user info
-//           if (res.account_type === 0 && to.matched[0].path === '/account') {
-//             toHomeAndLogin(router)
-//           } else {
-//             next()
-//           }
-//         })
-//         .catch(error => {
-//           // can't get user info
-//           console.log(error)
-//           toHomeAndLogin(router)
-//           return Promise.resolve(error)
-//         })
-//     }
-//   } else {
-//     next()
-//   }
-// })
 
 sync(store, router)
 
@@ -98,24 +65,6 @@ Vue.mixin({
     }
   }
 })
-
-// gethomePage().then(
-//   response => {
-//     store.dispatch('setSystemConfig',
-//       {
-//         homePageLogo: response.icon,
-//         customerServiceUrl: response.global_preferences.customer_service_url,
-//         agentDashboardUrl: response.global_preferences.agent_dashboard_url,
-//         global_preferences: response.global_preferences,
-//         agentBusinessConsultingQQ: response.global_preferences.agent_business_consulting_qq,
-//         contactEmail: response.global_preferences.contact_email,
-//         contactPhoneNumber: response.global_preferences.contact_phone_number,
-//         openAccountConsultingQQ: response.global_preferences.open_account_consulting_qq,
-//         siteName: response.name
-//       })
-//     document.title = store.state.systemConfig.siteName
-//   }
-// )
 
 /* eslint-disable no-new */
 new Vue({

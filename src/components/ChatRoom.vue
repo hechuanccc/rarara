@@ -432,18 +432,16 @@ export default {
   }
 }
 .item {
-  margin-top: 15px;
-  padding: 5px;
+  margin-top: 20px;
   &.sys-msg {
     text-align: center;
-    margin-top: 0px;
+    margin-top: 5px;
     .inner {
-      color: #999;
+      color: #dedede;
       display: inline-block;
-      background: #efefef;
-      border-radius: 8px;
-      border: 1px solid #dddddc;
-      padding: 5px 10px;
+      background: rgba(255, 255, 255, .1);
+      border-radius: 4px;
+      padding: 5px 20px;
     }
     .type-warning {
       color: #f60;
@@ -534,7 +532,7 @@ export default {
 }
 .msg-header {
   overflow: hidden;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   h4 {
     display: inline-block;
     font-size: 12px;
@@ -559,7 +557,6 @@ export default {
   border-left-color: rgb(25, 158, 216);
   border-right-color: $primary;
   color: rgb(255, 255, 255);
-  margin-top: 3px;
   position: relative;
   border-radius: 5px;
   padding: 5px 8px;
@@ -619,7 +616,7 @@ export default {
       }
     }
     .btn-smile:hover {
-      background: #ffd4c0;
+      background: #ccc;
     }
   }
   .typing {
