@@ -94,7 +94,7 @@
       width="640px"
       custom-class="show-image-msg text-center"
       append-to-body>
-      <img :src="showImageMsgUrl">
+      <img :src="showImageMsgUrl" class="popup-uploadedimage">
     </el-dialog>
     <el-dialog :visible.sync="errMsg"
       width="400px"
@@ -795,5 +795,10 @@ export default {
   .emoji:hover {
     border-color: #ff5a00;
   }
+}
+
+.popup-uploadedimage {
+  width: 100%;
+  height: 100%;
 }
 </style>

@@ -20,6 +20,8 @@
     "element-ui": "^2.0.0-alpha.3",
     "js-combinatorics": "^0.5.2",
     "jsonp": "^0.2.1",
+    "less": "^2.7.3",
+    "less-loader": "^4.0.5",
     "lodash": "^4.17.4",
     "vue": "^2.5.2",
     "vue-awesome": "^2.3.4",

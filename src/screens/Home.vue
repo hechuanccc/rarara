@@ -30,6 +30,8 @@
         </el-col>
       </el-row>
     </el-header>
+
+
     <el-container>
       <el-aside width="250px" class="aside">
         <el-tabs type="border-card">
@@ -72,12 +74,26 @@
           </el-tab-pane>
         </el-tabs>
       </el-aside>
+
+
       <el-main class="chat-area">
         <chat-room @receiveMember="receiveMember"></chat-room>
       </el-main>
-      <el-aside width="375px" class="aside-right">
-        <component :is="'Result'"></component>
+
+      <el-aside width="395px" class="aside">
+        <el-tabs type="border-card">
+          <el-tab-pane :label="'在线投注'">
+            <!-- todo: apply api -->
+            <iframe src="http://rico-st8ging.azureedge.net/#/" width="100%" style="height: calc(100vh - 130px)" frameborder="0"></iframe>
+          </el-tab-pane>
+          <el-tab-pane :label="'文字开奖'">
+            <div class="results-container">
+              <!-- <component :is="'Result'"></component> -->
+            </div>
+          </el-tab-pane>
+        </el-tabs>
       </el-aside>
+
       <el-dialog
         title="最新消息"
         :visible.sync="announcementDialogVisible"
@@ -108,7 +124,7 @@ import 'vue-awesome/icons/comments'
 import 'vue-awesome/icons/search'
 import MarqueeTips from 'vue-marquee-tips'
 import ChatRoom from '../components/ChatRoom'
-import Result from '../components/Result'
+// import Result from '../components/Result'
 import { fetchAnnouce, fetchOnlineMembers } from '../api'
 
 export default {
@@ -116,8 +132,8 @@ export default {
   components: {
     Icon,
     MarqueeTips,
-    ChatRoom,
-    Result
+    ChatRoom
+    // Result
   },
   data () {
     return {
@@ -362,7 +378,7 @@ export default {
   }
 }
 .chat-area {
-  padding: 0 10px 10px 0;
+  padding: 0 0px 10px 0;
 }
 .members{
   max-height: 500px;
@@ -420,4 +436,10 @@ export default {
   border-radius: 50%;
   background-color: black;
 }
+
+.results-container {
+  height: calc(100vh - 130px);
+  overflow-y: auto;
+}
+
 </style>
