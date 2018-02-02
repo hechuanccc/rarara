@@ -66,7 +66,7 @@
               </el-form>
               <div class="login-link">
                 <div class="tip">已有账号</div>
-                <router-link to="/login"><el-button type="primary" plain>立即登录</el-button></router-link>  
+                <router-link to="/login"><el-button type="primary" plain>立即登录</el-button></router-link>
               </div>
               <transition name="el-fade-in">
                 <span class="error" v-if="errorMsg">{{errorMsg}}</span>
@@ -147,7 +147,7 @@
       <p>©2017 至尊开奖直播版权所有</p>
     </div>
   </div>
- 
+
 </template>
 <script>
   import { register } from '../api'
@@ -283,7 +283,8 @@
     }
   }
 </script>
-<style lang="less" scoped>
+
+<style lang="scss" scoped>
 .box {
   background: #4a4a4a;
 }
