@@ -19,6 +19,10 @@ export function fetchUser () {
   return axios.get(urls.member)
 }
 
+export function fetchGames () {
+  return axios.get(urls.games)
+}
+
 export function fetchMemberRoom (limit, page) {
   return axios.get(`${urls.memberRoom}?offset=${page * limit}&limit=${limit}`)
 }

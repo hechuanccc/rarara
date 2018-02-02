@@ -30,13 +30,15 @@
         </el-col>
       </el-row>
     </el-header>
+
+
     <el-container>
       <el-aside width="250px" class="aside">
-        <el-tabs 
+        <el-tabs
           v-model="activeTab"
           type="border-card"
           @tab-click="switchTab">
-          <el-tab-pane 
+          <el-tab-pane
             :label="'在线会员(' + onlineMembers.length + ')'"
             name="members">
             <div class="search-form">
@@ -47,7 +49,7 @@
                 </el-form-item>
               </el-form>
             </div>
-            
+
             <ul class="members" v-if="onlineMembers.length">
               <li v-for="(member, index) in onlineMembers" @click="popoverMember=member" slot="reference">
                 <el-popover
@@ -71,7 +73,7 @@
             </ul>
             <div v-else class="empty">暂无在线会员</div>
           </el-tab-pane>
-          <el-tab-pane 
+          <el-tab-pane
             label="聊天列表"
             name="rooms">
             <div class="chat-list">
@@ -91,12 +93,26 @@
           </el-tab-pane>
         </el-tabs>
       </el-aside>
+
+
       <el-main class="chat-area">
         <chat-room @receiveMember="receiveMember"></chat-room>
       </el-main>
-      <el-aside width="300px" height="100%" class="aside-right">
-        right area1
+
+      <el-aside width="395px" class="aside">
+        <el-tabs type="border-card">
+          <el-tab-pane :label="'在线投注'">
+            <!-- todo: apply api -->
+            <iframe src="http://rico-st8ging.azureedge.net/#/" width="100%" style="height: calc(100vh - 110px)" frameborder="0"></iframe>
+          </el-tab-pane>
+          <el-tab-pane :label="'文字开奖'">
+            <div class="results-container">
+              <!-- <component :is="'Result'"></component> -->
+            </div>
+          </el-tab-pane>
+        </el-tabs>
       </el-aside>
+
       <el-dialog
         title="最新消息"
         :visible.sync="announcementDialogVisible"
@@ -130,6 +146,7 @@ import 'vue-awesome/icons/comments'
 import 'vue-awesome/icons/search'
 import MarqueeTips from 'vue-marquee-tips'
 import ChatRoom from '../components/ChatRoom'
+// import Result from '../components/Result'
 import { fetchAnnouce, fetchOnlineMembers, createRoom, fetchMemberRoom } from '../api'
 
 Vue.filter('truncate', function (text, stop) {
@@ -142,6 +159,7 @@ export default {
     Icon,
     MarqueeTips,
     ChatRoom
+    // Result
   },
   data () {
     return {
@@ -378,7 +396,7 @@ export default {
   }
 }
 .chat-area {
-  padding: 0 10px 10px 0;
+  padding: 0 0px 10px 0;
 }
 .members{
   height: calc(100vh - 163px);
@@ -472,4 +490,10 @@ export default {
   border-radius: 50%;
   background-color: black;
 }
+
+.results-container {
+  height: calc(100vh - 110px);
+  overflow-y: auto;
+}
+
 </style>
