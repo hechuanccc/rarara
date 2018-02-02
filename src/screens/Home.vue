@@ -39,15 +39,19 @@
           type="border-card"
           @tab-click="switchTab">
           <el-tab-pane
-            :label="'在线会员(' + onlineMembers.length + ')'"
+            label="在线会员"
             name="members">
             <div class="search-form">
               <el-form>
                 <el-form-item >
                   <el-input v-model="nickname_q" placeholder="请输入会员名称" class="ipt-search"></el-input>
-                  <icon class="search-icon fl" name="search" scale="1"></icon>
+                  <icon class="search-icon fl" name="search" scale="1" @click.native="search"></icon>
                 </el-form-item>
               </el-form>
+              <div class="search-tip" v-if="nickname_q && searchEnabled">
+                搜索 「{{nickname_q}}」
+                <span class="exit-search" @click="exitSearch">退出搜索</span>
+              </div>
             </div>
 
             <ul class="members" v-if="onlineMembers.length">
@@ -57,10 +61,9 @@
                   placement="right"
                   :title="member.nickname || '会员'"
                   width="150"
-                  trigger="click"
-                  content="这是一段内容,这是一段内容,这是一段内容,这是一段内容。">
+                  trigger="click">
                   <ul class="member-actions">
-                    <li @click="privateChat(member)">私聊</li>
+                    <li @click="privateChat(member)" v-if="member.id !== user.id">私聊</li>
                   </ul>
                   <div slot="reference">
                     <img :src="member.avatar_url" class="avatar" v-if="member.avatar_url"/>
@@ -71,7 +74,7 @@
               </li>
               <li v-if="!onlineMembersEnded" class="load-more" @click="fillOnlineMembers">{{ onlineMemberLoading ? '正在加载...' : '查看更多' }}</li>
             </ul>
-            <div v-else class="empty">暂无在线会员</div>
+            <div v-else-if="!onlineMemberLoading" class="empty">无结果</div>
           </el-tab-pane>
           <el-tab-pane
             label="聊天列表"
@@ -84,7 +87,7 @@
                 }">
                   <div class="meta">
                     <icon class="volume-up" name="comments" scale="1.5" v-if="room.type === 1"></icon>
-                    <span class="title">{{ room.title}}</span>
+                    <span class="title">{{ room.target ? `与 ${room.target.nickname} 的私聊` : room.title}}</span>
                   </div>
                   <div v-if="room.last_message">{{room.last_message.content | truncate(25)}}</div>
                 </li>
@@ -165,6 +168,7 @@ export default {
       user: {},
       activeRoomIndex: 0,
       popoverMember: {},
+      searchEnabled: false,
       activeTab: 'members',
       nickname_q: '',
       announcementStyle: {
@@ -180,16 +184,13 @@ export default {
       roomPage: 0,
       onlineMemberLoading: false,
       onlineMembersEnded: false,
-      roomLoading: false,
+      roomLoading: true,
       roomEnded: false,
       onlineMembers: [],
       roomList: []
     }
   },
   computed: {
-    isHome () {
-      return ''
-    },
     currentAnnouncement () {
       if (this.announcements[this.currentAnnouncementIndex]) {
         return this.announcements[this.currentAnnouncementIndex].content
@@ -203,7 +204,23 @@ export default {
     this.fillOnlineMembers()
   },
   methods: {
+    search () {
+      this.searchEnabled = true
+      this.memberPage = 0
+      this.onlineMembersEnded = false
+      this.fillOnlineMembers()
+    },
+    exitSearch () {
+      this.searchEnabled = false
+      this.nickname_q = ''
+      this.memberPage = 0
+      this.onlineMembersEnded = false
+      this.fillOnlineMembers()
+    },
     privateChat (member) {
+      if (member.id === this.user.id) {
+        return
+      }
       createRoom([member.id, this.user.id])
         .then((res) => {
           this.$set(this.$refs['popover' + member.id][0], 'showPopper', false)
@@ -221,9 +238,8 @@ export default {
         return
       }
       this.onlineMemberLoading = true
-      return fetchOnlineMembers(this.memberLimit, this.memberPage)
+      return fetchOnlineMembers(this.memberLimit, this.memberPage, this.nickname_q)
         .then(res => {
-          this.onlineMembersCount = res.count
           this.onlineMembers = this.memberPage === 0 ? res.results : this.onlineMembers.concat(res.results)
           this.onlineMembersEnded = this.memberLimit * (this.memberPage + 1) > this.onlineMembers.length
           this.memberPage += 1
@@ -250,6 +266,13 @@ export default {
           this.roomEnded = this.roomLimit * (this.roomPage + 1) > this.roomList.length
           this.roomPage += 1
           this.roomLoading = false
+          this.roomList = this.roomList.map(room => {
+            room.users.filter(user => user.id !== this.user.id)
+            return {
+              ...room,
+              target: room.type === 2 ? room.users[0] : undefined
+            }
+          })
         })
     },
     animate () {
@@ -424,7 +447,7 @@ export default {
 }
 .rooms {
   margin-top: 10px;
-  height: calc(100vh - 163px);
+  height: calc(100vh - 110px);
   overflow-y: scroll;
   border-top: 1px solid rgba(255, 255, 255, .2);
   .fa-icon {
@@ -463,6 +486,14 @@ export default {
   color: #fff;
   &::placeholder {
     color: #ccc;
+  }
+}
+.search-tip {
+  color: #fff;
+  padding: 5px 0;
+  .exit-search {
+    float: right;
+    cursor: pointer;
   }
 }
 .search-icon {
