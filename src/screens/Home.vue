@@ -184,7 +184,7 @@ export default {
       roomPage: 0,
       onlineMemberLoading: false,
       onlineMembersEnded: false,
-      roomLoading: true,
+      roomLoading: false,
       roomEnded: false,
       onlineMembers: [],
       roomList: []
