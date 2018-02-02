@@ -103,7 +103,7 @@
         <el-tabs type="border-card">
           <el-tab-pane :label="'在线投注'">
             <!-- todo: apply api -->
-            <iframe src="http://rico-st8ging.azureedge.net/#/" width="100%" style="height: calc(100vh - 130px)" frameborder="0"></iframe>
+            <iframe src="http://rico-st8ging.azureedge.net/#/" width="100%" style="height: calc(100vh - 110px)" frameborder="0"></iframe>
           </el-tab-pane>
           <el-tab-pane :label="'文字开奖'">
             <div class="results-container">
@@ -492,7 +492,7 @@ export default {
 }
 
 .results-container {
-  height: calc(100vh - 130px);
+  height: calc(100vh - 110px);
   overflow-y: auto;
 }
 
