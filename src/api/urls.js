@@ -13,5 +13,7 @@ export default {
   logout: host + '/logout/',
   chatEmoji: host + '/v1/emoji/',
   sendImgToChat: host + '/v1/image/',
-  annoucement: apiv1 + '/announcement/'
+  annoucement: apiv1 + '/announcement/',
+  memberRoom: host + '/v1/member/room/',
+  room: host + '/v1/room/'
 }
