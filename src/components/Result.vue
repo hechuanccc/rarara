@@ -1,23 +1,30 @@
 <template>
   <div>
-    <div v-for="(item, index) in formattedResult" :key="index" class="result m-b">
+    <div
+      v-for="(value, key, index) in resultsMap"
+      :key="index" class="result m-b">
       <div class="information">
         <div class="text">
-          <span class="name">{{item.game_display_name}}</span>
-          <span class="issue">{{item.issue_number}}期</span>
+          <span class="name">{{value.displayName}} </span>
+          <span class="issue">{{value.oldIssue}}期</span>
         </div>
-        <div class="text" v-if="countdownMap[item.code]">
-          <span>距下次开奖</span>
-          <span v-if="countdownMap[item.code].days">{{countdownMap[item.code].days + '天'}}</span>
-          <span v-if="countdownMap[item.code].hours">{{countdownMap[item.code].hours + '時'}}</span>
-          <span v-if="countdownMap[item.code].minutes">{{countdownMap[item.code].minutes + '分'}}</span>
-          <span>{{countdownMap[item.code].seconds + '秒'}}</span>
+        <div class="text" v-if="countdownMap[key]">
+          <div v-if="countdownMap[key].days + countdownMap[key].hours + countdownMap[key].seconds + countdownMap[key].minutes !== 0">
+            <span>距下次开奖</span>
+            <span v-if="countdownMap[key].days">{{countdownMap[key].days + '天'}}</span>
+            <span v-if="countdownMap[key].hours">{{countdownMap[key].hours + '時'}}</span>
+            <span v-if="countdownMap[key].minutes">{{countdownMap[key].minutes + '分'}}</span>
+            <span>{{countdownMap[key].seconds + '秒'}}</span>
+          </div>
+          <div v-else>
+            <span>开奖中...</span>
+          </div>
         </div>
       </div>
-      <div :class="['result-numbers', {'tie-up': item.code === 'bjkl8' || item.code === 'auluck8'}]">
-        <span v-for="(num, index) in item.result_str.split(',')"
+      <div :class="['result-numbers', {'tie-up': key === 'bjkl8' || key === 'auluck8'}]">
+        <span v-for="(num, index) in value.resultStr.split(',')"
           :key="index"
-          :class="[item.code, `${item.code}-${num}`]">
+          :class="[key, `${key}-${num}`]">
           {{num}}
         </span>
       </div>
@@ -26,8 +33,6 @@
 </template>
 
 <script>
-// todo: 正在更新中（gamecode api/）
-
 import urls from '../api/urls'
 import _ from 'lodash'
 const jsonp = require('jsonp')
@@ -36,19 +41,9 @@ const CryptoJS = require('crypto-js')
 export default {
   data () {
     return {
-      latestResult: [],
       resultsMap: {},
       countdownMap: {},
       codes: []
-    }
-  },
-  filters: {
-    deleted (val) {
-      if (val === 'Invalid date') {
-        return ''
-      } else {
-        return '距下期开奖: ' + val
-      }
     }
   },
   methods: {
@@ -56,14 +51,7 @@ export default {
       if (!game.next_draw_time) {
         return
       }
-
       this[`timer-${game.code}`] = setInterval(() => {
-        const resultTime = this.$moment(game.next_draw_time)
-
-        if (this.$moment().isAfter(resultTime)) {
-          clearInterval(this[`timer-${game.code}`])
-        }
-
         this.$set(this.countdownMap, game.code, this.getDiffOfTime(game))
       }, 1000)
     },
@@ -74,7 +62,7 @@ export default {
       let [days, hours, minutes, seconds] = [lag.days(), lag.hours(), lag.minutes(), lag.seconds()]
 
       if (days + hours + minutes + seconds === 0) {
-        this.pollResults(game.code)
+        this.pollResults(game)
       }
 
       days = days < 0 ? 0 : days
@@ -89,6 +77,28 @@ export default {
         seconds
       }
     },
+    pollResults (game) {
+      clearInterval(this[`timer-${game.code}`])
+
+      this.issueInterval = setInterval(() => {
+        this.fetchResults(game.code).then(data => {
+          let newResult = data[0]
+          let oldIssue = this.resultsMap[game.code].oldIssue
+          let newIssue = newResult.issue_number
+          if (oldIssue !== newIssue) {
+            this.$set(this.resultsMap, game.code, {
+              displayName: newResult.game_display_name,
+              oldIssue: newIssue,
+              resultStr: newResult.result_str,
+              nextDraw: newResult.next_draw_time
+            })
+
+            clearInterval(this.issueInterval)
+            this.startCountdown(newResult)
+          }
+        })
+      }, 1000)
+    },
     encoded (data) {
       const ciphertext = CryptoJS.enc.Base64.parse(data)
       const key = CryptoJS.enc.Utf8.parse('61Q3hC6jEvfQrwQvMd80fPm2XEqDPJhB')
@@ -98,49 +108,43 @@ export default {
       const plaintext = decryped.toString(CryptoJS.enc.Utf8)
       return plaintext
     },
-    pollResults (gameCodes) {
-      jsonp(`${urls.latest_results}?game_code=${gameCodes}`, null, (err, data) => {
-        if (err) {
-          console.error(err, 'err') // error handling
-        } else {
-          let formatted = JSON.parse(this.encoded(data))
+    fetchResults (code) {
+      return new Promise((resolve, reject) => {
+        jsonp(`${urls.latest_results}?game_code=${code}`, null, (err, data) => {
+          if (err) {
+            console.error(err, 'err') // error handling
+            reject(err)
+          } else {
+            let formatted = JSON.parse(this.encoded(data))
 
-          _.each(formatted, (game, index) => {
-            let currentGame = _.find(this.codes, obj => obj.display_name === game.game_display_name)
-            game.code = currentGame.code
+            _.each(formatted, (game) => {
+              let currentGame = _.find(this.codes, obj => obj.display_name === game.game_display_name)
+              game.code = currentGame.code
+            })
 
-            clearInterval(this[`timer-${game.code}`])
-            if (this.$moment().isBefore(game.next_draw_time)) {
-              this.issueInterval = setInterval(() => {
-                this.startCountdown(game)
-              }, 1000)
-            }
-          })
-        }
-        return data
+            resolve(formatted)
+          }
+        })
       })
     },
     initResults () {
       this.fetchGames().then(res => {
         let allcodes = _.map(this.codes, (obj) => obj.code)
-
         jsonp(`${urls.latest_results}?game_code=${allcodes.join()}`, null, (err, data) => {
           if (err) {
             console.error(err, 'err') // error handling
           } else {
             let formatted = JSON.parse(this.encoded(data))
 
-            this.latestResult = formatted
-
-            // add code in latestResult & start countdown
-
             _.each(formatted, (game, index) => {
               game.code = this.codes[index].code
 
-              this.resultsMap[game.code] = {
+              this.$set(this.resultsMap, game.code, {
+                displayName: game.game_display_name,
                 oldIssue: game.issue_number,
-                result_str: game.result_str
-              }
+                resultStr: game.result_str,
+                nextDraw: game.next_draw_time
+              })
 
               this.startCountdown(game)
             })
@@ -163,21 +167,12 @@ export default {
       })
     }
   },
-  computed: {
-    formattedResult () {
-      if (this.latestResult) {
-        let formatted = []
-        _.each(this.latestResult, (item) => {
-           // apply rule
-          if (item.code === 'bjkl8') {
-            let resultArr = item.result_str.split(',')
-            resultArr.pop()
-            item.result_str = resultArr.join()
-          }
-
-          formatted.push(item)
-        })
-        return formatted
+  watch: {
+    'resultsMap.bjkl8': function (game) {
+      if (game) {
+        let arr = game.resultStr.split(',')
+        arr.pop()
+        game.resultStr = arr.join()
       }
     }
   },
@@ -185,8 +180,8 @@ export default {
     this.initResults()
   },
   beforeDestroy () {
-    _.each(this.latestResult, (game) => {
-      clearInterval(this[`timer-${game.code}`])
+    _.each(this.codes, (code) => {
+      clearInterval(this[`timer-${code}`])
     })
   }
 }
