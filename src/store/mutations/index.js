@@ -20,5 +20,8 @@ export default {
   },
   [types.END_LOADING]: (state) => {
     state.loading = false
+  },
+  [types.SET_GLOBAL]: (state, data) => {
+    state.globalPreference = data
   }
 }

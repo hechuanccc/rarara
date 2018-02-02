@@ -81,5 +81,8 @@ export default {
   },
   endLoading: ({ commit }) => {
     commit(types.END_LOADING)
+  },
+  setGlobalConfig: ({ commit }, data) => {
+    commit(types.SET_GLOBAL, data)
   }
 }

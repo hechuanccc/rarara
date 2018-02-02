@@ -18,5 +18,6 @@ export default {
   latest_results: ghost + '/latest_results/',
   game_codes: ghost + '/game_codes/',
   memberRoom: host + '/v1/member/room/',
-  room: host + '/v1/room/'
+  room: host + '/v1/room/',
+  global_preference: host + '/v1/global-data/'
 }
