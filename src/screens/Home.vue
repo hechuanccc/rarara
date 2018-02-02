@@ -102,12 +102,11 @@
       <el-aside width="395px" class="aside">
         <el-tabs type="border-card">
           <el-tab-pane :label="'在线投注'">
-            <!-- todo: apply api -->
             <iframe src="http://rico-st8ging.azureedge.net/#/" width="100%" style="height: calc(100vh - 110px)" frameborder="0"></iframe>
           </el-tab-pane>
           <el-tab-pane :label="'文字开奖'">
             <div class="results-container">
-              <!-- <component :is="'Result'"></component> -->
+              <component :is="'Result'"></component>
             </div>
           </el-tab-pane>
         </el-tabs>
@@ -146,7 +145,7 @@ import 'vue-awesome/icons/comments'
 import 'vue-awesome/icons/search'
 import MarqueeTips from 'vue-marquee-tips'
 import ChatRoom from '../components/ChatRoom'
-// import Result from '../components/Result'
+import Result from '../components/Result'
 import { fetchAnnouce, fetchOnlineMembers, createRoom, fetchMemberRoom } from '../api'
 
 Vue.filter('truncate', function (text, stop) {
@@ -158,8 +157,8 @@ export default {
   components: {
     Icon,
     MarqueeTips,
-    ChatRoom
-    // Result
+    ChatRoom,
+    Result
   },
   data () {
     return {
@@ -473,7 +472,7 @@ export default {
   top: 7px;
   color: #fff;
 }
-.search-form {
+.search-form, .results-container {
   padding: 10px;
 }
 .chat-list {
@@ -492,7 +491,7 @@ export default {
 }
 
 .results-container {
-  height: calc(100vh - 110px);
+  height: calc(100vh - 140px);
   overflow-y: auto;
 }
 
