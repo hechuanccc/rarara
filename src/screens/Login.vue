@@ -86,6 +86,7 @@ export default {
           password: this.user.password
         }
       }).then(result => {
+        this.$store.dispatch('fetchUser')
         const next = this.$route.query.next
         this.$router.push(next || '/')
       }, errorMsg => {
