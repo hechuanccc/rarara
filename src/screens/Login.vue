@@ -35,9 +35,9 @@
                </el-form>
                <div class="register">
                 <div class="tip">还没有账号？</div>
-                <router-link to="/register"><el-button type="primary" plain>立即注册</el-button></router-link>  
+                <router-link to="/register"><el-button type="primary" plain>立即注册</el-button></router-link>
                </div>
-               
+
                <transition name="el-fade-in">
                  <span class="error" v-if="errorMsg">{{errorMsg}}</span>
                </transition>
@@ -51,7 +51,7 @@
       <p>©2017 至尊开奖直播版权所有</p>
     </div>
   </div>
-   
+
 </template>
 <script>
 export default {
@@ -98,7 +98,7 @@ export default {
   }
 }
 </script>
-<style lang="less" scoped>
+<style lang="scss" scoped>
 .box {
   background: #4a4a4a;
 }
