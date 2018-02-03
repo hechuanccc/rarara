@@ -86,6 +86,11 @@ export default {
         banned_time: mins
       }).then((data) => {
         this.restraint.dialogVisible = false
+        this.$message({
+          showClose: true,
+          message: data.status,
+          type: 'success'
+        })
       }, errorMsg => {
         this.restraint.dialogVisible = false
         this.$message({
@@ -103,12 +108,13 @@ export default {
         this.$message({
           showClose: true,
           message: data.status,
-          type: 'error'
+          type: 'success'
         })
       }, errorMsg => {
+        let data = errorMsg.response.data
         this.$message({
           showClose: true,
-          message: errorMsg,
+          message: data.error,
           type: 'error'
         })
       })
@@ -118,6 +124,11 @@ export default {
         user: this.restraint.user.username
       }).then((data) => {
         this.restraint.dialogVisible = false
+        this.$message({
+          showClose: true,
+          message: data.status,
+          type: 'success'
+        })
       }, errorMsg => {
         this.restraint.dialogVisible = false
         this.$message({
@@ -135,12 +146,13 @@ export default {
         this.$message({
           showClose: true,
           message: data.status,
-          type: 'error'
+          type: 'success'
         })
       }, errorMsg => {
+        let data = errorMsg.response.data
         this.$message({
           showClose: true,
-          message: errorMsg,
+          message: data.error,
           type: 'error'
         })
       })

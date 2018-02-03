@@ -62,6 +62,9 @@
                     trigger="click">
                     <ul class="member-actions">
                       <li @click="privateChat(member)" v-if="member.id !== user.id">私聊</li>
+                      <li @click="ban(member, 15)" v-if="member.id !== user.id && myRoles.includes('manager')">禁言15分钟</li>
+                      <li @click="ban(member, 30)" v-if="member.id !== user.id && myRoles.includes('manager')">禁言30分钟</li>
+                      <li @click="block(member)" v-if="member.id !== user.id && myRoles.includes('manager')">加入黑名单</li>
                     </ul>
                     <div slot="reference">
                       <img :src="member.avatar" class="avatar" v-if="member.avatar"/>
@@ -78,7 +81,7 @@
               label="聊天列表"
               name="rooms">
               <div class="chat-list">
-                <room-list 
+                <room-list
                   :user="user"
                   ref="roomList"
                   :activeRoom="activeRoom"></room-list>
@@ -138,9 +141,9 @@
                   <img v-if="user.avatar && !swichAvatar" :src="currentChooseAvatar || user.avatar" width="72" height="72">
                   <img v-else-if="!swichAvatar" :src="currentChooseAvatar || require('../assets/avatar.png')" width="72" height="72">
                 </div>
-               
-                <label 
-                  for="preViewAvatar" 
+
+                <label
+                  for="preViewAvatar"
                   class="upload-avatar">
                   <input @change="preViewAvatar" type="file" ref="preViewAvatar" class="img-upload-input" id="preViewAvatar" accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif" />
                   <span v-if="swichAvatar" class="el-icon-upload"></span>
@@ -206,13 +209,14 @@ import 'vue-awesome/icons/mobile-phone'
 import 'vue-awesome/icons/comments'
 import 'vue-awesome/icons/search'
 import ChatRoom from '../components/ChatRoom'
-import { fetchAnnouce, fetchOnlineMembers, createRoom, updateUser } from '../api'
+import { fetchAnnouce, fetchOnlineMembers, createRoom, updateUser, banChatUser, blockChatUser } from '../api'
 import { msgFormatter } from '../utils'
 import { validatePhone, validateQQ } from '../validate'
 import urls from '../api/urls'
 import Result from '../components/Result'
 import { mapState } from 'vuex'
 import RoomList from '../components/RoomList'
+const RECEIVER = 1
 
 Vue.filter('truncate', function (text, stop) {
   return text.slice(0, stop) + (stop < text.length ? '...' : '')
@@ -310,8 +314,8 @@ export default {
     promoteUrl () {
       return this.user.promote_code ? window.location.origin + '?r' + this.user.promote_code : ''
     },
-    test () {
-      return this.$store.state
+    myRoles () {
+      return this.user.roles.map(role => role.name)
     }
   },
   watch: {
@@ -333,6 +337,41 @@ export default {
     })
   },
   methods: {
+    ban (member, mins) {
+      banChatUser(RECEIVER, {
+        user: member.username,
+        banned_time: mins
+      }).then((data) => {
+        this.$message({
+          showClose: true,
+          message: data.status,
+          type: 'success'
+        })
+      }, errorMsg => {
+        this.$message({
+          showClose: true,
+          message: errorMsg.response.data.error,
+          type: 'error'
+        })
+      })
+    },
+    block (member) {
+      blockChatUser(RECEIVER, {
+        user: member.username
+      }).then((data) => {
+        this.$message({
+          showClose: true,
+          message: data.status,
+          type: 'success'
+        })
+      }, errorMsg => {
+        this.$message({
+          showClose: true,
+          message: errorMsg.response.data.error,
+          type: 'error'
+        })
+      })
+    },
     search () {
       this.searchEnabled = true
       this.memberPage = 0
