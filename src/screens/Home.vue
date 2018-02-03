@@ -30,24 +30,30 @@
         </el-col>
       </el-row>
     </el-header>
+
+
     <el-container>
       <el-aside width="250px" class="aside">
-        <el-tabs 
+        <el-tabs
           v-model="activeTab"
           type="border-card"
           @tab-click="switchTab">
-          <el-tab-pane 
-            :label="'在线会员(' + onlineMembers.length + ')'"
+          <el-tab-pane
+            label="在线会员"
             name="members">
             <div class="search-form">
               <el-form>
                 <el-form-item >
                   <el-input v-model="nickname_q" placeholder="请输入会员名称" class="ipt-search"></el-input>
-                  <icon class="search-icon fl" name="search" scale="1"></icon>
+                  <icon class="search-icon fl" name="search" scale="1" @click.native="search"></icon>
                 </el-form-item>
               </el-form>
+              <div class="search-tip" v-if="nickname_q && searchEnabled">
+                搜索 「{{nickname_q}}」
+                <span class="exit-search" @click="exitSearch">退出搜索</span>
+              </div>
             </div>
-            
+
             <ul class="members" v-if="onlineMembers.length">
               <li v-for="(member, index) in onlineMembers" @click="popoverMember=member" slot="reference">
                 <el-popover
@@ -57,7 +63,7 @@
                   width="150"
                   trigger="click">
                   <ul class="member-actions">
-                    <li @click="privateChat(member)">私聊</li>
+                    <li @click="privateChat(member)" v-if="member.id !== user.id">私聊</li>
                   </ul>
                   <div slot="reference">
                     <img :src="member.avatar_url" class="avatar" v-if="member.avatar_url"/>
@@ -68,9 +74,9 @@
               </li>
               <li v-if="!onlineMembersEnded" class="load-more" @click="fillOnlineMembers">{{ onlineMemberLoading ? '正在加载...' : '查看更多' }}</li>
             </ul>
-            <div v-else class="empty">暂无在线会员</div>
+            <div v-else-if="!onlineMemberLoading" class="empty">无结果</div>
           </el-tab-pane>
-          <el-tab-pane 
+          <el-tab-pane
             label="聊天列表"
             name="rooms">
             <div class="chat-list">
@@ -81,7 +87,7 @@
                 }">
                   <div class="meta">
                     <icon class="volume-up" name="comments" scale="1.5" v-if="room.type === 1"></icon>
-                    <span class="title">{{ room.title}}</span>
+                    <span class="title">{{ room.target ? `与 ${room.target.nickname} 的私聊` : room.title}}</span>
                   </div>
                   <div v-if="room.last_message">{{room.last_message.content | truncate(25)}}</div>
                 </li>
@@ -90,12 +96,25 @@
           </el-tab-pane>
         </el-tabs>
       </el-aside>
+
+
       <el-main class="chat-area">
         <chat-room :routeLeave="leave"></chat-room>
       </el-main>
-      <el-aside width="300px" height="100%" class="aside-right">
-        right area1
+
+      <el-aside width="395px" class="aside">
+        <el-tabs type="border-card">
+          <el-tab-pane :label="'在线投注'">
+            <iframe :src="globalPreference.mobile_lottery_url" width="100%" style="height: calc(100vh - 110px)" frameborder="0"></iframe>
+          </el-tab-pane>
+          <el-tab-pane :label="'文字开奖'">
+            <div class="results-container">
+              <component :is="'Result'"></component>
+            </div>
+          </el-tab-pane>
+        </el-tabs>
       </el-aside>
+
       <el-dialog
         title="最新消息"
         :visible.sync="announcementDialogVisible"
@@ -205,6 +224,8 @@ import { fetchAnnouce, fetchOnlineMembers, createRoom, fetchMemberRoom, updateUs
 import { msgFormatter } from '../utils'
 import { validatePhone, validateQQ } from '../validate'
 import urls from '../api/urls'
+import Result from '../components/Result'
+import { mapState } from 'vuex'
 
 Vue.filter('truncate', function (text, stop) {
   return text.slice(0, stop) + (stop < text.length ? '...' : '')
@@ -213,7 +234,8 @@ export default {
   name: 'home',
   components: {
     Icon,
-    ChatRoom
+    ChatRoom,
+    Result
   },
   data () {
     const qqValidator = (rule, value, callback) => {
@@ -233,6 +255,7 @@ export default {
     return {
       activeRoomIndex: 0,
       popoverMember: {},
+      searchEnabled: false,
       activeTab: 'members',
       swichAvatar: false,
       uploadUrl: urls.user,
@@ -281,6 +304,9 @@ export default {
     }
   },
   computed: {
+    ...mapState([
+      'globalPreference'
+    ]),
     isHome () {
       return ''
     },
@@ -310,7 +336,23 @@ export default {
     })
   },
   methods: {
+    search () {
+      this.searchEnabled = true
+      this.memberPage = 0
+      this.onlineMembersEnded = false
+      this.fillOnlineMembers()
+    },
+    exitSearch () {
+      this.searchEnabled = false
+      this.nickname_q = ''
+      this.memberPage = 0
+      this.onlineMembersEnded = false
+      this.fillOnlineMembers()
+    },
     privateChat (member) {
+      if (member.id === this.user.id) {
+        return
+      }
       createRoom([member.id, this.user.id])
         .then((res) => {
           this.$set(this.$refs['popover' + member.id][0], 'showPopper', false)
@@ -328,9 +370,8 @@ export default {
         return
       }
       this.onlineMemberLoading = true
-      return fetchOnlineMembers(this.memberLimit, this.memberPage)
+      return fetchOnlineMembers(this.memberLimit, this.memberPage, this.nickname_q)
         .then(res => {
-          this.onlineMembersCount = res.count
           this.onlineMembers = this.memberPage === 0 ? res.results : this.onlineMembers.concat(res.results)
           this.onlineMembersEnded = this.memberLimit * (this.memberPage + 1) > this.onlineMembers.length
           this.memberPage += 1
@@ -357,6 +398,13 @@ export default {
           this.roomEnded = this.roomLimit * (this.roomPage + 1) > this.roomList.length
           this.roomPage += 1
           this.roomLoading = false
+          this.roomList = this.roomList.map(room => {
+            room.users.filter(user => user.id !== this.user.id)
+            return {
+              ...room,
+              target: room.type === 2 ? room.users[0] : undefined
+            }
+          })
         })
     },
     animate () {
@@ -417,17 +465,20 @@ export default {
           hasChanged = true
         }
       }
-      if (!hasChanged) { return false }
+      let fileInp = this.$refs.preViewAvatar
+      let file = fileInp.files[0]
+      if (!file && !hasChanged) { return false }
       this.$refs['editUser'].validate((valid) => {
         if (valid) {
-          let fileInp = this.$refs.preViewAvatar
-          let file = fileInp.files[0]
           if (file) {
             formData.append('avatar', file)
           }
           updateUser(this.user.id, formData).then(result => {
             if (!result.error) {
               this.changeProfileRes = '修改资料成功'
+              this.$store.commit('SET_USER', {
+                user: result
+              })
             } else {
               this.changeProfileRes = '修改资料失败'
             }
@@ -567,7 +618,7 @@ export default {
   }
 }
 .chat-area {
-  padding: 0 10px 10px 0;
+  padding: 0 0px 10px 0;
 }
 .members{
   height: calc(100vh - 163px);
@@ -596,7 +647,7 @@ export default {
 }
 .rooms {
   margin-top: 10px;
-  height: calc(100vh - 163px);
+  height: calc(100vh - 110px);
   overflow-y: scroll;
   border-top: 1px solid rgba(255, 255, 255, .2);
   .fa-icon {
@@ -637,6 +688,14 @@ export default {
     color: #ccc;
   }
 }
+.search-tip {
+  color: #fff;
+  padding: 5px 0;
+  .exit-search {
+    float: right;
+    cursor: pointer;
+  }
+}
 .search-icon {
   cursor: pointer;
   position: absolute;
@@ -644,7 +703,7 @@ export default {
   top: 7px;
   color: #fff;
 }
-.search-form {
+.search-form, .results-container {
   padding: 10px;
 }
 .chat-list {
@@ -721,4 +780,9 @@ export default {
     top: 0;
   }
 }
+.results-container {
+  height: calc(100vh - 140px);
+  overflow-y: auto;
+}
+
 </style>

@@ -77,5 +77,14 @@ export default {
         user: data
       })
     })
+  },
+  startLoading: ({ commit }) => {
+    commit(types.START_LOADING)
+  },
+  endLoading: ({ commit }) => {
+    commit(types.END_LOADING)
+  },
+  setGlobalConfig: ({ commit }, data) => {
+    commit(types.SET_GLOBAL, data)
   }
 }

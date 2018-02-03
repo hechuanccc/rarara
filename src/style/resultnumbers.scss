@@ -1,0 +1,102 @@
+$results_racing: jspk10, bcr, mlaft, er75ft;
+
+%racing {
+  display: inline-block;
+  height: 21px;
+  width: 21px;
+  background: url("../assets/ball-pk.png") no-repeat;
+  text-indent: -9999px;
+  margin-right: 5px;
+}
+@for $index from 1 through length($results_racing) {
+
+    @for $num from 1 through 10 {
+      .#{nth($results_racing, $index)}-#{$num} {
+        @extend %racing;
+        background-position: 0 (-21px * ($num - 1));
+      }
+
+      .#{nth($results_racing, $index)}-0#{$num} {
+        @extend %racing;
+        background-position: 0 (-21px * ($num - 1));
+      }
+    }
+}
+
+%plainball {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  background: radial-gradient(circle at 5px 5px, #fff, #ccc);
+  border-radius: 100%;
+  text-align: center;
+  color: #333;
+  font-weight: normal;
+  font-size: 14px;
+  margin-right: 5px;
+}
+
+$plainballgames:
+  tjssc 10,
+  xjssc 10 ,
+  cqssc 10,
+  jsssc 10,
+  pcdd 27,
+  bjkl8 80,
+  auluck8 80,
+  gd11x5 11,
+  gdklsf 20,
+  jnd28 27,
+  cqlf 20,
+  fc3d 10;
+
+$plaingameslength: length($plainballgames);
+
+@for $index from 1 through $plaingameslength {
+  @for $num from 0 through nth(nth($plainballgames, $index), 2) {
+    @if $num < 10 {
+      .#{nth(nth($plainballgames, $index), 1)}-0#{$num} {
+        @extend %plainball;
+      }
+    }
+    .#{nth(nth($plainballgames, $index), 1)}-#{$num} {
+      @extend %plainball;
+    }
+  }
+}
+
+%hkl-ball {
+  display: inline-block;
+  background: url("../assets/ball_hk6.png") no-repeat;
+  height: 26px;
+  width: 24px;
+  margin-left: 5px;
+  text-indent: -9999px;
+}
+
+.hkl:last-child {
+  margin-left: 15px;
+}
+@for $num from 1 through 49 {
+  &.hkl-#{$num} {
+    @extend %hkl-ball;
+    background-position: 0 (-27px * ($num - 1));
+  }
+}
+
+%jsk3-dice {
+  display: inline-block;
+  background: url("../assets/ball_4.png") no-repeat;
+  width: 27px;
+  height: 27px;
+  margin-left: 5px;
+  text-indent: -9999px;
+}
+
+ @for $num from 1 through 6 {
+   &.jsk3-#{$num} {
+     @extend %jsk3-dice;
+     background-position: 0 (-27px * ($num - 1));
+   }
+ }

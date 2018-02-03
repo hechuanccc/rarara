@@ -11,7 +11,7 @@ import axios from 'axios'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import Vue2Filters from 'vue2-filters'
-// import { gethomePage } from './api'
+import { fetchGlobalData } from './api'
 import qs from 'qs'
 
 let url = window.location.href
@@ -85,6 +85,15 @@ router.beforeEach((to, from, next) => {
 })
 
 sync(store, router)
+
+fetchGlobalData().then(res => {
+  const globalData = res.global_preferences
+  store.dispatch('setGlobalConfig', {
+    mobile_lottery_url: globalData.mobile_lottery_url,
+    customer_service_url: globalData.customer_service_url,
+    web_lottery_register_url: globalData.web_lottery_register_url
+  })
+})
 
 Vue.mixin({
   methods: {

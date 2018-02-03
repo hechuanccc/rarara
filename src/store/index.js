@@ -12,7 +12,8 @@ export function createStore () {
       user: {
         logined: ''
       },
-      loading: false
+      loading: false,
+      globalPreference: {}
     },
     actions,
     mutations,

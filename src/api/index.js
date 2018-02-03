@@ -31,8 +31,8 @@ export function createRoom (users) {
   })
 }
 
-export function fetchOnlineMembers (limit, page) {
-  return axios.get(`${urls.member}?logined=True&offset=${page * limit}&limit=${limit}`)
+export function fetchOnlineMembers (limit, page, nickname) {
+  return axios.get(`${urls.member}?logined=True&offset=${page * limit}&limit=${limit}${nickname ? '&nickname_q=' + nickname : ''}`)
 }
 
 export function updateUser (id, user) {
@@ -71,4 +71,8 @@ export function sendImgToChat (data) {
 
 export function fetchAnnouce () {
   return axios.get(`${urls.annoucement}`)
+}
+
+export function fetchGlobalData () {
+  return axios.get(`${urls.global_preference}`)
 }
