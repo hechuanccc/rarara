@@ -76,3 +76,41 @@ export function fetchAnnouce () {
 export function fetchGlobalData () {
   return axios.get(`${urls.global_preference}`)
 }
+
+export function banChatUser (id, data) {
+  return axios.put(`${urls.room}${id}/`,
+    {
+      action: 'banned',
+      user: data.user,
+      banned_time: data.banned_time
+    })
+}
+
+export function unbanChatUser (id, data) {
+  return axios.put(`${urls.room}${id}/`,
+    {
+      action: 'unbanned',
+      user: data.user,
+      banned_time: data.banned_time
+    })
+}
+
+export function blockChatUser (id, data) {
+  return axios.put(`${urls.room}${id}/`,
+    {
+      action: 'block',
+      user: data.user,
+      block_time: 60
+    })
+}
+export function unblockChatUser (id, data) {
+  return axios.put(`${urls.room}${id}/`,
+    {
+      action: 'unblock',
+      user: data.user
+    })
+}
+
+export function getChatUser (id) {
+  return axios.get(`${urls.room}${id}/`)
+}

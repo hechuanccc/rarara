@@ -15,7 +15,7 @@
                 item.sender && ((item.sender.nickname && item.sender.nickname === user.nickname) || user.username === item.sender.username) ? 'item-right' : 'item-left', item.type < 0 ? 'sys-msg' : ''
               ]">
             <div class="lay-block clearfix" v-if="item.type >= 0">
-              <div class="avatar">
+              <div class="avatar" @click="handleAvatarClick(item)">
                 <icon name="cog" class="font-cog" v-if="item.type == 4" scale="3"></icon>
                 <img :src="item.sender && item.sender.avatar_url ? item.sender.avatar_url : require('../assets/avatar.png')" v-else>
               </div>
@@ -23,7 +23,7 @@
                 <div class="msg-header">
                   <h4 v-html="item.type === 4 ? '计划消息' : item.sender && item.sender.username === user.username && user.nickname ? user.nickname : item.sender && (item.sender.nickname || item.sender.username)"></h4>
                   <span class="common-member" v-if="item.type !== 4">
-                    {{item.sender && item.sender.level_name && item.sender.level_name.indexOf('管理员') !== -1 ? '管理员' : '普通会员'}}
+                    {{item.sender && item.sender.roles.length && getRoles(item).includes('manager') ? '管理员' : '普通会员'}}
                   </span>
                   <span class="msg-time">{{item.created_at | moment('HH:mm:ss')}}</span>
                 </div>
@@ -71,6 +71,9 @@
               </span>
             </label>
           </a>
+          <span v-if="personal_setting.user && myRoles.includes('manager')" class="btn-control right" @click="openManageDialog()" >
+            <icon name="cog" class="font-cog" scale="1.4"></icon>
+          </span>
         </div>
         <div class="typing">
           <div :class="['txtinput', 'el-textarea', !personal_setting.chat.status ? 'is-disabled' : '']">
@@ -102,6 +105,21 @@
       append-to-body>
       <p>{{errMsgCnt}}</p>
     </el-dialog>
+    <el-dialog
+      title="管理"
+      :visible.sync="restraint.dialogVisible"
+      :width="restraint.showManageDialog ? '700px' : '30%'"
+      class="restraint-dialog"
+      :append-to-body="true"
+      :modal-append-to-body="true"
+      center>
+      <Restraint :restraint="restraint"
+        :blockedUsers="blockedUsers"
+        :bannedUsers="formattedBannerUsers"
+        :RECEIVER="RECEIVER"
+        @updateUsers="updateUsers"
+        />
+    </el-dialog>
   </div>
 
 </template>
@@ -111,15 +129,17 @@
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/cog'
 import 'vue-awesome/icons/smile-o'
-import { fetchChatEmoji, sendImgToChat } from '../api'
+import { fetchChatEmoji, sendImgToChat, getChatUser } from '../api'
 // import { getCookie } from '../utils'
 import config from '../../config'
+import Restraint from './Restraint'
 const WSHOST = config.chatHost
 const RECEIVER = 1
 
 export default {
   components: {
-    Icon
+    Icon,
+    Restraint
   },
   data () {
     return {
@@ -134,10 +154,28 @@ export default {
       emojis: {
         people: []
       },
+      RECEIVER,
       personal_setting: {
         chat: {
           reasons: []
         }
+      },
+      blockedUsers: [],
+      bannedUsers: [],
+      restraint: {
+        dialogVisible: false,
+        user: '',
+        showManageDialog: false,
+        showRestraintDialog: false,
+        nowTab: '0',
+        tabs: [
+          {
+            display: '黑名单'
+          },
+          {
+            display: '禁言'
+          }
+        ]
       }
     }
   },
@@ -160,6 +198,24 @@ export default {
     },
     user () {
       return this.$store.state.user
+    },
+    formattedBannerUsers () {
+      let result = []
+      if (this.bannedUsers.length) {
+        this.bannedUsers.forEach((item) => {
+          result.push({
+            username: item.username,
+            banned_time: this.$moment(item.banned_time).fromNow(true)
+          })
+        })
+
+        return result
+      }
+    },
+    myRoles () {
+      if (this.personal_setting.user) {
+        return this.personal_setting.user.roles.map((role) => role.name)
+      }
     }
   },
   created () {
@@ -170,6 +226,9 @@ export default {
     }
   },
   methods: {
+    getRoles (message) {
+      return message.sender.roles.map((role) => role.name)
+    },
     joinChatRoom () {
       let token = this.$cookie.get('access_token')
       this.loading = true
@@ -332,6 +391,40 @@ export default {
       if (this.ws) {
         this.ws.close()
       }
+    },
+    getUser () {
+      this.loading = true
+      getChatUser(1).then(response => {
+        this.bannedUsers = response.banned_users
+        this.blockedUsers = response.block_users
+        this.loading = false
+      })
+    },
+    updateUsers (data) {
+      this.bannedUsers = data.banned_users
+      this.blockedUsers = data.block_users
+    },
+    handleAvatarClick (message) {
+      if (this.myRoles.includes('manager')) {
+        let role = message.sender.roles.map((role) => role.name)
+        if ((this.personal_setting.user.username === message.sender.username) || role.includes('manager')) {
+          return
+        }
+        this.restraint.user = message.sender
+        this.restraint.showManageDialog = false
+        this.restraint.showRestraintDialog = true
+        this.restraint.dialogVisible = true
+      }
+    },
+    switchBlockTab (index) {
+      this.restraint.nowTab = index + ''
+    },
+    openManageDialog () {
+      this.restraint.showRestraintDialog = false
+      this.restraint.showManageDialog = true
+      this.restraint.dialogVisible = true
+
+      this.getUser()
     }
   }
 }
@@ -678,8 +771,11 @@ export default {
     float: left;
     display: inline-block;
     padding: 5px 12px;
-    color: #666;
+    color: #ddd;
     cursor: pointer;
+    &.right {
+      float: right;
+    }
     .el-icon-picture {
       cursor: pointer;
       font-size: 20px;
@@ -812,4 +908,5 @@ export default {
   width: 100%;
   height: 100%;
 }
+
 </style>

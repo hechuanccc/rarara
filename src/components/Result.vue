@@ -38,12 +38,23 @@ import _ from 'lodash'
 const jsonp = require('jsonp')
 const CryptoJS = require('crypto-js')
 
+const encoded = (data) => {
+  const ciphertext = CryptoJS.enc.Base64.parse(data)
+  const key = CryptoJS.enc.Utf8.parse('61Q3hC6jEvfQrwQvMd80fPm2XEqDPJhB')
+  const decryped = CryptoJS.AES.decrypt({ciphertext: ciphertext}, key, {
+    mode: CryptoJS.mode.ECB
+  })
+  const plaintext = decryped.toString(CryptoJS.enc.Utf8)
+  return plaintext
+}
+
 export default {
   data () {
     return {
       resultsMap: {},
       countdownMap: {},
-      codes: []
+      codes: [],
+      encoded
     }
   },
   methods: {
@@ -52,6 +63,9 @@ export default {
         return
       }
       this[`timer-${game.code}`] = setInterval(() => {
+        if (this.$moment().isAfter(game.next_draw_time)) {
+          clearInterval(this[`timer-${game.code}`])
+        }
         this.$set(this.countdownMap, game.code, this.getDiffOfTime(game))
       }, 1000)
     },
@@ -99,23 +113,13 @@ export default {
         })
       }, 1000)
     },
-    encoded (data) {
-      const ciphertext = CryptoJS.enc.Base64.parse(data)
-      const key = CryptoJS.enc.Utf8.parse('61Q3hC6jEvfQrwQvMd80fPm2XEqDPJhB')
-      const decryped = CryptoJS.AES.decrypt({ciphertext: ciphertext}, key, {
-        mode: CryptoJS.mode.ECB
-      })
-      const plaintext = decryped.toString(CryptoJS.enc.Utf8)
-      return plaintext
-    },
     fetchResults (code) {
       return new Promise((resolve, reject) => {
         jsonp(`${urls.latest_results}?game_code=${code}`, null, (err, data) => {
           if (err) {
-            console.error(err, 'err') // error handling
-            reject(err)
+            clearInterval(this[`timer-${code}`])
           } else {
-            let formatted = JSON.parse(this.encoded(data))
+            let formatted = JSON.parse(encoded(data))
 
             _.each(formatted, (game) => {
               let currentGame = _.find(this.codes, obj => obj.display_name === game.game_display_name)
@@ -134,7 +138,7 @@ export default {
           if (err) {
             console.error(err, 'err') // error handling
           } else {
-            let formatted = JSON.parse(this.encoded(data))
+            let formatted = JSON.parse(encoded(data))
 
             _.each(formatted, (game, index) => {
               game.code = this.codes[index].code
