@@ -23,104 +23,177 @@
         </el-col>
         <el-col class="head-right" :span="4">
           <div class="user-info">
-            <img :src="user.avatar_url ? user.avatar_url : require('../assets/avatar.png')" width="25">
-            <span class="username">{{user.username}}</span>
+            <img @click="showProfileDiag = true" :src="user.avatar ? user.avatar : require('../assets/avatar.png')" width="25">
+            <span @click="showProfileDiag = true" class="username">{{user.username}}</span>
             <a @click="logout">退出</a>
           </div>
         </el-col>
       </el-row>
     </el-header>
 
-    <el-container>
-      <el-aside width="250px" class="aside">
-        <el-tabs
-          v-model="activeTab"
-          type="border-card">
-          <el-tab-pane
-            label="在线会员"
-            name="members">
-            <div class="search-form">
-              <el-form>
-                <el-form-item >
-                  <el-input v-model="nickname_q" placeholder="请输入会员名称" class="ipt-search"></el-input>
-                  <icon class="search-icon fl" name="search" scale="1" @click.native="search"></icon>
+      <el-container>
+        <el-aside width="250px" class="aside">
+          <el-tabs
+            v-model="activeTab"
+            type="border-card">
+            <el-tab-pane
+              label="在线会员"
+              name="members">
+              <div class="search-form">
+                <el-form>
+                  <el-form-item >
+                    <el-input v-model="nickname_q" placeholder="请输入会员名称" class="ipt-search"></el-input>
+                    <icon class="search-icon fl" name="search" scale="1" @click.native="search"></icon>
+                  </el-form-item>
+                </el-form>
+                <div class="search-tip" v-if="nickname_q && searchEnabled">
+                  搜索 「{{nickname_q}}」
+                  <span class="exit-search" @click="exitSearch">退出搜索</span>
+                </div>
+              </div>
+
+              <ul class="members" v-if="onlineMembers.length">
+                <li v-for="(member, index) in onlineMembers" @click="popoverMember=member" slot="reference">
+                  <el-popover
+                    :ref="'popover' + member.id"
+                    placement="right"
+                    :title="member.nickname || '会员'"
+                    width="150"
+                    trigger="click">
+                    <ul class="member-actions">
+                      <li @click="privateChat(member)" v-if="member.id !== user.id">私聊</li>
+                    </ul>
+                    <div slot="reference">
+                      <img :src="member.avatar_url" class="avatar" v-if="member.avatar_url"/>
+                      <img :src="require('../assets/avatar.png')" v-else class="avatar" />
+                      {{ member.nickname || '会员' }}
+                    </div>
+                  </el-popover>
+                </li>
+                <li v-if="!onlineMembersEnded" class="load-more" @click="fillOnlineMembers">{{ onlineMemberLoading ? '正在加载...' : '查看更多' }}</li>
+              </ul>
+              <div v-else-if="!onlineMemberLoading" class="empty">无结果</div>
+            </el-tab-pane>
+            <el-tab-pane
+              label="聊天列表"
+              name="rooms">
+              <div class="chat-list">
+                <room-list 
+                  :user="user"
+                  :activeRoom="activeRoom"></room-list>
+              </div>
+            </el-tab-pane>
+          </el-tabs>
+        </el-aside>
+
+        <el-main class="chat-area">
+          <chat-room :routeLeave="leave"></chat-room>
+        </el-main>
+
+        <el-aside width="395px" class="aside">
+          <el-tabs type="border-card">
+            <el-tab-pane :label="'在线投注'">
+              <iframe :src="globalPreference.mobile_lottery_url" width="100%" style="height: calc(100vh - 110px)" frameborder="0"></iframe>
+            </el-tab-pane>
+            <el-tab-pane :label="'文字开奖'">
+              <div class="results-container">
+                <component :is="'Result'"></component>
+              </div>
+            </el-tab-pane>
+          </el-tabs>
+        </el-aside>
+
+        <el-dialog
+          title="最新消息"
+          :visible.sync="announcementDialogVisible"
+          :width="'600px'"
+          center>
+          <el-carousel :height="'200px'"
+            v-if="announcementDialogVisible"
+            class="announcement-popup"
+            :initial-index="currentAnnouncementIndex">
+            <el-carousel-item v-for="item in announcements"
+              :key="item.rank">
+              <p class="text-center" key="announcement">
+                {{ item.content }}
+              </p>
+            </el-carousel-item>
+          </el-carousel>
+        </el-dialog>
+        <el-dialog
+          title="用户中心"
+          :visible.sync="showProfileDiag"
+          :width="'600px'"
+          @open="changeProfileRes = ''"
+          center>
+          <div class="edit-profile">
+            <div>
+              <div
+                class="avatar"
+                v-on:mouseover="swichAvatar = true"
+                v-on:mouseout="swichAvatar = false"
+                style="overflow-y: hidden;">
+                <div>
+                  <img v-if="user.avatar && !swichAvatar" :src="currentChooseAvatar || user.avatar" width="72" height="72">
+                  <img v-else-if="!swichAvatar" :src="currentChooseAvatar || require('../assets/avatar.png')" width="72" height="72">
+                </div>
+               
+                <label 
+                  for="preViewAvatar" 
+                  class="upload-avatar">
+                  <input @change="preViewAvatar" type="file" ref="preViewAvatar" class="img-upload-input" id="preViewAvatar" accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif" />
+                  <span v-if="swichAvatar" class="el-icon-upload"></span>
+                </label>
+              </div>
+              <p class="text-center m-b">上传新头像</p>
+              <el-form :model="editUser" status-icon :rules="rules" ref="editUser" :style="{marginLeft: '-20px'}">
+                <el-form-item prop="nickname" label="昵称"  label-width="85px">
+                  <el-input v-model="editUser.nickname"
+                            class="inp">
+                  </el-input>
+                </el-form-item>
+
+                <el-form-item label="邮箱" prop="email" label-width="85px">
+                  <el-input class="input-width" v-model="editUser.email"></el-input>
+                </el-form-item>
+
+                <el-form-item prop="mobile" label="手机" label-width="85px">
+                  <el-input v-model="editUser.mobile"
+                            type="number"
+                            class="inp">
+                  </el-input>
+                </el-form-item>
+
+                <el-form-item prop="QQ" label="QQ"  label-width="85px">
+                  <el-input v-model="editUser.QQ"
+                            type="number"
+                            class="inp">
+                  </el-input>
+                </el-form-item>
+
+                <el-form-item label="登录IP"  label-width="85px">
+                  <p class="member-info">{{user.last_login_ip}}</p>
+                </el-form-item>
+
+                <el-form-item label="注册时间"  label-width="85px">
+                  <p class="member-info">{{user.date_joined | moment('YYYY-MM-HH')}}</p>
+                </el-form-item>
+
+                <el-form-item label="推广链接"  label-width="85px">
+                  <p class="member-info">{{promoteUrl}}</p>
+                </el-form-item>
+                <el-form-item label-width="85px">
+                  <el-button class="profile-submit" type="primary" @click="submit">确认修改</el-button>
+                </el-form-item>
+                <el-form-item label-width="85px">
+                  <p :class="[changeProfileSuccess ? 'text-success' : 'text-danger']">{{changeProfileRes}}</p>
                 </el-form-item>
               </el-form>
-              <div class="search-tip" v-if="nickname_q && searchEnabled">
-                搜索 「{{nickname_q}}」
-                <span class="exit-search" @click="exitSearch">退出搜索</span>
-              </div>
             </div>
+          </div>
 
-            <ul class="members" v-if="onlineMembers.length">
-              <li v-for="(member, index) in onlineMembers" @click="popoverMember=member" slot="reference">
-                <el-popover
-                  :ref="'popover' + member.id"
-                  placement="right"
-                  :title="member.nickname || '会员'"
-                  width="150"
-                  trigger="click">
-                  <ul class="member-actions">
-                    <li @click="privateChat(member)" v-if="member.id !== user.id">私聊</li>
-                  </ul>
-                  <div slot="reference">
-                    <img :src="member.avatar_url" class="avatar" v-if="member.avatar_url"/>
-                    <img :src="require('../assets/avatar.png')" v-else class="avatar" />
-                    {{ member.nickname || '会员' }}
-                  </div>
-                </el-popover>
-              </li>
-              <li v-if="!onlineMembersEnded" class="load-more" @click="fillOnlineMembers">{{ onlineMemberLoading ? '正在加载...' : '查看更多' }}</li>
-            </ul>
-            <div v-else-if="!onlineMemberLoading" class="empty">无结果</div>
-          </el-tab-pane>
-          <el-tab-pane
-            label="聊天列表"
-            name="rooms">
-            <div class="chat-list">
-              <room-list 
-                :user="user"
-                :activeRoom="activeRoom"></room-list>
-            </div>
-          </el-tab-pane>
-        </el-tabs>
-      </el-aside>
-
-      <el-main class="chat-area">
-        <chat-room @receiveMember="receiveMember"></chat-room>
-      </el-main>
-
-      <el-aside width="395px" class="aside">
-        <el-tabs type="border-card">
-          <el-tab-pane :label="'在线投注'">
-            <iframe :src="globalPreference.mobile_lottery_url" width="100%" style="height: calc(100vh - 110px)" frameborder="0"></iframe>
-          </el-tab-pane>
-          <el-tab-pane :label="'文字开奖'">
-            <div class="results-container">
-              <component :is="'Result'"></component>
-            </div>
-          </el-tab-pane>
-        </el-tabs>
-      </el-aside>
-
-      <el-dialog
-        title="最新消息"
-        :visible.sync="announcementDialogVisible"
-        :width="'600px'"
-        center>
-        <el-carousel :height="'200px'"
-          v-if="announcementDialogVisible"
-          class="announcement-popup"
-          :initial-index="currentAnnouncementIndex">
-          <el-carousel-item v-for="item in announcements"
-            :key="item.rank">
-            <p class="text-center" key="announcement">
-              {{ item.content }}
-            </p>
-          </el-carousel-item>
-        </el-carousel>
-      </el-dialog>
-    </el-container>
+        </el-dialog>
+      </el-container>
   </el-container>
 </template>
 
@@ -131,34 +204,52 @@ import 'vue-awesome/icons/volume-up'
 import 'vue-awesome/icons/mobile-phone'
 import 'vue-awesome/icons/comments'
 import 'vue-awesome/icons/search'
-import MarqueeTips from 'vue-marquee-tips'
 import ChatRoom from '../components/ChatRoom'
+import { fetchAnnouce, fetchOnlineMembers, createRoom, updateUser } from '../api'
+import { msgFormatter } from '../utils'
+import { validatePhone, validateQQ } from '../validate'
+import urls from '../api/urls'
 import Result from '../components/Result'
-import { fetchAnnouce, fetchOnlineMembers, createRoom } from '../api'
 import { mapState } from 'vuex'
 import RoomList from '../components/RoomList'
 
 Vue.filter('truncate', function (text, stop) {
   return text.slice(0, stop) + (stop < text.length ? '...' : '')
 })
-
 export default {
   name: 'home',
   components: {
     Icon,
-    MarqueeTips,
     ChatRoom,
     Result,
     RoomList
   },
   data () {
+    const qqValidator = (rule, value, callback) => {
+      if (value && !validateQQ(value)) {
+        callback(new Error('qq号码格式无效'))
+      } else {
+        callback()
+      }
+    }
+    const phoneValidator = (rule, value, callback) => {
+      if (value && !validatePhone(value)) {
+        callback(new Error('手机号码格式无效'))
+      } else {
+        callback()
+      }
+    }
     return {
-      user: {},
       activeRoom: {},
       popoverMember: {},
       searchEnabled: false,
       activeTab: 'members',
+      swichAvatar: false,
+      uploadUrl: urls.user,
       nickname_q: '',
+      showProfileDiag: false,
+      searchStr: '',
+      leave: false,
       announcementStyle: {
         opacity: 1,
         translateY: 0
@@ -170,7 +261,31 @@ export default {
       memberPage: 0,
       onlineMemberLoading: false,
       onlineMembersEnded: false,
-      onlineMembers: []
+      roomLoading: false,
+      roomEnded: false,
+      onlineMembers: [],
+      roomList: [],
+      editUser: {
+        mobile: '',
+        email: '',
+        nickname: '',
+        QQ: ''
+      },
+      oldUser: {},
+      rules: {
+        email: [
+          { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur,change' }
+        ],
+        mobile: [
+          { validator: phoneValidator, trigger: 'blur,change' }
+        ],
+        QQ: [
+          { validator: qqValidator, trigger: 'blur,change' }
+        ]
+      },
+      currentChooseAvatar: '',
+      changeProfileSuccess: true,
+      changeProfileRes: ''
     }
   },
   computed: {
@@ -186,11 +301,24 @@ export default {
       } else {
         return ''
       }
+    },
+    user () {
+      return this.$store.state.user
+    },
+    promoteUrl () {
+      return this.user.promote_code ? window.location.origin + '?r' + this.user.promote_code : ''
     }
   },
   created () {
+    this.leave = false
     this.getAnnouce()
     this.fillOnlineMembers()
+  },
+  beforeRouteLeave (to, from, next) {
+    this.leave = true
+    this.$nextTick(() => {
+      next()
+    })
   },
   methods: {
     search () {
@@ -247,6 +375,13 @@ export default {
       }, 100)
     },
     getAnnouce () {
+      this.editUser = {
+        mobile: this.user.mobile,
+        email: this.user.email,
+        nickname: this.user.nickname,
+        QQ: this.user.QQ
+      }
+      this.oldUser = Object.assign({}, this.editUser)
       fetchAnnouce().then(result => {
         result.forEach((item) => {
           if (item.platform !== 0) {
@@ -278,12 +413,76 @@ export default {
         .then(() => {
           this.$router.push('/login')
         })
+    },
+    submit () {
+      let hasChanged = false
+      let formData = new FormData()
+      for (let key in this.editUser) {
+        if (this.editUser[key] !== this.oldUser[key]) {
+          formData.append(key, this.editUser[key])
+          hasChanged = true
+        }
+      }
+      let fileInp = this.$refs.preViewAvatar
+      let file = fileInp.files[0]
+      if (!file && !hasChanged) { return false }
+      this.$refs['editUser'].validate((valid) => {
+        if (valid) {
+          if (file) {
+            formData.append('avatar', file)
+          }
+          updateUser(this.user.id, formData).then(result => {
+            if (!result.error) {
+              this.changeProfileRes = '修改资料成功'
+              this.$store.commit('SET_USER', {
+                user: result
+              })
+            } else {
+              this.changeProfileRes = '修改资料失败'
+            }
+          }, errorMsg => {
+            this.$message({
+              showClose: true,
+              message: msgFormatter(errorMsg),
+              type: 'error'
+            })
+            this.changeProfileRes = '修改资料失败'
+          })
+        } else {
+          return false
+        }
+      })
+    },
+    preViewAvatar (e) {
+      let fileInp = this.$refs.preViewAvatar
+      let file = fileInp.files[0]
+      if (!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(fileInp.value)) {
+        this.$message({
+          showClose: true,
+          message: '文件格式不正确或您目前尚不符合发言条件',
+          type: 'error'
+        })
+        return false
+      }
+      if (file.size > 1024 * 1024) {
+        this.$message({
+          showClose: true,
+          message: '图片尺寸太大，请选择较小尺寸的图片。',
+          type: 'error'
+        })
+        return
+      }
+      this.currentChooseAvatar = URL.createObjectURL(file)
     }
+  },
+  openPersonCenter () {
+    this.changeProfileRes = ''
   }
 }
 </script>
 
 <style lang="scss" scoped>
+@import '../style/vars.scss';
 .chat-box {
   width: 100%;
   height: 100%;
@@ -445,6 +644,65 @@ export default {
   background-color: black;
 }
 
+.edit-profile {
+  width: 50%;
+  border-radius: 5px;
+  background: rgba(255,255,255,.93);
+  margin: 0 auto ;
+  position: relative;
+  min-height: 200px;
+  text-align: center;
+  z-index: 9999;
+  color: #4f77ab;
+  .avatar-upload-tip {
+    font-size: 12px;
+    color: rgb(255, 127, 77);
+  }
+  .avatar {
+    display: inline-block;
+    border-radius: 50%;
+    width: 70px;
+    height: 70px;
+    border: 1px solid #c8d4e4;
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    img {
+      display: block;
+      width: 100%;
+    }
+    label {
+      display: block;
+      position: absolute;
+      top: 13px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      color: #fff;
+      font-size: 50px;
+      color: #909090;
+      cursor: pointer;
+    }
+  }
+  p {
+    cursor: pointer;
+  }
+  .member-info {
+    color: #999;
+    text-align: left;
+    padding-left: 15px;
+  }
+  .profile-submit {
+    width: 100%;
+  }
+  .img-upload-input {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    position: absolute;
+    top: 0;
+  }
+}
 .results-container {
   height: calc(100vh - 140px);
   overflow-y: auto;

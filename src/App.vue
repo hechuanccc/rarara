@@ -1,7 +1,7 @@
 <template>
   <div v-loading.fullscreen="$store.state.loading" element-loading-text="加载中...">
     <div :style="{height: bodyHeight + 'px'}">
-      <router-view/>
+      <router-view />
     </div>
   </div>
 </template>

@@ -27,6 +27,10 @@
                   </el-input>
                 </el-form-item>
 
+                <el-form-item label="邮箱*" prop="email" label-width="85px">
+                  <el-input class="input-width" v-model="user.email"></el-input>
+                </el-form-item>
+
                 <el-form-item prop="password" label="密码*" label-width="85px">
                   <el-input v-model="user.password"
                             :maxlength="15"
@@ -218,6 +222,7 @@
         user: {
           username: '',
           nickname: '',
+          email: '',
           qq: '',
           password: '',
           confirmation_password: '',
@@ -250,6 +255,10 @@
           ],
           hasAgree: [
             { type: 'array', required: true, message: '请阅读并同意用户协议', trigger: 'change' }
+          ],
+          email: [
+            { required: true, message: '该栏位必须输入', trigger: 'blur' },
+            { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur,change' }
           ]
         }
       }
