@@ -23,7 +23,7 @@
                 <div class="msg-header">
                   <h4 v-html="item.type === 4 ? '计划消息' : item.sender && item.sender.username === user.username && user.nickname ? user.nickname : item.sender && (item.sender.nickname || item.sender.username)"></h4>
                   <span class="common-member" v-if="item.type !== 4">
-                    {{item.sender && item.sender.level_name && item.sender.level_name.indexOf('管理员') !== -1 ? '管理员' : '普通会员'}}
+                    {{item.sender && item.sender.roles.length && getRoles(item).includes('manager') ? '管理员' : '普通会员'}}
                   </span>
                   <span class="msg-time">{{item.created_at | moment('HH:mm:ss')}}</span>
                 </div>
@@ -71,8 +71,8 @@
               </span>
             </label>
           </a>
-          <span v-if="personal_setting.user && myRoles.includes('manager')" class="btn-control" @click="openManageDialog()" >
-            <icon name="cog" class="font-cog" scale="1.2"></icon>
+          <span v-if="personal_setting.user && myRoles.includes('manager')" class="btn-control right" @click="openManageDialog()" >
+            <icon name="cog" class="font-cog" scale="1.4"></icon>
           </span>
         </div>
         <div class="typing">
@@ -106,68 +106,20 @@
       <p>{{errMsgCnt}}</p>
     </el-dialog>
     <el-dialog
-      title="限制"
+      title="管理"
       :visible.sync="restraint.dialogVisible"
-      width="30%"
+      :width="restraint.showManageDialog ? '700px' : '30%'"
       class="restraint-dialog"
-      center>
-      <div class="information text-center" v-if="restraint.user">
-        <div class="avatar">
-          <img v-if="restraint.user.avatar" :src="restraint.user.avatar" alt="avatar">
-          <img v-else :src="require('../assets/avatar.png')" alt="default">
-        </div>
-        <div class="m-t">
-          {{restraint.user.nickname || restraint.user.username}}
-          <div>
-            <span v-for="(role, index) in restraint.user.roles" :key="index">
-              ({{role.display_name}})
-            </span>
-          </div>
-        </div>
-      </div>
-      <div slot="footer" class="m-b actions">
-        <el-button type="danger" @click.native="ban(15)">禁言15分钟</el-button>
-        <el-button type="danger" @click.native="ban(30)">禁言30分钟</el-button>
-        <el-button type="danger" @click.native="block()">加入黑名单</el-button>
-      </div>
-    </el-dialog>
-    <el-dialog
-      :visible.sync="restraint.showManageDialog"
-      width="700px"
-      :modal-append-to-body="true"
       :append-to-body="true"
+      :modal-append-to-body="true"
       center>
-      <el-menu :default-active="'0'" class="m-b-xlg" mode="horizontal">
-        <el-menu-item v-for="(tab, index) in restraint.tabs"
-          :key="index"
-          :index="index + ''"
-          @click.native="switchBlockTab(index)">{{tab.display}}</el-menu-item>
-      </el-menu>
-      <el-table
-        :data="restraint.nowTab === '1' ? formattedBannerUsers : blockedUsers"
-        style="width: 100%">
-        <el-table-column
-          prop="username"
-          label="帐号"
-          :width="restraint.nowTab === '0' ? 322 : 215">
-        </el-table-column>
-        <el-table-column
-          v-if="restraint.nowTab === '1'"
-          prop="banned_time"
-          label="时间(min)"
-          width="215">
-        </el-table-column>
-        <el-table-column
-          label="操作"
-          :width="restraint.nowTab === '0' ? 322 : 215">
-          <template slot-scope="scope">
-            <el-button v-if="restraint.nowTab === '1'" size="mini" type="danger" @click.native="unban(scope.row.username)">解除</el-button>
-            <el-button v-else size="mini" type="danger" @click.native="unblock(scope.row.username)">解除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+      <Restraint :restraint="restraint"
+        :blockedUsers="blockedUsers"
+        :bannedUsers="formattedBannerUsers"
+        :RECEIVER="RECEIVER"
+        @updateUsers="updateUsers"
+        />
     </el-dialog>
-
   </div>
 
 </template>
@@ -177,15 +129,17 @@
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/cog'
 import 'vue-awesome/icons/smile-o'
-import { fetchChatEmoji, sendImgToChat, banChatUser, blockChatUser, unbanChatUser, unblockChatUser, getChatUser } from '../api'
+import { fetchChatEmoji, sendImgToChat, getChatUser } from '../api'
 // import { getCookie } from '../utils'
 import config from '../../config'
+import Restraint from './Restraint'
 const WSHOST = config.chatHost
 const RECEIVER = 1
 
 export default {
   components: {
-    Icon
+    Icon,
+    Restraint
   },
   data () {
     return {
@@ -200,6 +154,7 @@ export default {
       emojis: {
         people: []
       },
+      RECEIVER,
       personal_setting: {
         chat: {
           reasons: []
@@ -211,6 +166,7 @@ export default {
         dialogVisible: false,
         user: '',
         showManageDialog: false,
+        showRestraintDialog: false,
         nowTab: '0',
         tabs: [
           {
@@ -258,6 +214,9 @@ export default {
     this.joinChatRoom()
   },
   methods: {
+    getRoles (message) {
+      return message.sender.roles.map((role) => role.name)
+    },
     joinChatRoom () {
       let token = this.$cookie.get('access_token')
       this.loading = true
@@ -419,71 +378,6 @@ export default {
         this.ws.close()
       }
     },
-    ban (mins) {
-      banChatUser(RECEIVER, {
-        user: this.restraint.user.username,
-        banned_time: mins
-      }).then((data) => {
-        this.restraint.dialogVisible = false
-      }, errorMsg => {
-        this.restraint.dialogVisible = false
-        this.$message({
-          showClose: true,
-          message: errorMsg,
-          type: 'error'
-        })
-      })
-    },
-    unban (user) {
-      unbanChatUser(RECEIVER, {
-        user: user
-      }).then((data) => {
-        this.getUser()
-        this.$message({
-          showClose: true,
-          message: data.data.status,
-          type: 'error'
-        })
-      }, errorMsg => {
-        this.$message({
-          showClose: true,
-          message: errorMsg,
-          type: 'error'
-        })
-      })
-    },
-    block () {
-      blockChatUser(RECEIVER, {
-        user: this.restraint.user.username
-      }).then((data) => {
-        this.restraint.dialogVisible = false
-      }, errorMsg => {
-        this.restraint.dialogVisible = false
-        this.$message({
-          showClose: true,
-          message: errorMsg.response.data.error,
-          type: 'error'
-        })
-      })
-    },
-    unblock (user) {
-      unblockChatUser(RECEIVER, {
-        user: user
-      }).then((data) => {
-        this.getUser()
-        this.$message({
-          showClose: true,
-          message: data.data.status,
-          type: 'error'
-        })
-      }, errorMsg => {
-        this.$message({
-          showClose: true,
-          message: errorMsg,
-          type: 'error'
-        })
-      })
-    },
     getUser () {
       this.loading = true
       getChatUser(1).then(response => {
@@ -492,6 +386,10 @@ export default {
         this.loading = false
       })
     },
+    updateUsers (data) {
+      this.bannedUsers = data.banned_users
+      this.blockedUsers = data.block_users
+    },
     handleAvatarClick (message) {
       if (this.myRoles.includes('manager')) {
         let role = message.sender.roles.map((role) => role.name)
@@ -499,6 +397,8 @@ export default {
           return
         }
         this.restraint.user = message.sender
+        this.restraint.showManageDialog = false
+        this.restraint.showRestraintDialog = true
         this.restraint.dialogVisible = true
       }
     },
@@ -506,7 +406,10 @@ export default {
       this.restraint.nowTab = index + ''
     },
     openManageDialog () {
+      this.restraint.showRestraintDialog = false
       this.restraint.showManageDialog = true
+      this.restraint.dialogVisible = true
+
       this.getUser()
     }
   }
@@ -854,8 +757,11 @@ export default {
     float: left;
     display: inline-block;
     padding: 5px 12px;
-    color: #666;
+    color: #ddd;
     cursor: pointer;
+    &.right {
+      float: right;
+    }
     .el-icon-picture {
       cursor: pointer;
       font-size: 20px;
@@ -989,15 +895,4 @@ export default {
   height: 100%;
 }
 
-.restraint-dialog {
-  .avatar {
-    display: inline-block;
-    width: 120px;
-    img {
-      width: 100%;
-      height: 100%;
-      border-radius: 5px;
-    }
-  }
-}
 </style>
