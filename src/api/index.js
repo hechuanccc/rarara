@@ -16,7 +16,7 @@ export function register (user) {
 }
 
 export function fetchUser () {
-  return axios.get(urls.member)
+  return axios.get(urls.user)
 }
 
 export function fetchMemberRoom (limit, page) {
@@ -26,7 +26,7 @@ export function fetchMemberRoom (limit, page) {
 export function createRoom (users) {
   return axios.post(urls.room, {
     users: users,
-    type: 2,
+    type: 3,
     status: 1
   })
 }
@@ -35,8 +35,8 @@ export function fetchOnlineMembers (limit, page, nickname) {
   return axios.get(`${urls.member}?logined=True&offset=${page * limit}&limit=${limit}${nickname ? '&nickname_q=' + nickname : ''}`)
 }
 
-export function updateUser (user, id) {
-  return axios.put(`${urls.user}${user.id ? user.id : id}/`, user)
+export function updateUser (id, user) {
+  return axios.put(`${urls.member}${id}/`, user)
 }
 
 export function updatePassword (password) {

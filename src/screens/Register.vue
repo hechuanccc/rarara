@@ -5,7 +5,6 @@
         <el-container>
           <el-header class="login-head">
             <div class="title">会员注册</div>
-            <el-button type="warning" class="kf">客服中心</el-button>
           </el-header>
           <el-main>
             <div class="register">
@@ -26,6 +25,10 @@
                   <el-input v-model="user.qq"
                             type="number">
                   </el-input>
+                </el-form-item>
+
+                <el-form-item label="邮箱*" prop="email" label-width="85px">
+                  <el-input class="input-width" v-model="user.email"></el-input>
                 </el-form-item>
 
                 <el-form-item prop="password" label="密码*" label-width="85px">
@@ -219,6 +222,7 @@
         user: {
           username: '',
           nickname: '',
+          email: '',
           qq: '',
           password: '',
           confirmation_password: '',
@@ -251,6 +255,10 @@
           ],
           hasAgree: [
             { type: 'array', required: true, message: '请阅读并同意用户协议', trigger: 'change' }
+          ],
+          email: [
+            { required: true, message: '该栏位必须输入', trigger: 'blur' },
+            { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur,change' }
           ]
         }
       }
@@ -309,7 +317,6 @@
   margin-top: 20px;
   text-align: center;
   .title {
-    margin-left: 23%;
     line-height: 40px;
     display: inline-block;
     font-size: 20px;

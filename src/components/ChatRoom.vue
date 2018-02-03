@@ -179,9 +179,17 @@ export default {
       }
     }
   },
+  props: {
+    routeLeave: {
+      type: Boolean,
+      default: false
+    }
+  },
   watch: {
-    'user.showChatRoom' (val, oldVal) {
-      this.leaveRoom()
+    'routeLeave' (val, oldVal) {
+      if (val) {
+        this.leaveRoom()
+      }
     }
   },
   computed: {
@@ -211,7 +219,11 @@ export default {
     }
   },
   created () {
-    this.joinChatRoom()
+    if (this.$route.name !== 'Home') {
+      this.leaveRoom()
+    } else {
+      this.joinChatRoom()
+    }
   },
   methods: {
     getRoles (message) {
@@ -267,7 +279,6 @@ export default {
                 return
               } else if (data.personal_setting) {
                 this.personal_setting = data.personal_setting
-                this.$emit('receiveMember', data.personal_setting.user)
                 this.$store.commit('SET_USER', data.personal_setting.user)
               } else {
                 switch (data.type) {
@@ -360,6 +371,9 @@ export default {
     },
     sendMsg () {
       if (!this.msgCnt.trim()) { return false }
+      if (!this.ws) {
+        return this.joinChatRoom()
+      }
       this.ws.send(JSON.stringify({
         'command': 'send',
         'receivers': [RECEIVER],
@@ -368,7 +382,7 @@ export default {
       }))
       this.msgCnt = ''
     },
-    leaveRoom (n) {
+    leaveRoom () {
       this.messages = []
       this.ws && this.ws.send(JSON.stringify({
         'command': 'leave',
