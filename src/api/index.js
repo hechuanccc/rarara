@@ -72,3 +72,7 @@ export function sendImgToChat (data) {
 export function fetchAnnouce () {
   return axios.get(`${urls.annoucement}`)
 }
+
+export function fetchGlobalData () {
+  return axios.get(`${urls.global_preference}`)
+}

@@ -105,7 +105,7 @@
       <el-aside width="395px" class="aside">
         <el-tabs type="border-card">
           <el-tab-pane :label="'在线投注'">
-            <iframe src="http://rico-st8ging.azureedge.net/#/" width="100%" style="height: calc(100vh - 110px)" frameborder="0"></iframe>
+            <iframe :src="globalPreference.mobile_lottery_url" width="100%" style="height: calc(100vh - 110px)" frameborder="0"></iframe>
           </el-tab-pane>
           <el-tab-pane :label="'文字开奖'">
             <div class="results-container">
@@ -150,7 +150,7 @@ import MarqueeTips from 'vue-marquee-tips'
 import ChatRoom from '../components/ChatRoom'
 import Result from '../components/Result'
 import { fetchAnnouce, fetchOnlineMembers, createRoom, fetchMemberRoom } from '../api'
-
+import { mapState } from 'vuex'
 Vue.filter('truncate', function (text, stop) {
   return text.slice(0, stop) + (stop < text.length ? '...' : '')
 })
@@ -191,6 +191,12 @@ export default {
     }
   },
   computed: {
+    ...mapState([
+      'globalPreference'
+    ]),
+    isHome () {
+      return ''
+    },
     currentAnnouncement () {
       if (this.announcements[this.currentAnnouncementIndex]) {
         return this.announcements[this.currentAnnouncementIndex].content
