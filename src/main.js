@@ -15,11 +15,9 @@ import { fetchGlobalData } from './api'
 import qs from 'qs'
 
 let url = window.location.href
-let params = qs.parse(url.slice(url.indexOf('?') + 1, url.length))
+let params = qs.parse(url.slice(url.indexOf('?') + 1, url.indexOf('#')))
 if (params.r) {
-  let expires = new Date()
-  expires.setMonth(expires.getMonth() + 1)
-  VueCookie.set('r', params.r, {expires: expires})
+  VueCookie.set('r', params.r, {expires: '1M'})
 }
 
 Vue.use(require('vue-moment'))
