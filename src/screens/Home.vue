@@ -62,9 +62,9 @@
                     trigger="click">
                     <ul class="member-actions">
                       <li @click="privateChat(member)" v-if="member.id !== user.id">私聊</li>
-                      <li @click="ban(member, 15)" v-if="member.id !== user.id">禁言15分钟</li>
-                      <li @click="ban(member, 30)" v-if="member.id !== user.id">禁言30分钟</li>
-                      <li @click="block(member)" v-if="member.id !== user.id">加入黑名单</li>
+                      <li @click="ban(member, 15)" v-if="member.id !== user.id && myRoles.includes('manager')">禁言15分钟</li>
+                      <li @click="ban(member, 30)" v-if="member.id !== user.id && myRoles.includes('manager')">禁言30分钟</li>
+                      <li @click="block(member)" v-if="member.id !== user.id && myRoles.includes('manager')">加入黑名单</li>
                     </ul>
                     <div slot="reference">
                       <img :src="member.avatar_url" class="avatar" v-if="member.avatar_url"/>
@@ -311,6 +311,9 @@ export default {
     },
     promoteUrl () {
       return this.user.promote_code ? window.location.origin + '?r' + this.user.promote_code : ''
+    },
+    myRoles () {
+      return this.user.roles.map(role => role.name)
     }
   },
   created () {
