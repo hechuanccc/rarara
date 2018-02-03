@@ -15,7 +15,7 @@
                 item.sender && ((item.sender.nickname && item.sender.nickname === user.nickname) || user.username === item.sender.username) ? 'item-right' : 'item-left', item.type < 0 ? 'sys-msg' : ''
               ]">
             <div class="lay-block clearfix" v-if="item.type >= 0">
-              <div class="avatar">
+              <div class="avatar" @click="handleAvatarClick(item)">
                 <icon name="cog" class="font-cog" v-if="item.type == 4" scale="3"></icon>
                 <img :src="item.sender && item.sender.avatar_url ? item.sender.avatar_url : require('../assets/avatar.png')" v-else>
               </div>
@@ -71,6 +71,9 @@
               </span>
             </label>
           </a>
+          <span v-if="personal_setting.user && myRoles.includes('manager')" class="btn-control" @click="openManageDialog()" >
+            <icon name="cog" class="font-cog" scale="1.2"></icon>
+          </span>
         </div>
         <div class="typing">
           <div :class="['txtinput', 'el-textarea', !personal_setting.chat.status ? 'is-disabled' : '']">
@@ -102,6 +105,69 @@
       append-to-body>
       <p>{{errMsgCnt}}</p>
     </el-dialog>
+    <el-dialog
+      title="限制"
+      :visible.sync="restraint.dialogVisible"
+      width="30%"
+      class="restraint-dialog"
+      center>
+      <div class="information text-center" v-if="restraint.user">
+        <div class="avatar">
+          <img v-if="restraint.user.avatar" :src="restraint.user.avatar" alt="avatar">
+          <img v-else :src="require('../assets/avatar.png')" alt="default">
+        </div>
+        <div class="m-t">
+          {{restraint.user.nickname || restraint.user.username}}
+          <div>
+            <span v-for="(role, index) in restraint.user.roles" :key="index">
+              ({{role.display_name}})
+            </span>
+          </div>
+        </div>
+      </div>
+      <div slot="footer" class="m-b actions">
+        <el-button type="danger" @click.native="ban(15)">禁言15分钟</el-button>
+        <el-button type="danger" @click.native="ban(30)">禁言30分钟</el-button>
+        <el-button type="danger" @click.native="block()">加入黑名单</el-button>
+      </div>
+    </el-dialog>
+    <el-dialog
+      :visible.sync="restraint.showManageDialog"
+      width="700px"
+      :modal-append-to-body="true"
+      :append-to-body="true"
+      center>
+      <el-menu :default-active="'0'" class="m-b-xlg" mode="horizontal">
+        <el-menu-item v-for="(tab, index) in restraint.tabs"
+          :key="index"
+          :index="index + ''"
+          @click.native="switchBlockTab(index)">{{tab.display}}</el-menu-item>
+      </el-menu>
+      <el-table
+        :data="restraint.nowTab === '1' ? formattedBannerUsers : blockedUsers"
+        style="width: 100%">
+        <el-table-column
+          prop="username"
+          label="帐号"
+          :width="restraint.nowTab === '0' ? 322 : 215">
+        </el-table-column>
+        <el-table-column
+          v-if="restraint.nowTab === '1'"
+          prop="banned_time"
+          label="时间(min)"
+          width="215">
+        </el-table-column>
+        <el-table-column
+          label="操作"
+          :width="restraint.nowTab === '0' ? 322 : 215">
+          <template slot-scope="scope">
+            <el-button v-if="restraint.nowTab === '1'" size="mini" type="danger" @click.native="unban(scope.row.username)">解除</el-button>
+            <el-button v-else size="mini" type="danger" @click.native="unblock(scope.row.username)">解除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
+
   </div>
 
 </template>
@@ -111,7 +177,7 @@
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/cog'
 import 'vue-awesome/icons/smile-o'
-import { fetchChatEmoji, sendImgToChat } from '../api'
+import { fetchChatEmoji, sendImgToChat, banChatUser, blockChatUser, unbanChatUser, unblockChatUser, getChatUser } from '../api'
 // import { getCookie } from '../utils'
 import config from '../../config'
 const WSHOST = config.chatHost
@@ -138,6 +204,22 @@ export default {
         chat: {
           reasons: []
         }
+      },
+      blockedUsers: [],
+      bannedUsers: [],
+      restraint: {
+        dialogVisible: false,
+        user: '',
+        showManageDialog: false,
+        nowTab: '0',
+        tabs: [
+          {
+            display: '黑名单'
+          },
+          {
+            display: '禁言'
+          }
+        ]
       }
     }
   },
@@ -152,6 +234,24 @@ export default {
     },
     user () {
       return this.$store.state.user
+    },
+    formattedBannerUsers () {
+      let result = []
+      if (this.bannedUsers.length) {
+        this.bannedUsers.forEach((item) => {
+          result.push({
+            username: item.username,
+            banned_time: this.$moment(item.banned_time).fromNow(true)
+          })
+        })
+
+        return result
+      }
+    },
+    myRoles () {
+      if (this.personal_setting.user) {
+        return this.personal_setting.user.roles.map((role) => role.name)
+      }
     }
   },
   created () {
@@ -318,6 +418,96 @@ export default {
       if (this.ws) {
         this.ws.close()
       }
+    },
+    ban (mins) {
+      banChatUser(RECEIVER, {
+        user: this.restraint.user.username,
+        banned_time: mins
+      }).then((data) => {
+        this.restraint.dialogVisible = false
+      }, errorMsg => {
+        this.restraint.dialogVisible = false
+        this.$message({
+          showClose: true,
+          message: errorMsg,
+          type: 'error'
+        })
+      })
+    },
+    unban (user) {
+      unbanChatUser(RECEIVER, {
+        user: user
+      }).then((data) => {
+        this.getUser()
+        this.$message({
+          showClose: true,
+          message: data.data.status,
+          type: 'error'
+        })
+      }, errorMsg => {
+        this.$message({
+          showClose: true,
+          message: errorMsg,
+          type: 'error'
+        })
+      })
+    },
+    block () {
+      blockChatUser(RECEIVER, {
+        user: this.restraint.user.username
+      }).then((data) => {
+        this.restraint.dialogVisible = false
+      }, errorMsg => {
+        this.restraint.dialogVisible = false
+        this.$message({
+          showClose: true,
+          message: errorMsg.response.data.error,
+          type: 'error'
+        })
+      })
+    },
+    unblock (user) {
+      unblockChatUser(RECEIVER, {
+        user: user
+      }).then((data) => {
+        this.getUser()
+        this.$message({
+          showClose: true,
+          message: data.data.status,
+          type: 'error'
+        })
+      }, errorMsg => {
+        this.$message({
+          showClose: true,
+          message: errorMsg,
+          type: 'error'
+        })
+      })
+    },
+    getUser () {
+      this.loading = true
+      getChatUser(1).then(response => {
+        this.bannedUsers = response.banned_users
+        this.blockedUsers = response.block_users
+        this.loading = false
+      })
+    },
+    handleAvatarClick (message) {
+      if (this.myRoles.includes('manager')) {
+        let role = message.sender.roles.map((role) => role.name)
+        if ((this.personal_setting.user.username === message.sender.username) || role.includes('manager')) {
+          return
+        }
+        this.restraint.user = message.sender
+        this.restraint.dialogVisible = true
+      }
+    },
+    switchBlockTab (index) {
+      this.restraint.nowTab = index + ''
+    },
+    openManageDialog () {
+      this.restraint.showManageDialog = true
+      this.getUser()
     }
   }
 }
@@ -797,5 +987,17 @@ export default {
 .popup-uploadedimage {
   width: 100%;
   height: 100%;
+}
+
+.restraint-dialog {
+  .avatar {
+    display: inline-block;
+    width: 120px;
+    img {
+      width: 100%;
+      height: 100%;
+      border-radius: 5px;
+    }
+  }
 }
 </style>
