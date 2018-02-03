@@ -344,7 +344,6 @@ export default {
       })
     },
     block (member) {
-      console.log(member)
       blockChatUser(RECEIVER, {
         user: member.username
       }).then((data) => {
