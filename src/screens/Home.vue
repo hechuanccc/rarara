@@ -31,201 +31,187 @@
       </el-row>
     </el-header>
 
+      <el-container>
+        <el-aside width="250px" class="aside">
+          <el-tabs
+            v-model="activeTab"
+            type="border-card">
+            <el-tab-pane
+              label="在线会员"
+              name="members">
+              <div class="search-form">
+                <el-form>
+                  <el-form-item >
+                    <el-input v-model="nickname_q" placeholder="请输入会员名称" class="ipt-search"></el-input>
+                    <icon class="search-icon fl" name="search" scale="1" @click.native="search"></icon>
+                  </el-form-item>
+                </el-form>
+                <div class="search-tip" v-if="nickname_q && searchEnabled">
+                  搜索 「{{nickname_q}}」
+                  <span class="exit-search" @click="exitSearch">退出搜索</span>
+                </div>
+              </div>
 
-    <el-container>
-      <el-aside width="250px" class="aside">
-        <el-tabs
-          v-model="activeTab"
-          type="border-card"
-          @tab-click="switchTab">
-          <el-tab-pane
-            label="在线会员"
-            name="members">
-            <div class="search-form">
-              <el-form>
-                <el-form-item >
-                  <el-input v-model="nickname_q" placeholder="请输入会员名称" class="ipt-search"></el-input>
-                  <icon class="search-icon fl" name="search" scale="1" @click.native="search"></icon>
+              <ul class="members" v-if="onlineMembers.length">
+                <li v-for="(member, index) in onlineMembers" @click="popoverMember=member" slot="reference">
+                  <el-popover
+                    :ref="'popover' + member.id"
+                    placement="right"
+                    :title="member.nickname || '会员'"
+                    width="150"
+                    trigger="click">
+                    <ul class="member-actions">
+                      <li @click="privateChat(member)" v-if="member.id !== user.id">私聊</li>
+                    </ul>
+                    <div slot="reference">
+                      <img :src="member.avatar_url" class="avatar" v-if="member.avatar_url"/>
+                      <img :src="require('../assets/avatar.png')" v-else class="avatar" />
+                      {{ member.nickname || '会员' }}
+                    </div>
+                  </el-popover>
+                </li>
+                <li v-if="!onlineMembersEnded" class="load-more" @click="fillOnlineMembers">{{ onlineMemberLoading ? '正在加载...' : '查看更多' }}</li>
+              </ul>
+              <div v-else-if="!onlineMemberLoading" class="empty">无结果</div>
+            </el-tab-pane>
+            <el-tab-pane
+              label="聊天列表"
+              name="rooms">
+              <div class="chat-list">
+                <room-list 
+                  :user="user"
+                  :activeRoom="activeRoom"></room-list>
+              </div>
+            </el-tab-pane>
+          </el-tabs>
+        </el-aside>
+
+        <el-main class="chat-area">
+          <chat-room :routeLeave="leave"></chat-room>
+        </el-main>
+
+        <el-aside width="395px" class="aside">
+          <el-tabs type="border-card">
+            <el-tab-pane :label="'在线投注'">
+              <iframe :src="globalPreference.mobile_lottery_url" width="100%" style="height: calc(100vh - 110px)" frameborder="0"></iframe>
+            </el-tab-pane>
+            <el-tab-pane :label="'文字开奖'">
+              <div class="results-container">
+                <component :is="'Result'"></component>
+              </div>
+            </el-tab-pane>
+          </el-tabs>
+        </el-aside>
+
+        <el-dialog
+          title="最新消息"
+          :visible.sync="announcementDialogVisible"
+          :width="'600px'"
+          center>
+          <el-carousel :height="'200px'"
+            v-if="announcementDialogVisible"
+            class="announcement-popup"
+            :initial-index="currentAnnouncementIndex">
+            <el-carousel-item v-for="item in announcements"
+              :key="item.rank">
+              <p class="text-center" key="announcement">
+                {{ item.content }}
+              </p>
+            </el-carousel-item>
+          </el-carousel>
+        </el-dialog>
+        <el-dialog
+          title="用户中心"
+          :visible.sync="showProfileDiag"
+          :width="'600px'"
+          @open="changeProfileRes = ''"
+          center>
+          <div class="edit-profile">
+            <div>
+              <div
+                class="avatar"
+                v-on:mouseover="swichAvatar = true"
+                v-on:mouseout="swichAvatar = false"
+                style="overflow-y: hidden;">
+                <div>
+                  <img v-if="user.avatar && !swichAvatar" :src="currentChooseAvatar || user.avatar" width="72" height="72">
+                  <img v-else-if="!swichAvatar" :src="currentChooseAvatar || require('../assets/avatar.png')" width="72" height="72">
+                </div>
+               
+                <label 
+                  for="preViewAvatar" 
+                  class="upload-avatar">
+                  <input @change="preViewAvatar" type="file" ref="preViewAvatar" class="img-upload-input" id="preViewAvatar" accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif" />
+                  <span v-if="swichAvatar" class="el-icon-upload"></span>
+                </label>
+              </div>
+              <p class="text-center m-b">上传新头像</p>
+              <el-form :model="editUser" status-icon :rules="rules" ref="editUser" :style="{marginLeft: '-20px'}">
+                <el-form-item prop="nickname" label="昵称"  label-width="85px">
+                  <el-input v-model="editUser.nickname"
+                            class="inp">
+                  </el-input>
+                </el-form-item>
+
+                <el-form-item label="邮箱" prop="email" label-width="85px">
+                  <el-input class="input-width" v-model="editUser.email"></el-input>
+                </el-form-item>
+
+                <el-form-item prop="mobile" label="手机" label-width="85px">
+                  <el-input v-model="editUser.mobile"
+                            type="number"
+                            class="inp">
+                  </el-input>
+                </el-form-item>
+
+                <el-form-item prop="QQ" label="QQ"  label-width="85px">
+                  <el-input v-model="editUser.QQ"
+                            type="number"
+                            class="inp">
+                  </el-input>
+                </el-form-item>
+
+                <el-form-item label="登录IP"  label-width="85px">
+                  <p class="member-info">{{user.last_login_ip}}</p>
+                </el-form-item>
+
+                <el-form-item label="注册时间"  label-width="85px">
+                  <p class="member-info">{{user.date_joined | moment('YYYY-MM-HH')}}</p>
+                </el-form-item>
+
+                <el-form-item label="推广链接"  label-width="85px">
+                  <p class="member-info">{{promoteUrl}}</p>
+                </el-form-item>
+                <el-form-item label-width="85px">
+                  <el-button class="profile-submit" type="primary" @click="submit">确认修改</el-button>
+                </el-form-item>
+                <el-form-item label-width="85px">
+                  <p :class="[changeProfileSuccess ? 'text-success' : 'text-danger']">{{changeProfileRes}}</p>
                 </el-form-item>
               </el-form>
-              <div class="search-tip" v-if="nickname_q && searchEnabled">
-                搜索 「{{nickname_q}}」
-                <span class="exit-search" @click="exitSearch">退出搜索</span>
-              </div>
             </div>
-
-            <ul class="members" v-if="onlineMembers.length">
-              <li v-for="(member, index) in onlineMembers" @click="popoverMember=member" slot="reference">
-                <el-popover
-                  :ref="'popover' + member.id"
-                  placement="right"
-                  :title="member.nickname || '会员'"
-                  width="150"
-                  trigger="click">
-                  <ul class="member-actions">
-                    <li @click="privateChat(member)" v-if="member.id !== user.id">私聊</li>
-                  </ul>
-                  <div slot="reference">
-                    <img :src="member.avatar_url" class="avatar" v-if="member.avatar_url"/>
-                    <img :src="require('../assets/avatar.png')" v-else class="avatar" />
-                    {{ member.nickname || '会员' }}
-                  </div>
-                </el-popover>
-              </li>
-              <li v-if="!onlineMembersEnded" class="load-more" @click="fillOnlineMembers">{{ onlineMemberLoading ? '正在加载...' : '查看更多' }}</li>
-            </ul>
-            <div v-else-if="!onlineMemberLoading" class="empty">无结果</div>
-          </el-tab-pane>
-          <el-tab-pane
-            label="聊天列表"
-            name="rooms">
-            <div class="chat-list">
-              <ul class="rooms">
-                <li v-for="(room, index) in roomList" :class="{
-                  active: activeRoomIndex === index,
-                  public: room.type === 1
-                }">
-                  <div class="meta">
-                    <icon class="volume-up" name="comments" scale="1.5" v-if="room.type === 1"></icon>
-                    <span class="title">{{ room.target ? `与 ${room.target.nickname} 的私聊` : room.title}}</span>
-                  </div>
-                  <div v-if="room.last_message">{{room.last_message.content | truncate(25)}}</div>
-                </li>
-              </ul>
-            </div>
-          </el-tab-pane>
-        </el-tabs>
-      </el-aside>
-
-
-      <el-main class="chat-area">
-        <chat-room :routeLeave="leave"></chat-room>
-      </el-main>
-
-      <el-aside width="395px" class="aside">
-        <el-tabs type="border-card">
-          <el-tab-pane :label="'在线投注'">
-            <iframe :src="globalPreference.mobile_lottery_url" width="100%" style="height: calc(100vh - 110px)" frameborder="0"></iframe>
-          </el-tab-pane>
-          <el-tab-pane :label="'文字开奖'">
-            <div class="results-container">
-              <component :is="'Result'"></component>
-            </div>
-          </el-tab-pane>
-        </el-tabs>
-      </el-aside>
-
-      <el-dialog
-        title="最新消息"
-        :visible.sync="announcementDialogVisible"
-        :width="'600px'"
-        center>
-        <el-carousel :height="'200px'"
-          v-if="announcementDialogVisible"
-          class="announcement-popup"
-          :initial-index="currentAnnouncementIndex">
-          <el-carousel-item v-for="item in announcements"
-            :key="item.rank">
-            <p class="text-center" key="announcement">
-              {{ item.content }}
-            </p>
-          </el-carousel-item>
-        </el-carousel>
-      </el-dialog>
-      <el-dialog
-        title="用户中心"
-        :visible.sync="showProfileDiag"
-        :width="'600px'"
-        @open="changeProfileRes = ''"
-        center>
-        <div class="edit-profile">
-          <div>
-            <div
-              class="avatar"
-              v-on:mouseover="swichAvatar = true"
-              v-on:mouseout="swichAvatar = false"
-              style="overflow-y: hidden;">
-              <div>
-                <img v-if="user.avatar && !swichAvatar" :src="currentChooseAvatar || user.avatar" width="72" height="72">
-                <img v-else-if="!swichAvatar" :src="currentChooseAvatar || require('../assets/avatar.png')" width="72" height="72">
-              </div>
-             
-              <label 
-                for="preViewAvatar" 
-                class="upload-avatar">
-                <input @change="preViewAvatar" type="file" ref="preViewAvatar" class="img-upload-input" id="preViewAvatar" accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif" />
-                <span v-if="swichAvatar" class="el-icon-upload"></span>
-              </label>
-            </div>
-            <p class="text-center m-b">上传新头像</p>
-            <el-form :model="editUser" status-icon :rules="rules" ref="editUser" :style="{marginLeft: '-20px'}">
-              <el-form-item prop="nickname" label="昵称"  label-width="85px">
-                <el-input v-model="editUser.nickname"
-                          class="inp">
-                </el-input>
-              </el-form-item>
-
-              <el-form-item label="邮箱" prop="email" label-width="85px">
-                <el-input class="input-width" v-model="editUser.email"></el-input>
-              </el-form-item>
-
-              <el-form-item prop="mobile" label="手机" label-width="85px">
-                <el-input v-model="editUser.mobile"
-                          type="number"
-                          class="inp">
-                </el-input>
-              </el-form-item>
-
-              <el-form-item prop="QQ" label="QQ"  label-width="85px">
-                <el-input v-model="editUser.QQ"
-                          type="number"
-                          class="inp">
-                </el-input>
-              </el-form-item>
-
-              <el-form-item label="登录IP"  label-width="85px">
-                <p class="member-info">{{user.last_login_ip}}</p>
-              </el-form-item>
-
-              <el-form-item label="注册时间"  label-width="85px">
-                <p class="member-info">{{user.date_joined | moment('YYYY-MM-HH')}}</p>
-              </el-form-item>
-
-              <el-form-item label="推广链接"  label-width="85px">
-                <p class="member-info">{{promoteUrl}}</p>
-              </el-form-item>
-              <el-form-item label-width="85px">
-                <el-button class="profile-submit" type="primary" @click="submit">确认修改</el-button>
-              </el-form-item>
-              <el-form-item label-width="85px">
-                <p :class="[changeProfileSuccess ? 'text-success' : 'text-danger']">{{changeProfileRes}}</p>
-              </el-form-item>
-            </el-form>
           </div>
-        </div>
 
-      </el-dialog>
-    </el-container>
-
-    </el-container>
+        </el-dialog>
+      </el-container>
   </el-container>
 </template>
 
 <script>
 import Vue from 'vue'
-import _ from 'lodash'
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/volume-up'
 import 'vue-awesome/icons/mobile-phone'
 import 'vue-awesome/icons/comments'
 import 'vue-awesome/icons/search'
 import ChatRoom from '../components/ChatRoom'
-import { fetchAnnouce, fetchOnlineMembers, createRoom, fetchMemberRoom, updateUser } from '../api'
+import { fetchAnnouce, fetchOnlineMembers, createRoom, updateUser } from '../api'
 import { msgFormatter } from '../utils'
 import { validatePhone, validateQQ } from '../validate'
 import urls from '../api/urls'
 import Result from '../components/Result'
 import { mapState } from 'vuex'
+import RoomList from '../components/RoomList'
 
 Vue.filter('truncate', function (text, stop) {
   return text.slice(0, stop) + (stop < text.length ? '...' : '')
@@ -235,7 +221,8 @@ export default {
   components: {
     Icon,
     ChatRoom,
-    Result
+    Result,
+    RoomList
   },
   data () {
     const qqValidator = (rule, value, callback) => {
@@ -253,7 +240,7 @@ export default {
       }
     }
     return {
-      activeRoomIndex: 0,
+      activeRoom: {},
       popoverMember: {},
       searchEnabled: false,
       activeTab: 'members',
@@ -272,8 +259,6 @@ export default {
       announcementDialogVisible: false,
       memberLimit: 20,
       memberPage: 0,
-      roomLimit: 40,
-      roomPage: 0,
       onlineMemberLoading: false,
       onlineMembersEnded: false,
       roomLoading: false,
@@ -357,12 +342,7 @@ export default {
         .then((res) => {
           this.$set(this.$refs['popover' + member.id][0], 'showPopper', false)
           this.activeTab = 'rooms'
-          this.roomPage = 0
-          this.roomEnded = false
-          this.fillMemberRooms()
-            .then(() => {
-              this.activeRoomIndex = _.findIndex(this.roomList, room => room.id === res.room.id)
-            })
+          this.activeRoom = res.room
         })
     },
     fillOnlineMembers () {
@@ -376,35 +356,6 @@ export default {
           this.onlineMembersEnded = this.memberLimit * (this.memberPage + 1) > this.onlineMembers.length
           this.memberPage += 1
           this.onlineMemberLoading = false
-        })
-    },
-    switchTab (tab) {
-      switch (tab.index) {
-        case '0':
-          return this.fillOnlineMembers()
-        case '1':
-          return this.fillMemberRooms()
-        default:;
-      }
-    },
-    fillMemberRooms () {
-      if (this.roomEnded || this.roomLoading) {
-        return
-      }
-      this.roomLoading = true
-      return fetchMemberRoom(this.roomLimit, this.roomPage)
-        .then(res => {
-          this.roomList = this.roomPage === 0 ? res.results : this.roomList.concat(res.results)
-          this.roomEnded = this.roomLimit * (this.roomPage + 1) > this.roomList.length
-          this.roomPage += 1
-          this.roomLoading = false
-          this.roomList = this.roomList.map(room => {
-            room.users.filter(user => user.id !== this.user.id)
-            return {
-              ...room,
-              target: room.type === 2 ? room.users[0] : undefined
-            }
-          })
         })
     },
     animate () {
@@ -449,6 +400,13 @@ export default {
       }).catch(err => {
         console.log(err)
       })
+    },
+    receiveMember (user) {
+      this.user = user
+      // 登录聊天室后才去出发 RoomList 的获取
+      this.activeRoom = {
+        id: 1
+      }
     },
     logout () {
       this.$store.dispatch('logout')
@@ -645,37 +603,6 @@ export default {
     padding: 10px 0;
   }
 }
-.rooms {
-  margin-top: 10px;
-  height: calc(100vh - 110px);
-  overflow-y: scroll;
-  border-top: 1px solid rgba(255, 255, 255, .2);
-  .fa-icon {
-    vertical-align: middle;
-    fill: #fff;
-  }
-  .title {
-    color: #fff;
-    font-size: 13px;
-    vertical-align: middle;
-  }
-  .public .title {
-    font-size: 14px;
-  }
-  li {
-    color: #ccc;
-    cursor: pointer;
-    padding: 5px 10px;
-    border-bottom: 1px solid rgba(255, 255, 255, .2);
-  }
-  .active {
-    background: #FFB74D;
-    color: #fff;
-  }
-}
-.load-more {
-  text-align: center;
-}
 .empty {
   color: #ccc;
   text-align: center;
@@ -709,11 +636,7 @@ export default {
 .chat-list {
   color: #ccc;
 }
-.default-room {
-  .fa-icon {
-    vertical-align: middle;
-  }
-}
+
 .el-carousel.announcement-popup .el-carousel__button {
   width: 8px;
   height: 8px;
@@ -784,5 +707,4 @@ export default {
   height: calc(100vh - 140px);
   overflow-y: auto;
 }
-
 </style>

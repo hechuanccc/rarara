@@ -204,7 +204,6 @@ export default {
         if (typeof resData.data === 'string') {
           try {
             data = JSON.parse(resData.data)
-            console.log(data)
             if (!data.error_type) {
               if (data.latest_message) {
                 // if (data.latest_message[data.latest_message.length - 1].type === 3) {
@@ -325,7 +324,6 @@ export default {
       this.msgCnt = ''
     },
     leaveRoom () {
-      console.log('in leaveRoom')
       this.messages = []
       this.ws && this.ws.send(JSON.stringify({
         'command': 'leave',

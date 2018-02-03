@@ -49,8 +49,6 @@ export default {
   },
   fetchUser: ({ commit, state }) => {
     return fetchUser().then(res => {
-      console.log('return user data')
-      console.log(res)
       if (res) {
         commit(types.SET_USER, {
           user: {
