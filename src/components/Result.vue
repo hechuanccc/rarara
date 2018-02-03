@@ -117,7 +117,7 @@ export default {
       return new Promise((resolve, reject) => {
         jsonp(`${urls.latest_results}?game_code=${code}`, null, (err, data) => {
           if (err) {
-            clearInterval(clearInterval(this[`timer-${code}`]))
+            clearInterval(this[`timer-${code}`])
           } else {
             let formatted = JSON.parse(encoded(data))
 
