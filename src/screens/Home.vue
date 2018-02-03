@@ -326,7 +326,6 @@ export default {
   },
   methods: {
     ban (member, mins) {
-      console.log(member)
       banChatUser(RECEIVER, {
         user: member.username,
         banned_time: mins
