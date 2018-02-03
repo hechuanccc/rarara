@@ -5,7 +5,6 @@
          <el-container>
            <el-header class="login-head">
              <div class="title">会员登录</div>
-             <el-button type="warning" class="kf">客服中心</el-button>
            </el-header>
            <el-main>
              <div class="login">
@@ -24,6 +23,9 @@
                              class="inp">
                    </el-input>
                  </el-form-item>
+                 <transition name="el-fade-in">
+                   <span class="error" v-if="errorMsg">{{errorMsg}}</span>
+                 </transition>
                  <div class="login-actions">
                    <el-form-item>
                      <el-button type="primary" @click="submit">登录</el-button>
@@ -34,10 +36,6 @@
                 <div class="tip">还没有账号？</div>
                 <router-link to="/register"><el-button type="primary" plain>立即注册</el-button></router-link>
                </div>
-
-               <transition name="el-fade-in">
-                 <span class="error" v-if="errorMsg">{{errorMsg}}</span>
-               </transition>
              </div>
            </el-main>
          </el-container>
@@ -119,7 +117,6 @@ export default {
   margin-top: 20px;
   text-align: center;
   .title {
-    margin-left: 25%;
     line-height: 40px;
     display: inline-block;
     font-size: 20px;
@@ -179,7 +176,7 @@ export default {
 .error {
   display: block;
   font-size: 13px;
-  text-align: center;
+  padding-left: 65px;
   color: red;
 }
 .footer {

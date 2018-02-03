@@ -31,13 +31,11 @@
       </el-row>
     </el-header>
 
-
     <el-container>
       <el-aside width="250px" class="aside">
         <el-tabs
           v-model="activeTab"
-          type="border-card"
-          @tab-click="switchTab">
+          type="border-card">
           <el-tab-pane
             label="在线会员"
             name="members">
@@ -80,23 +78,13 @@
             label="聊天列表"
             name="rooms">
             <div class="chat-list">
-              <ul class="rooms">
-                <li v-for="(room, index) in roomList" :class="{
-                  active: activeRoomIndex === index,
-                  public: room.type === 1
-                }">
-                  <div class="meta">
-                    <icon class="volume-up" name="comments" scale="1.5" v-if="room.type === 1"></icon>
-                    <span class="title">{{ room.target ? `与 ${room.target.nickname} 的私聊` : room.title}}</span>
-                  </div>
-                  <div v-if="room.last_message">{{room.last_message.content | truncate(25)}}</div>
-                </li>
-              </ul>
+              <room-list 
+                :user="user"
+                :activeRoom="activeRoom"></room-list>
             </div>
           </el-tab-pane>
         </el-tabs>
       </el-aside>
-
 
       <el-main class="chat-area">
         <chat-room @receiveMember="receiveMember"></chat-room>
@@ -132,15 +120,12 @@
           </el-carousel-item>
         </el-carousel>
       </el-dialog>
-
-
     </el-container>
   </el-container>
 </template>
 
 <script>
 import Vue from 'vue'
-import _ from 'lodash'
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/volume-up'
 import 'vue-awesome/icons/mobile-phone'
@@ -149,8 +134,10 @@ import 'vue-awesome/icons/search'
 import MarqueeTips from 'vue-marquee-tips'
 import ChatRoom from '../components/ChatRoom'
 import Result from '../components/Result'
-import { fetchAnnouce, fetchOnlineMembers, createRoom, fetchMemberRoom } from '../api'
+import { fetchAnnouce, fetchOnlineMembers, createRoom } from '../api'
 import { mapState } from 'vuex'
+import RoomList from '../components/RoomList'
+
 Vue.filter('truncate', function (text, stop) {
   return text.slice(0, stop) + (stop < text.length ? '...' : '')
 })
@@ -161,12 +148,13 @@ export default {
     Icon,
     MarqueeTips,
     ChatRoom,
-    Result
+    Result,
+    RoomList
   },
   data () {
     return {
       user: {},
-      activeRoomIndex: 0,
+      activeRoom: {},
       popoverMember: {},
       searchEnabled: false,
       activeTab: 'members',
@@ -180,14 +168,9 @@ export default {
       announcementDialogVisible: false,
       memberLimit: 20,
       memberPage: 0,
-      roomLimit: 40,
-      roomPage: 0,
       onlineMemberLoading: false,
       onlineMembersEnded: false,
-      roomLoading: false,
-      roomEnded: false,
-      onlineMembers: [],
-      roomList: []
+      onlineMembers: []
     }
   },
   computed: {
@@ -231,12 +214,7 @@ export default {
         .then((res) => {
           this.$set(this.$refs['popover' + member.id][0], 'showPopper', false)
           this.activeTab = 'rooms'
-          this.roomPage = 0
-          this.roomEnded = false
-          this.fillMemberRooms()
-            .then(() => {
-              this.activeRoomIndex = _.findIndex(this.roomList, room => room.id === res.room.id)
-            })
+          this.activeRoom = res.room
         })
     },
     fillOnlineMembers () {
@@ -250,35 +228,6 @@ export default {
           this.onlineMembersEnded = this.memberLimit * (this.memberPage + 1) > this.onlineMembers.length
           this.memberPage += 1
           this.onlineMemberLoading = false
-        })
-    },
-    switchTab (tab) {
-      switch (tab.index) {
-        case '0':
-          return this.fillOnlineMembers()
-        case '1':
-          return this.fillMemberRooms()
-        default:;
-      }
-    },
-    fillMemberRooms () {
-      if (this.roomEnded || this.roomLoading) {
-        return
-      }
-      this.roomLoading = true
-      return fetchMemberRoom(this.roomLimit, this.roomPage)
-        .then(res => {
-          this.roomList = this.roomPage === 0 ? res.results : this.roomList.concat(res.results)
-          this.roomEnded = this.roomLimit * (this.roomPage + 1) > this.roomList.length
-          this.roomPage += 1
-          this.roomLoading = false
-          this.roomList = this.roomList.map(room => {
-            room.users.filter(user => user.id !== this.user.id)
-            return {
-              ...room,
-              target: room.type === 2 ? room.users[0] : undefined
-            }
-          })
         })
     },
     animate () {
@@ -319,6 +268,10 @@ export default {
     },
     receiveMember (user) {
       this.user = user
+      // 登录聊天室后才去出发 RoomList 的获取
+      this.activeRoom = {
+        id: 1
+      }
     },
     logout () {
       this.$store.dispatch('logout')
@@ -451,37 +404,6 @@ export default {
     padding: 10px 0;
   }
 }
-.rooms {
-  margin-top: 10px;
-  height: calc(100vh - 110px);
-  overflow-y: scroll;
-  border-top: 1px solid rgba(255, 255, 255, .2);
-  .fa-icon {
-    vertical-align: middle;
-    fill: #fff;
-  }
-  .title {
-    color: #fff;
-    font-size: 13px;
-    vertical-align: middle;
-  }
-  .public .title {
-    font-size: 14px;
-  }
-  li {
-    color: #ccc;
-    cursor: pointer;
-    padding: 5px 10px;
-    border-bottom: 1px solid rgba(255, 255, 255, .2);
-  }
-  .active {
-    background: #FFB74D;
-    color: #fff;
-  }
-}
-.load-more {
-  text-align: center;
-}
 .empty {
   color: #ccc;
   text-align: center;
@@ -515,11 +437,7 @@ export default {
 .chat-list {
   color: #ccc;
 }
-.default-room {
-  .fa-icon {
-    vertical-align: middle;
-  }
-}
+
 .el-carousel.announcement-popup .el-carousel__button {
   width: 8px;
   height: 8px;
@@ -531,5 +449,4 @@ export default {
   height: calc(100vh - 140px);
   overflow-y: auto;
 }
-
 </style>

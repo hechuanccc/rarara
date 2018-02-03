@@ -26,7 +26,7 @@ export function fetchMemberRoom (limit, page) {
 export function createRoom (users) {
   return axios.post(urls.room, {
     users: users,
-    type: 2,
+    type: 3,
     status: 1
   })
 }

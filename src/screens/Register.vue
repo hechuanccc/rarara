@@ -5,7 +5,6 @@
         <el-container>
           <el-header class="login-head">
             <div class="title">会员注册</div>
-            <el-button type="warning" class="kf">客服中心</el-button>
           </el-header>
           <el-main>
             <div class="register">
@@ -309,7 +308,6 @@
   margin-top: 20px;
   text-align: center;
   .title {
-    margin-left: 23%;
     line-height: 40px;
     display: inline-block;
     font-size: 20px;
