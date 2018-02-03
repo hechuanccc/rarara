@@ -106,9 +106,10 @@ export default {
           type: 'error'
         })
       }, errorMsg => {
+        let data = errorMsg.response.data
         this.$message({
           showClose: true,
-          message: errorMsg,
+          message: data.error,
           type: 'error'
         })
       })
@@ -138,9 +139,10 @@ export default {
           type: 'error'
         })
       }, errorMsg => {
+        let data = errorMsg.response.data
         this.$message({
           showClose: true,
-          message: errorMsg,
+          message: data.error,
           type: 'error'
         })
       })
