@@ -23,5 +23,14 @@ export default {
   },
   [types.SET_GLOBAL]: (state, data) => {
     state.globalPreference = data
+  },
+  [types.UPDATE_ROOMLIST]: (state, data) => {
+    state.roomList = data || []
+  },
+  [types.UPDATE_NOW_ROOM_ID]: (state, data) => {
+    state.activeRoomId = data || 1
+  },
+  [types.NEW_MESSAGE]: (state, data) => {
+    state.newMsg = data || {}
   }
 }

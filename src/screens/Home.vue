@@ -64,7 +64,7 @@
                       <li @click="privateChat(member)" v-if="member.id !== user.id">私聊</li>
                     </ul>
                     <div slot="reference">
-                      <img :src="member.avatar_url" class="avatar" v-if="member.avatar_url"/>
+                      <img :src="member.avatar" class="avatar" v-if="member.avatar"/>
                       <img :src="require('../assets/avatar.png')" v-else class="avatar" />
                       {{ member.nickname || '会员' }}
                     </div>
@@ -80,6 +80,7 @@
               <div class="chat-list">
                 <room-list 
                   :user="user"
+                  ref="roomList"
                   :activeRoom="activeRoom"></room-list>
               </div>
             </el-tab-pane>
@@ -97,7 +98,7 @@
             </el-tab-pane>
             <el-tab-pane :label="'文字开奖'">
               <div class="results-container">
-                <component :is="'Result'"></component>
+                <!-- <component :is="'Result'"></component> -->
               </div>
             </el-tab-pane>
           </el-tabs>
@@ -285,7 +286,8 @@ export default {
       },
       currentChooseAvatar: '',
       changeProfileSuccess: true,
-      changeProfileRes: ''
+      changeProfileRes: '',
+      createRoomLoading: false
     }
   },
   computed: {
@@ -307,6 +309,16 @@ export default {
     },
     promoteUrl () {
       return this.user.promote_code ? window.location.origin + '?r' + this.user.promote_code : ''
+    },
+    test () {
+      return this.$store.state
+    }
+  },
+  watch: {
+    'activeTab': function (val, oldVal) {
+      if (val === 'rooms') {
+        this.initRoomList()
+      }
     }
   },
   created () {
@@ -338,11 +350,13 @@ export default {
       if (member.id === this.user.id) {
         return
       }
+      this.createRoomLoading = true
       createRoom([member.id, this.user.id])
         .then((res) => {
           this.$set(this.$refs['popover' + member.id][0], 'showPopper', false)
           this.activeTab = 'rooms'
           this.activeRoom = res.room
+          this.createRoomLoading = false
         })
     },
     fillOnlineMembers () {
@@ -473,10 +487,12 @@ export default {
         return
       }
       this.currentChooseAvatar = URL.createObjectURL(file)
+    },
+    initRoomList () {
+      // this.$refs.roomList.roomEnded = false
+      // this.$refs.roomList.roomPage = 0
+      this.$refs.roomList.fillMemberRooms()
     }
-  },
-  openPersonCenter () {
-    this.changeProfileRes = ''
   }
 }
 </script>

@@ -3,7 +3,7 @@
     <li v-for="(room, index) in roomList" :class="{
       active: activeRoomIndex === index,
       public: room.type === 1
-    }">
+    }" @click="switchRoom(room, index)">
       <div class="meta">
         <icon class="volume-up" name="comments" scale="1.5" v-if="room.type === 1"></icon>
         <span class="title">{{ room.target ? `与 ${room.target.nickname || '会员'} 的私聊` : room.title}}</span>
@@ -41,17 +41,27 @@ export default {
     }
   },
   watch: {
-    activeRoom () {
+    activeRoom (val, oldVal) {
       this.roomEnded = false
       this.roomPage = 0
       this.fillMemberRooms()
         .then(() => {
           this.activeRoomIndex = _.findIndex(this.roomList, room => room.id === this.activeRoom.id)
+          this.$store.commit('UPDATE_NOW_ROOM_ID', this.roomList[this.activeRoomIndex].id)
         })
+    },
+    '$store.state.newMsg': {
+      handler: function (val, oldVal) {
+        this.roomList.forEach((item, index) => {
+          if (item.id === val.id) {
+            item.last_message.content = val.content
+          }
+        })
+      },
+      deep: true
     }
   },
   created () {
-    this.fillMemberRooms()
   },
   methods: {
     fillMemberRooms () {
@@ -72,7 +82,12 @@ export default {
               target: room.type !== 1 ? room.users[0] : undefined
             }
           })
+          this.$store.commit('UPDATE_ROOMLIST', this.roomList)
         })
+    },
+    switchRoom (room, index) {
+      this.$store.commit('UPDATE_NOW_ROOM_ID', room.id)
+      this.activeRoomIndex = index
     }
   }
 }

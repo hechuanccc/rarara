@@ -13,7 +13,10 @@ export function createStore () {
         logined: ''
       },
       loading: false,
-      globalPreference: {}
+      globalPreference: {},
+      roomList: [],
+      activeRoomId: 1,
+      newMsg: {}
     },
     actions,
     mutations,
