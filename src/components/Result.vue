@@ -202,15 +202,21 @@ export default {
 .information {
   display: inline-block;
   width: 100%;
-  vertical-align: super;
+  height: 28px;
+  overflow: hidden;
   text-align: justify;
   &:after {
     content: '';
+    font-size: 0;
+    line-height: 0;
     display: inline-block;
     width: 100%;
   }
   .text {
     display: inline-block;
+  }
+  .name, .issue {
+    font-size: 14px;
   }
 }
 
