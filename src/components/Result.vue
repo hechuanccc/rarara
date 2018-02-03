@@ -94,7 +94,7 @@ export default {
     pollResults (game) {
       clearInterval(this[`timer-${game.code}`])
 
-      this.issueInterval = setInterval(() => {
+      this[`issueInterval-${game.code}`] = setInterval(() => {
         this.fetchResults(game.code).then(data => {
           let newResult = data[0]
           let oldIssue = this.resultsMap[game.code].oldIssue
@@ -107,7 +107,7 @@ export default {
               nextDraw: newResult.next_draw_time
             })
 
-            clearInterval(this.issueInterval)
+            clearInterval(this[`issueInterval-${game.code}`])
             this.startCountdown(newResult)
           }
         })
@@ -186,6 +186,7 @@ export default {
   beforeDestroy () {
     _.each(this.codes, (code) => {
       clearInterval(this[`timer-${code}`])
+      clearInterval(this[`issueInterval-${code}`])
     })
   }
 }
