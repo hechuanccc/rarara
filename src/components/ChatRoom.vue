@@ -94,7 +94,7 @@
       width="640px"
       custom-class="show-image-msg text-center"
       append-to-body>
-      <img :src="showImageMsgUrl">
+      <img :src="showImageMsgUrl" width="90%">
     </el-dialog>
     <el-dialog :visible.sync="errMsg"
       width="400px"
@@ -141,9 +141,17 @@ export default {
       }
     }
   },
+  props: {
+    routeLeave: {
+      type: Boolean,
+      default: false
+    }
+  },
   watch: {
-    'user.showChatRoom' (val, oldVal) {
-      this.leaveRoom()
+    'routeLeave' (val, oldVal) {
+      if (val) {
+        this.leaveRoom()
+      }
     }
   },
   computed: {
@@ -155,7 +163,11 @@ export default {
     }
   },
   created () {
-    this.joinChatRoom()
+    if (this.$route.name !== 'Home') {
+      this.leaveRoom()
+    } else {
+      this.joinChatRoom()
+    }
   },
   methods: {
     joinChatRoom () {
@@ -192,6 +204,7 @@ export default {
         if (typeof resData.data === 'string') {
           try {
             data = JSON.parse(resData.data)
+            console.log(data)
             if (!data.error_type) {
               if (data.latest_message) {
                 // if (data.latest_message[data.latest_message.length - 1].type === 3) {
@@ -208,7 +221,6 @@ export default {
                 return
               } else if (data.personal_setting) {
                 this.personal_setting = data.personal_setting
-                this.$emit('receiveMember', data.personal_setting.user)
                 this.$store.commit('SET_USER', data.personal_setting.user)
               } else {
                 switch (data.type) {
@@ -301,6 +313,9 @@ export default {
     },
     sendMsg () {
       if (!this.msgCnt.trim()) { return false }
+      if (!this.ws) {
+        return this.joinChatRoom()
+      }
       this.ws.send(JSON.stringify({
         'command': 'send',
         'receivers': [RECEIVER],
@@ -309,7 +324,8 @@ export default {
       }))
       this.msgCnt = ''
     },
-    leaveRoom (n) {
+    leaveRoom () {
+      console.log('in leaveRoom')
       this.messages = []
       this.ws && this.ws.send(JSON.stringify({
         'command': 'leave',

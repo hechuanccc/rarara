@@ -49,16 +49,18 @@ export default {
   },
   fetchUser: ({ commit, state }) => {
     return fetchUser().then(res => {
-      if (res.length > 0) {
+      console.log('return user data')
+      console.log(res)
+      if (res) {
         commit(types.SET_USER, {
           user: {
-            ...res[0],
+            ...res,
             logined: true
           }
         })
-        return Promise.resolve(res[0])
+        return Promise.resolve(res)
       } else {
-        return Promise.reject(res[0])
+        return Promise.reject(res)
       }
     }, error => {
       commit(types.SET_USER, {
@@ -75,11 +77,5 @@ export default {
         user: data
       })
     })
-  },
-  startLoading: ({ commit }) => {
-    commit(types.START_LOADING)
-  },
-  endLoading: ({ commit }) => {
-    commit(types.END_LOADING)
   }
 }
