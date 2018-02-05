@@ -7,7 +7,7 @@
       element-loading-text="正在登录计划聊天室">
       <el-main class="content" id="chatBox">
         <ul class="lay-scroll">
-          <li v-for="(item, index) in messages"
+          <li v-for="(item, index) in roomMessages[activeRoomId]"
             :key="index"
             :class="
               ['clearfix',
@@ -134,7 +134,6 @@ import { fetchChatEmoji, sendImgToChat, getChatUser } from '../api'
 import config from '../../config'
 import Restraint from './Restraint'
 const WSHOST = config.chatHost
-const RECEIVER = 1
 
 export default {
   components: {
@@ -144,7 +143,6 @@ export default {
   data () {
     return {
       ws: null,
-      messages: [],
       msgCnt: '',
       errMsg: false,
       errMsgCnt: '',
@@ -154,7 +152,7 @@ export default {
       emojis: {
         people: []
       },
-      RECEIVER,
+      RECEIVER: 1,
       personal_setting: {
         chat: {
           reasons: []
@@ -176,7 +174,9 @@ export default {
             display: '禁言'
           }
         ]
-      }
+      },
+      roomMessages: {},
+      num: 0
     }
   },
   props: {
@@ -190,6 +190,25 @@ export default {
       if (val) {
         this.leaveRoom()
       }
+    },
+    '$store.state.roomList' (val, oldVal) {
+      let roomList = this.$store.state.roomList
+      roomList.forEach((item, index) => {
+        this.roomMessages[item.id] = this.roomMessages[item.id] ? this.roomMessages[item.id] : []
+      })
+    },
+    '$store.state.activeRoomId' (val, oldVal) {
+      this.RECEIVER = val
+      this.$nextTick(() => {
+        this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
+      })
+    },
+    'roomMessages': {
+      handler: function (val, oldVal) {
+        this.num++
+        this.msgCnt = ' '
+      },
+      deep: true
     }
   },
   computed: {
@@ -216,6 +235,9 @@ export default {
       if (this.personal_setting.user) {
         return this.personal_setting.user.roles.map((role) => role.name)
       }
+    },
+    activeRoomId () {
+      return this.$store.state.activeRoomId
     }
   },
   created () {
@@ -256,23 +278,35 @@ export default {
       if (!this.ws) { return false }
       this.ws.send(JSON.stringify({
         'command': 'join',
-        'receivers': [RECEIVER]
+        'receivers': [this.RECEIVER]
       }))
       this.ws.onmessage = (resData) => {
         let data
         if (typeof resData.data === 'string') {
           try {
             data = JSON.parse(resData.data)
+            console.log(data)
             if (!data.error_type) {
-              if (data.latest_message) {
+              let latestMsg = data.latest_message
+              if (latestMsg) {
                 // if (data.latest_message[data.latest_message.length - 1].type === 3) {
                 //   let annouce = data.latest_message.pop()
                 //   this.announcement = annouce.content
                 // }
-                this.messages = this.messages.concat(data.latest_message.reverse())
-                this.messages = this.messages.concat([{
-                  type: -1
-                }])
+                if (data.count) {
+                  let lastMsg = latestMsg[0]
+                  // this.$set(this.roomMessages[lastMsg.receivers]) = latestMsg.reverse().concat([{
+                  //   type: -1
+                  // }])
+                  this.$set(this.roomMessages, lastMsg.receivers, latestMsg.reverse().concat([{
+                    type: -1
+                  }]))
+                  // this.$set(this.$refs['popover' + member.id][0], 'showPopper', false)
+                }
+                // this.messages = this.messages.concat(data.latest_message.reverse())
+                // this.messages = this.messages.concat([{
+                //   type: -1
+                // }])
                 this.$nextTick(() => {
                   this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
                 })
@@ -305,7 +339,11 @@ export default {
                   //   this.announcement = data.content
                   //   return
                   default:
-                    this.messages.push(data)
+                    this.roomMessages[this.activeRoomId].push(data)
+                    this.$store.commit('NEW_MESSAGE', {
+                      id: data.receivers,
+                      content: data.content
+                    })
                 }
 
                 let chatBox = document.getElementById('chatBox')
@@ -363,7 +401,7 @@ export default {
         return
       }
       let formData = new FormData()
-      formData.append('receiver', RECEIVER)
+      formData.append('receiver', this.RECEIVER)
       formData.append('image', file)
       sendImgToChat(formData).then((data) => {
         fileInp.value = ''
@@ -376,7 +414,7 @@ export default {
       }
       this.ws.send(JSON.stringify({
         'command': 'send',
-        'receivers': [RECEIVER],
+        'receivers': [this.RECEIVER],
         'type': 0,
         'content': this.msgCnt
       }))
@@ -386,7 +424,7 @@ export default {
       this.messages = []
       this.ws && this.ws.send(JSON.stringify({
         'command': 'leave',
-        'receivers': [RECEIVER]
+        'receivers': [this.RECEIVER]
       }))
       if (this.ws) {
         this.ws.close()
