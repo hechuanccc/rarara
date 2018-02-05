@@ -101,7 +101,7 @@
             </el-tab-pane>
             <el-tab-pane :label="'文字开奖'">
               <div class="results-container" v-if="lasyLoadResult">
-                <!-- <component :is="'Result'"></component> -->
+                <result></result>
               </div>
             </el-tab-pane>
           </el-tabs>
@@ -534,7 +534,7 @@ export default {
       this.$refs.roomList.fillMemberRooms()
     },
     loadResult (tab) {
-      if (tab.index === 1) {
+      if (tab.index === '1') {
         this.lasyLoadResult = true
       }
     }
