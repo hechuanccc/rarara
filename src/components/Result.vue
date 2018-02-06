@@ -139,7 +139,6 @@ export default {
             console.error(err, 'err') // error handling
           } else {
             let formatted = JSON.parse(encoded(data))
-            console.log(formatted)
 
             _.each(formatted, (game, index) => {
               game.code = this.codes[index].code
