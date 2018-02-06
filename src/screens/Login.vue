@@ -5,6 +5,7 @@
          <el-container>
            <el-header class="login-head">
              <div class="title">会员登录</div>
+             <a :href="$store.state.globalPreference.customer_service_url" target="_blank" class="service">客服中心</a>
            </el-header>
            <el-main>
              <div class="login">
@@ -124,12 +125,18 @@ export default {
       color: #9b9b9b;
     }
   }
-  .kf {
-    float: right;
+  .service {
+    position: absolute;
+    right: 15px;
+    top: 20px;
     width: 100px;
     height: 40px;
+    line-height: 40px;
     border-radius: 2px;
+    font-size: 14px;
+    font-weight: 500;
     background-color: #f57723;
+    color: #ffffff;
   }
 }
 

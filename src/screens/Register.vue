@@ -5,6 +5,8 @@
         <el-container>
           <el-header class="login-head">
             <div class="title">会员注册</div>
+            <div class="tip m-t-sm"><router-link to="/login">已有账号? 立即登录</router-link></div>
+            <a :href="$store.state.globalPreference.customer_service_url" target="_blank" class="service">客服中心</a>
           </el-header>
           <el-main>
             <div class="register">
@@ -67,10 +69,6 @@
                   </el-form-item>
                 </div>
               </el-form>
-              <div class="login-link">
-                <div class="tip">已有账号</div>
-                <router-link to="/login"><el-button type="primary" plain>立即登录</el-button></router-link>
-              </div>
               <transition name="el-fade-in">
                 <span class="error" v-if="errorMsg">{{errorMsg}}</span>
               </transition>
@@ -324,12 +322,18 @@
       color: #9b9b9b;
     }
   }
-  .kf {
-    float: right;
+  .service {
+    position: absolute;
+    right: 15px;
+    top: 20px;
     width: 100px;
     height: 40px;
+    line-height: 40px;
     border-radius: 2px;
+    font-size: 14px;
+    font-weight: 500;
     background-color: #f57723;
+    color: #ffffff;
   }
 }
 
@@ -359,15 +363,12 @@
     text-decoration: none;
   }
 }
-.login-link {
-  .tip {
-    color: #999;
-    width: 220px;
-    text-align: center;
-    margin: 20px 0 10px;
+.tip {
+  text-align: center;
+  font-size: 14px;
+  a {
+    color:  #4a90e2;
   }
-  margin-bottom: 30px;
-  padding-left: 85px;
 }
 .register-actions {
   padding-left: 85px;

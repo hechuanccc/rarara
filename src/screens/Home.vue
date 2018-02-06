@@ -1,10 +1,10 @@
 <template>
-  <el-container class="chat-box">
+  <el-container class="chat-box" :style="{backgroundImage: `url(${globalPreference.web_background})`}">
     <el-header class="header" height="50px">
       <el-row>
-        <el-col :span="4" class="logo clearfix">
+        <el-col :span="4" class="logo clearfix" :style="{backgroundImage: `url(${globalPreference.logo})`}">
         </el-col>
-        <el-col :span="16">
+        <el-col :span="14">
           <div class="annouce-box clearfix" @click="announcementDialogVisible = true">
             <div class="title clearfix fl">
               <span>公告</span>
@@ -21,7 +21,14 @@
             </div>
           </div>
         </el-col>
-        <el-col class="head-right" :span="4">
+        <el-col class="head-right" :span="6">
+          <div class="mobile-promotion" @mouseover="showQR = true" @mouseleave="showQR = false">
+            <icon class="icon m-r" name="mobile-phone" scale="2"></icon>
+            <span class="text">手机版聊天室</span>
+          </div>
+          <div class="qrcode" v-show="showQR">
+            <qr-code :text="globalPreference.mobile_url"></qr-code>
+          </div>
           <div class="user-info">
             <img @click="showProfileDiag = true" :src="user.avatar ? user.avatar : require('../assets/avatar.png')" width="25">
             <span @click="showProfileDiag = true" class="username">{{user.nickname || user.username}}</span>
@@ -197,9 +204,9 @@
               </el-form>
             </div>
           </div>
-
         </el-dialog>
       </el-container>
+
   </el-container>
 </template>
 
@@ -294,7 +301,8 @@ export default {
       changeProfileSuccess: true,
       changeProfileRes: '',
       createRoomLoading: false,
-      lasyLoadResult: false
+      lasyLoadResult: false,
+      showQR: false
     }
   },
   computed: {
@@ -604,7 +612,9 @@ export default {
 .chat-box {
   width: 100%;
   height: 100%;
-  background: url('../assets/chat_bg.jpg') 0px 0px / 100% 100% no-repeat scroll rgb(64, 128, 128);
+  background-color: rgba(0, 0, 0, .5);
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 .header {
   height: 50px;
@@ -618,8 +628,9 @@ export default {
     }
   }
   .logo {
-    background: url('../assets/logo.png') center center no-repeat;
+    background-position: center center;
     background-size: contain;
+    background-repeat: no-repeat;
     height: 50px;
     h1 {
       text-indent: -999px;
@@ -670,6 +681,12 @@ export default {
   img {
     vertical-align: middle;
     display: inline-block;
+  }
+  .mobile-promotion {
+    display: inline-block;
+    .icon, .text {
+      vertical-align: middle;
+    }
   }
   .user-info {
     float: right;
@@ -822,4 +839,13 @@ export default {
   height: calc(100vh - 140px);
   overflow-y: auto;
 }
+.qrcode {
+  position: absolute;
+  z-index: 3;
+  img {
+    width: 280px;
+    height: 280px;
+  }
+}
+
 </style>

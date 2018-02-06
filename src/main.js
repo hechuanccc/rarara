@@ -13,12 +13,14 @@ import 'element-ui/lib/theme-chalk/index.css'
 import Vue2Filters from 'vue2-filters'
 import { fetchGlobalData } from './api'
 import qs from 'qs'
+import VueQRCodeComponent from 'vue-qrcode-component'
 
 Vue.use(require('vue-moment'))
 Vue.use(Vue2Filters)
 Vue.use(ElementUI, { size: 'small' })
 Vue.use(VueCookie)
 Vue.use(Vuex)
+Vue.component('qr-code', VueQRCodeComponent)
 
 let url = window.location.href
 let params = qs.parse(url.slice(url.indexOf('?') + 1, url.length))
@@ -112,8 +114,14 @@ fetchGlobalData().then(res => {
   store.dispatch('setGlobalConfig', {
     mobile_lottery_url: globalData.mobile_lottery_url,
     customer_service_url: globalData.customer_service_url,
-    web_lottery_register_url: globalData.web_lottery_register_url
+    web_lottery_register_url: globalData.web_lottery_register_url,
+    logo: globalData.logo,
+    private_chat_blocked_users: globalData.private_chat_blocked_users,
+    title: globalData.title,
+    web_background: globalData.web_background,
+    mobile_url: globalData.mobile_url
   })
+  document.title = store.state.globalPreference.title
 })
 
 Vue.mixin({
