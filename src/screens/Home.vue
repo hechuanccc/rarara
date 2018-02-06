@@ -53,7 +53,7 @@
               </div>
 
               <ul class="members" v-if="onlineMembers.length">
-                <li v-for="(member, index) in onlineMembers" @click="popoverMember=member" slot="reference">
+                <li v-for="(member, index) in onlineMembers" @click="popoverMember = member" :key="index">
                   <el-popover
                     :ref="'popover' + member.id"
                     placement="right"
@@ -101,7 +101,7 @@
             </el-tab-pane>
             <el-tab-pane :label="'文字开奖'">
               <div class="results-container">
-                <!-- <component :is="'Result'"></component> -->
+                <Result/>
               </div>
             </el-tab-pane>
           </el-tabs>
