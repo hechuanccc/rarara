@@ -79,6 +79,12 @@ $plaingameslength: length($plainballgames);
   margin-left: 15px;
 }
 @for $num from 1 through 49 {
+  @if $num < 10 {
+    .hkl-0#{$num} {
+      @extend %hkl-ball;
+      background-position: 0 (-27px * ($num - 1));
+    }
+  }
   &.hkl-#{$num} {
     @extend %hkl-ball;
     background-position: 0 (-27px * ($num - 1));

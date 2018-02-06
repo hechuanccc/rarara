@@ -111,7 +111,7 @@ export default {
             this.startCountdown(newResult)
           }
         })
-      }, 1000)
+      }, 3000)
     },
     fetchResults (code) {
       return new Promise((resolve, reject) => {

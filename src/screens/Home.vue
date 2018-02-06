@@ -555,14 +555,11 @@ export default {
     }
   }
   .logo {
-    background: url('../assets/logo_chat.png') no-repeat 0 center;
+    background: url('../assets/logo.png') center center no-repeat;
+    background-size: contain;
     height: 50px;
     h1 {
       text-indent: -999px;
-    }
-    .mobile-phone {
-      padding-left: 230px;
-      padding-right: 10px;
     }
     a {
       padding-top: 6px;
