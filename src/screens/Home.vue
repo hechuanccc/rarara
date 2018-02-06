@@ -4,7 +4,7 @@
       <el-row>
         <el-col :span="4" class="logo clearfix">
         </el-col>
-        <el-col :span="16">
+        <el-col :span="14">
           <div class="annouce-box clearfix" @click="announcementDialogVisible = true">
             <div class="title clearfix fl">
               <span>公告</span>
@@ -21,7 +21,14 @@
             </div>
           </div>
         </el-col>
-        <el-col class="head-right" :span="4">
+        <el-col class="head-right" :span="6">
+          <div class="mobile-promotion" @mouseover="showQR = true" @mouseleave="showQR = false">
+            <icon class="icon m-r" name="mobile-phone" scale="2"></icon>
+            <span class="text">手机版聊天室</span>
+          </div>
+          <div class="qrcode" v-show="showQR">
+            <qr-code :text="$store.state.globalPreference.mobile_url"></qr-code>
+          </div>
           <div class="user-info">
             <img @click="showProfileDiag = true" :src="user.avatar ? user.avatar : require('../assets/avatar.png')" width="25">
             <span @click="showProfileDiag = true" class="username">{{user.nickname || user.username}}</span>
@@ -197,9 +204,9 @@
               </el-form>
             </div>
           </div>
-
         </el-dialog>
       </el-container>
+
   </el-container>
 </template>
 
@@ -294,7 +301,8 @@ export default {
       changeProfileSuccess: true,
       changeProfileRes: '',
       createRoomLoading: false,
-      lasyLoadResult: false
+      lasyLoadResult: false,
+      showQR: false
     }
   },
   computed: {
@@ -671,6 +679,12 @@ export default {
     vertical-align: middle;
     display: inline-block;
   }
+  .mobile-promotion {
+    display: inline-block;
+    .icon, .text {
+      vertical-align: middle;
+    }
+  }
   .user-info {
     float: right;
     cursor: pointer;
@@ -822,4 +836,13 @@ export default {
   height: calc(100vh - 140px);
   overflow-y: auto;
 }
+.qrcode {
+  position: absolute;
+  z-index: 3;
+  img {
+    width: 280px;
+    height: 280px;
+  }
+}
+
 </style>
