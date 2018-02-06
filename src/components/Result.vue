@@ -62,11 +62,11 @@ export default {
       if (!game.next_draw_time) {
         return
       }
-      this[`timer-${game.code}`] = setInterval(() => {
+      this[`timer-${game.game_code}`] = setInterval(() => {
         if (this.$moment().isAfter(game.next_draw_time)) {
-          clearInterval(this[`timer-${game.code}`])
+          clearInterval(this[`timer-${game.game_code}`])
         }
-        this.$set(this.countdownMap, game.code, this.getDiffOfTime(game))
+        this.$set(this.countdownMap, game.game_code, this.getDiffOfTime(game))
       }, 1000)
     },
     getDiffOfTime (game) {
@@ -92,22 +92,23 @@ export default {
       }
     },
     pollResults (game) {
-      clearInterval(this[`timer-${game.code}`])
+      clearInterval(this[`timer-${game.game_code}`])
 
-      this[`issueInterval-${game.code}`] = setInterval(() => {
-        this.fetchResults(game.code).then(data => {
+      this[`issueInterval-${game.game_code}`] = setInterval(() => {
+        this.fetchResults(game.game_code).then(data => {
           let newResult = data[0]
-          let oldIssue = this.resultsMap[game.code].oldIssue
+          let oldIssue = this.resultsMap[game.game_code].oldIssue
           let newIssue = newResult.issue_number
+
           if (oldIssue !== newIssue) {
-            this.$set(this.resultsMap, game.code, {
+            this.$set(this.resultsMap, game.game_code, {
               displayName: newResult.game_display_name,
               oldIssue: newIssue,
               resultStr: newResult.result_str,
               nextDraw: newResult.next_draw_time
             })
 
-            clearInterval(this[`issueInterval-${game.code}`])
+            clearInterval(this[`issueInterval-${game.game_code}`])
             this.startCountdown(newResult)
           }
         })
@@ -115,59 +116,39 @@ export default {
     },
     fetchResults (code) {
       return new Promise((resolve, reject) => {
-        jsonp(`${urls.latest_results}?game_code=${code}`, null, (err, data) => {
+        jsonp(`${urls.latest_results}?game_codes=${code}`, null, (err, data) => {
           if (err) {
             clearInterval(this[`timer-${code}`])
           } else {
             let formatted = JSON.parse(encoded(data))
-
-            _.each(formatted, (game) => {
-              let currentGame = _.find(this.codes, obj => obj.display_name === game.game_display_name)
-              game.code = currentGame.code
-            })
-
             resolve(formatted)
           }
         })
       })
     },
     initResults () {
-      this.fetchGames().then(res => {
-        let allcodes = _.map(this.codes, (obj) => obj.code)
-        jsonp(`${urls.latest_results}?game_code=${allcodes.join()}`, null, (err, data) => {
-          if (err) {
-            console.error(err, 'err') // error handling
-          } else {
-            let formatted = JSON.parse(encoded(data))
+      jsonp(`${urls.latest_results}`, null, (err, data) => {
+        if (err) {
+          this.$message({
+            showClose: true,
+            message: '系统发生了错误, 请刷新再試或联系客服',
+            type: 'error'
+          })
+        } else {
+          let formatted = JSON.parse(encoded(data))
 
-            _.each(formatted, (game, index) => {
-              game.code = this.codes[index].code
-
-              this.$set(this.resultsMap, game.code, {
-                displayName: game.game_display_name,
-                oldIssue: game.issue_number,
-                resultStr: game.result_str,
-                nextDraw: game.next_draw_time
-              })
-
-              this.startCountdown(game)
+          this.codes = _.map(formatted, (obj) => obj.game_code)
+          _.each(formatted, (game, index) => {
+            this.$set(this.resultsMap, game.game_code, {
+              displayName: game.game_display_name,
+              oldIssue: game.issue_number,
+              resultStr: game.result_str,
+              nextDraw: game.next_draw_time
             })
-          }
-        })
-      })
-    },
-    fetchGames (value) {
-      return new Promise((resolve, reject) => {
-        jsonp(urls.game_codes, null, (err, data) => {
-          if (err) {
-            console.log(err, 'err')
-            reject(err)
-          } else {
-            let formatted = JSON.parse(data)
-            this.codes = formatted
-            resolve(formatted)
-          }
-        })
+
+            this.startCountdown(game)
+          })
+        }
       })
     }
   },
