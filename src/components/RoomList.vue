@@ -1,12 +1,24 @@
 <template>
   <ul class="rooms">
-    <li v-for="(room, index) in roomList" :class="{
-      active: activeRoomIndex === index,
-      public: room.type === 1
-    }" @click="switchRoom(room, index)">
+    <li v-for="(room, index) in roomList"
+      :key="index"
+      :class="{
+        active: activeRoomIndex === index,
+        public: room.type === 1
+      }"
+      @click="switchRoom(room, index)">
       <div class="meta">
-        <icon class="volume-up" name="comments" scale="1.5" v-if="room.type === 1"></icon>
-        <span class="title">{{ room.target ? `与 ${room.target.nickname || '会员'} 的私聊` : room.title}}</span>
+        <div class="illustration">
+          <icon class="volume-up" name="comments" scale="1.5" v-if="room.type === 1"></icon>
+          <img class="avatar" v-else-if="room.type === 2" :src="require('../assets/stick_admin.png')" alt="avatar">
+          <img class="avatar" v-else :src="room.users[1].avatar ? room.users[1].avatar : require('../assets/avatar.png')" alt="avatar">
+        </div>
+        <span class="title" v-if="room.type === 2">
+          {{ `客服人员 ${room.users[1].nickname || room.users[1].username}`}}
+        </span>
+        <span class="title" v-else>
+          {{ room.target ? `与 ${room.target.nickname || '会员'} 的私聊` : room.title}}
+        </span>
       </div>
       <div v-if="room.last_message">{{room.last_message.content | truncate(25)}}</div>
     </li>
@@ -107,6 +119,12 @@ export default {
     font-size: 13px;
     vertical-align: middle;
   }
+  .avatar {
+    width: 28px;
+    height: 28px;
+    margin-right: 10px;
+    vertical-align: middle;
+  }
   .public .title {
     font-size: 14px;
   }
@@ -134,5 +152,8 @@ export default {
   .fa-icon {
     vertical-align: middle;
   }
+}
+.illustration {
+  display: inline-block;
 }
 </style>
