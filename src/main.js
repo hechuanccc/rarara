@@ -15,9 +15,15 @@ import { fetchGlobalData } from './api'
 import qs from 'qs'
 
 let url = window.location.href
-let params = qs.parse(url.slice(url.indexOf('?') + 1, url.indexOf('#')))
+let params = qs.parse(url.slice(url.indexOf('?') + 1, url.length))
+
 if (params.r) {
-  VueCookie.set('r', params.r, {expires: '1M'})
+  let expires = new Date()
+  expires.setMonth(expires.getMonth() + 1)
+  VueCookie.set('r', params.r, {expires: expires})
+} else if (params.desktop === 1 && VueCookie.get('desktop') !== 1) {
+  VueCookie.set('desktop', params.desktop)
+  window.location.reload()
 }
 
 Vue.use(require('vue-moment'))
