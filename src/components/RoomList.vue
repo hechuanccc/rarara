@@ -16,8 +16,9 @@
         <span class="title" v-if="room.type === 2">
           {{ `客服人员 ${room.users[1].nickname || room.users[1].username}`}}
         </span>
-        <span class="title" v-else>
-          {{ room.target ? `与 ${room.target.nickname || '会员'} 的私聊` : room.title}}
+        <span class="title">
+          <span v-if="room.type !== 1">{{ `与 ${room.users[1].nickname || room.users[1].username} 的私聊`}}</span>
+          <span v-else>{{room.title}}</span>
         </span>
       </div>
       <div v-if="room.last_message">{{room.last_message.content | truncate(25)}}</div>

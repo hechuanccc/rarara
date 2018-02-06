@@ -14,6 +14,12 @@ import Vue2Filters from 'vue2-filters'
 import { fetchGlobalData } from './api'
 import qs from 'qs'
 
+Vue.use(require('vue-moment'))
+Vue.use(Vue2Filters)
+Vue.use(ElementUI, { size: 'small' })
+Vue.use(VueCookie)
+Vue.use(Vuex)
+
 let url = window.location.href
 let params = qs.parse(url.slice(url.indexOf('?') + 1, url.length))
 
@@ -21,16 +27,11 @@ if (params.r) {
   let expires = new Date()
   expires.setMonth(expires.getMonth() + 1)
   VueCookie.set('r', params.r, {expires: expires})
-} else if (params.desktop === 1 && VueCookie.get('desktop') !== 1) {
+} else if (params.desktop === '0' && Vue.cookie.get('desktop') !== '0') {
   VueCookie.set('desktop', params.desktop)
   window.location.reload()
 }
 
-Vue.use(require('vue-moment'))
-Vue.use(Vue2Filters)
-Vue.use(ElementUI, { size: 'small' })
-Vue.use(VueCookie)
-Vue.use(Vuex)
 const store = createStore()
 const token = Vue.cookie.get('access_token')
 

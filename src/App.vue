@@ -23,11 +23,6 @@ export default {
     }
   },
   created () {
-    const version = this.$route.query.desktop
-    if (version === '1' && this.$cookie.desktop !== '1') {
-      this.$cookie.set('desktop', version)
-      window.location.reload()
-    }
     window.addEventListener('resize', this.resizeHeight)
   },
   beforeDestroy () {
