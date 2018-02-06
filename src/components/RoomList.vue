@@ -16,8 +16,8 @@
         <span class="title" v-if="room.type === 2">
           {{ `客服人员 ${room.users[1].nickname || room.users[1].username}`}}
         </span>
-        <span class="title">
-          <span v-if="room.type !== 1">{{ `与 ${room.users[1].nickname || room.users[1].username} 的私聊`}}</span>
+        <span class="title" v-else>
+          <span v-if="room.type === 3">{{ `与 ${room.users[1].nickname || room.users[1].username} 的私聊`}}</span>
           <span v-else>{{room.title}}</span>
         </span>
       </div>
