@@ -16,7 +16,6 @@ export default {
   sendImgToChat: host + '/v1/image/',
   annoucement: apiv1 + '/announcement/',
   latest_results: ghost + '/latest_results/',
-  game_codes: ghost + '/game_codes/',
   memberRoom: host + '/v1/member/room/',
   room: host + '/v1/room/',
   global_preference: host + '/v1/global-data/'

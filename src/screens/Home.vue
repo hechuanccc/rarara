@@ -24,7 +24,7 @@
         <el-col class="head-right" :span="4">
           <div class="user-info">
             <img @click="showProfileDiag = true" :src="user.avatar ? user.avatar : require('../assets/avatar.png')" width="25">
-            <span @click="showProfileDiag = true" class="username">{{user.username}}</span>
+            <span @click="showProfileDiag = true" class="username">{{user.nickname || user.username}}</span>
             <a @click="logout">退出</a>
           </div>
         </el-col>
@@ -53,7 +53,7 @@
               </div>
 
               <ul class="members" v-if="onlineMembers.length">
-                <li v-for="(member, index) in onlineMembers" @click="popoverMember=member" slot="reference">
+                <li v-for="(member, index) in onlineMembers" @click="popoverMember = member" :key="index" slot="reference">
                   <el-popover
                     :ref="'popover' + member.id"
                     placement="right"
@@ -62,9 +62,11 @@
                     trigger="click">
                     <ul class="member-actions">
                       <li @click="privateChat(member)" v-if="member.id !== user.id">私聊</li>
-                      <li @click="ban(member, 15)" v-if="member.id !== user.id && myRoles.includes('manager')">禁言15分钟</li>
-                      <li @click="ban(member, 30)" v-if="member.id !== user.id && myRoles.includes('manager')">禁言30分钟</li>
-                      <li @click="block(member)" v-if="member.id !== user.id && myRoles.includes('manager')">加入黑名单</li>
+                      <li @click="ban(member, 15)" v-if="member.id !== user.id && !member.is_banned.is_banned && myRoles.includes('manager')">禁言15分钟</li>
+                      <li @click="ban(member, 30)" v-if="member.id !== user.id  && !member.is_banned.is_banned && myRoles.includes('manager')">禁言30分钟</li>
+                      <li @click="block(member)" v-if="member.id !== user.id && !member.is_blocked && myRoles.includes('manager')">加入黑名单</li>
+                      <li @click="unblock(member)" v-if="member.id !== user.id && member.is_blocked && myRoles.includes('manager')">解除拉黑</li>
+                      <li @click="unban(member)" v-if="member.id !== user.id && member.is_banned.is_banned  && myRoles.includes('manager')  ">解除禁言</li>
                     </ul>
                     <div slot="reference">
                       <img :src="member.avatar" class="avatar" v-if="member.avatar"/>
@@ -209,7 +211,7 @@ import 'vue-awesome/icons/mobile-phone'
 import 'vue-awesome/icons/comments'
 import 'vue-awesome/icons/search'
 import ChatRoom from '../components/ChatRoom'
-import { fetchAnnouce, fetchOnlineMembers, createRoom, updateUser, banChatUser, blockChatUser } from '../api'
+import { fetchAnnouce, fetchOnlineMembers, createRoom, updateUser, banChatUser, unbanChatUser, blockChatUser, unblockChatUser, getChatUser } from '../api'
 import { msgFormatter } from '../utils'
 import { validatePhone, validateQQ } from '../validate'
 import urls from '../api/urls'
@@ -338,11 +340,26 @@ export default {
     })
   },
   methods: {
+    getUser (member) {
+      getChatUser(1).then(response => {
+        if (!response.banned_users.length || !response.block_users.length) {
+          this.popoverMember.is_banned.is_banned = false
+          this.popoverMember.is_blocked = false
+        }
+
+        let newBannedUsers = response.banned_users.map((member) => member.username)
+        let newBlockUsers = response.block_users.map((member) => member.username)
+
+        this.popoverMember.is_banned.is_banned = newBannedUsers.includes(member.username)
+        this.popoverMember.is_blocked = newBlockUsers.includes(member.username)
+      })
+    },
     ban (member, mins) {
       banChatUser(RECEIVER, {
         user: member.username,
         banned_time: mins
       }).then((data) => {
+        this.getUser(member)
         this.$message({
           showClose: true,
           message: data.status,
@@ -356,10 +373,30 @@ export default {
         })
       })
     },
+    unban (member, user) {
+      unbanChatUser(RECEIVER, {
+        user: member.username
+      }).then((data) => {
+        this.getUser(member)
+        this.$message({
+          showClose: true,
+          message: data.status,
+          type: 'success'
+        })
+      }, errorMsg => {
+        let data = errorMsg.response.data
+        this.$message({
+          showClose: true,
+          message: data.error,
+          type: 'error'
+        })
+      })
+    },
     block (member) {
       blockChatUser(RECEIVER, {
         user: member.username
       }).then((data) => {
+        this.getUser(member)
         this.$message({
           showClose: true,
           message: data.status,
@@ -369,6 +406,26 @@ export default {
         this.$message({
           showClose: true,
           message: errorMsg.response.data.error,
+          type: 'error'
+        })
+      })
+    },
+
+    unblock (member, user) {
+      unblockChatUser(RECEIVER, {
+        user: member.username
+      }).then((data) => {
+        this.getUser(member)
+        this.$message({
+          showClose: true,
+          message: data.status,
+          type: 'success'
+        })
+      }, errorMsg => {
+        let data = errorMsg.response.data
+        this.$message({
+          showClose: true,
+          message: data.error,
           type: 'error'
         })
       })
