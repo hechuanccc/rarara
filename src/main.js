@@ -39,10 +39,24 @@ axios.interceptors.response.use(res => {
   if (!responseData.error) {
     return responseData
   } else {
+    Vue.prototype.$message({
+      showClose: true,
+      message: responseData.error,
+      type: 'error'
+    })
     toHomeAndLogin(router)
     return Promise.reject(responseData)
   }
 }, (error) => {
+  let msg = error.error
+  if (!msg) {
+    msg = '系统发生了错误, 请联系客服'
+  }
+  Vue.prototype.$message({
+    showClose: true,
+    message: msg,
+    type: 'error'
+  })
   toHomeAndLogin(router)
   return Promise.reject(error)
 })

@@ -95,13 +95,13 @@
         </el-main>
 
         <el-aside width="395px" class="aside">
-          <el-tabs type="border-card">
+          <el-tabs type="border-card" @tab-click="loadResult">
             <el-tab-pane :label="'在线投注'">
               <iframe :src="globalPreference.mobile_lottery_url" width="100%" style="height: calc(100vh - 110px)" frameborder="0"></iframe>
             </el-tab-pane>
             <el-tab-pane :label="'文字开奖'">
-              <div class="results-container">
-                <!-- <component :is="'Result'"></component> -->
+              <div class="results-container" v-if="lasyLoadResult">
+                <result></result>
               </div>
             </el-tab-pane>
           </el-tabs>
@@ -291,7 +291,8 @@ export default {
       currentChooseAvatar: '',
       changeProfileSuccess: true,
       changeProfileRes: '',
-      createRoomLoading: false
+      createRoomLoading: false,
+      lasyLoadResult: false
     }
   },
   computed: {
@@ -531,6 +532,11 @@ export default {
       // this.$refs.roomList.roomEnded = false
       // this.$refs.roomList.roomPage = 0
       this.$refs.roomList.fillMemberRooms()
+    },
+    loadResult (tab) {
+      if (tab.index === '1') {
+        this.lasyLoadResult = true
+      }
     }
   }
 }
