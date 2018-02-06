@@ -121,6 +121,7 @@ fetchGlobalData().then(res => {
     web_background: globalData.web_background,
     mobile_url: globalData.mobile_url
   })
+  document.title = store.state.globalPreference.title
 })
 
 Vue.mixin({

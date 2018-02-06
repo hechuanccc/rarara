@@ -1,8 +1,8 @@
 <template>
-  <el-container class="chat-box">
+  <el-container class="chat-box" :style="{backgroundImage: `url(${globalPreference.web_background})`}">
     <el-header class="header" height="50px">
       <el-row>
-        <el-col :span="4" class="logo clearfix">
+        <el-col :span="4" class="logo clearfix" :style="{backgroundImage: `url(${globalPreference.logo})`}">
         </el-col>
         <el-col :span="14">
           <div class="annouce-box clearfix" @click="announcementDialogVisible = true">
@@ -27,7 +27,7 @@
             <span class="text">手机版聊天室</span>
           </div>
           <div class="qrcode" v-show="showQR">
-            <qr-code :text="$store.state.globalPreference.mobile_url"></qr-code>
+            <qr-code :text="globalPreference.mobile_url"></qr-code>
           </div>
           <div class="user-info">
             <img @click="showProfileDiag = true" :src="user.avatar ? user.avatar : require('../assets/avatar.png')" width="25">
@@ -612,7 +612,9 @@ export default {
 .chat-box {
   width: 100%;
   height: 100%;
-  background: url('../assets/chat_bg.jpg') 0px 0px / 100% 100% no-repeat scroll rgb(64, 128, 128);
+  background-color: rgba(0, 0, 0, .5);
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 .header {
   height: 50px;
@@ -626,8 +628,9 @@ export default {
     }
   }
   .logo {
-    background: url('../assets/logo.png') center center no-repeat;
+    background-position: center center;
     background-size: contain;
+    background-repeat: no-repeat;
     height: 50px;
     h1 {
       text-indent: -999px;
