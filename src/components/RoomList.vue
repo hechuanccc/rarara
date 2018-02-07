@@ -88,9 +88,6 @@ export default {
         this.roomPage += 1
         this.roomLoading = false
         this.roomList = this.roomList.map(room => {
-          if (room.users && room.users.length) {
-            room.users.filter(user => user.id !== this.user.id)
-          }
           return {
             ...room
           }
