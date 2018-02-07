@@ -87,12 +87,14 @@ export default {
         this.roomEnded = this.roomLimit * (this.roomPage + 1) > this.roomList.length
         this.roomPage += 1
         this.roomLoading = false
-        this.roomList = this.roomList.map(room => {
-          return {
-            ...room
+        let temp = []
+        this.roomList.forEach((room) => {
+          if (room.users && room.users.length < 2 && (room.type === 2 || room.type === 3)) {
+            return
           }
+          temp.push({...room})
         })
-
+        this.roomList = temp
         this.$store.commit('UPDATE_ROOMLIST', this.roomList)
       })
     },

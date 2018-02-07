@@ -458,6 +458,11 @@ export default {
       this.createRoomLoading = true
       createRoom([member.id, this.user.id])
         .then((res) => {
+          this.$message({
+            showClose: true,
+            message: res.status,
+            type: 'info'
+          })
           this.$set(this.$refs['popover' + member.id][0], 'showPopper', false)
           this.activeTab = 'rooms'
           this.activeRoom = res.room
