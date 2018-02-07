@@ -1,29 +1,32 @@
 <template>
-  <ul class="rooms">
-    <li v-for="(room, index) in roomList"
-      :key="index"
-      :class="{
-        active: activeRoomIndex === index,
-        public: room.type === 1
-      }"
-      @click="switchRoom(room, index)">
-      <div class="meta">
-        <div class="illustration">
-          <icon class="volume-up" name="comments" scale="1.5" v-if="room.type === 1"></icon>
-          <img class="avatar" v-else-if="room.type === 2" :src="require('../assets/stick_admin.png')" alt="avatar">
-          <img class="avatar" v-else :src="room.users[1].avatar ? room.users[1].avatar : require('../assets/avatar.png')" alt="avatar">
+  <div class="rooms-container">
+    <ul class="rooms m-t m-b">
+      <li v-for="(room, index) in roomList"
+        :key="index"
+        :class="{
+          active: activeRoomIndex === index,
+          public: room.type === 1
+        }"
+        @click="switchRoom(room, index)">
+        <div class="meta">
+          <div class="illustration">
+            <icon class="volume-up" name="comments" scale="1.5" v-if="room.type === 1"></icon>
+            <img class="avatar" v-else-if="room.type === 2" :src="require('../assets/stick_admin.png')" alt="avatar">
+            <img class="avatar" v-else-if="room.users.length === 2" :src="room.users[1].avatar ? room.users[1].avatar : require('../assets/avatar.png')" alt="avatar">
+            <img class="avatar" v-else :src="require('../assets/avatar.png')" alt="avatar">
+          </div>
+          <span class="title" v-if="room.type === 2">
+            {{ `客服人员 ${room.users[1].nickname || room.users[1].username}`}}
+          </span>
+          <span class="title" v-else>
+            <span v-if="room.type === 3 && room.users.length === 2">{{ `与 ${room.users[1].nickname || room.users[1].username} 的私聊`}}</span>
+            <span v-else>{{room.title}}</span>
+          </span>
         </div>
-        <span class="title" v-if="room.type === 2">
-          {{ `客服人员 ${room.users[1].nickname || room.users[1].username}`}}
-        </span>
-        <span class="title" v-else>
-          <span v-if="room.type === 3">{{ `与 ${room.users[1].nickname || room.users[1].username} 的私聊`}}</span>
-          <span v-else>{{room.title}}</span>
-        </span>
-      </div>
-      <div v-if="room.last_message">{{room.last_message.content | truncate(25)}}</div>
-    </li>
-  </ul>
+        <div v-if="room.last_message">{{room.last_message.content | truncate(25)}}</div>
+      </li>
+    </ul>
+  </div>
 </template>
 
 <script>
@@ -57,11 +60,10 @@ export default {
     activeRoom (val, oldVal) {
       this.roomEnded = false
       this.roomPage = 0
-      this.fillMemberRooms()
-        .then(() => {
-          this.activeRoomIndex = _.findIndex(this.roomList, room => room.id === this.activeRoom.id)
-          this.$store.commit('UPDATE_NOW_ROOM_ID', this.roomList[this.activeRoomIndex].id)
-        })
+      this.fillMemberRooms().then(() => {
+        this.activeRoomIndex = _.findIndex(this.roomList, room => room.id === this.activeRoom.id)
+        this.$store.commit('UPDATE_NOW_ROOM_ID', this.roomList[this.activeRoomIndex].id)
+      })
     },
     '$store.state.newMsg': {
       handler: function (val, oldVal) {
@@ -74,29 +76,25 @@ export default {
       deep: true
     }
   },
-  created () {
-  },
   methods: {
     fillMemberRooms () {
       if (this.roomEnded || this.roomLoading) {
         return
       }
       this.roomLoading = true
-      return fetchMemberRoom(this.roomLimit, this.roomPage)
-        .then(res => {
-          this.roomList = this.roomPage === 0 ? res.results : this.roomList.concat(res.results)
-          this.roomEnded = this.roomLimit * (this.roomPage + 1) > this.roomList.length
-          this.roomPage += 1
-          this.roomLoading = false
-          this.roomList = this.roomList.map(room => {
-            room.users.filter(user => user.id !== this.user.id)
-            return {
-              ...room,
-              target: room.type !== 1 ? room.users[0] : undefined
-            }
-          })
-          this.$store.commit('UPDATE_ROOMLIST', this.roomList)
+      return fetchMemberRoom(this.roomLimit, this.roomPage).then(res => {
+        this.roomList = this.roomPage === 0 ? res.results : this.roomList.concat(res.results)
+        this.roomEnded = this.roomLimit * (this.roomPage + 1) > this.roomList.length
+        this.roomPage += 1
+        this.roomLoading = false
+        this.roomList = this.roomList.map(room => {
+          return {
+            ...room
+          }
         })
+
+        this.$store.commit('UPDATE_ROOMLIST', this.roomList)
+      })
     },
     switchRoom (room, index) {
       this.$store.commit('UPDATE_NOW_ROOM_ID', room.id)
@@ -106,10 +104,11 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+.rooms-container {
+   height: calc(100vh - 110px);
+   overflow-y: auto;
+}
 .rooms {
-  margin-top: 10px;
-  height: calc(100vh - 110px);
-  overflow-y: scroll;
   border-top: 1px solid rgba(255, 255, 255, .2);
   .fa-icon {
     vertical-align: middle;
