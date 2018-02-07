@@ -49,7 +49,7 @@
               <div class="search-form">
                 <el-form>
                   <el-form-item >
-                    <el-input v-model="nickname_q" placeholder="请输入会员名称" class="ipt-search"></el-input>
+                    <el-input v-model="nickname_q" placeholder="请输入会员名称" class="ipt-search" @keyup.native.enter="search"></el-input>
                     <icon class="search-icon fl" name="search" scale="1" @click.native="search"></icon>
                   </el-form-item>
                 </el-form>
@@ -60,7 +60,10 @@
               </div>
 
               <ul class="members" v-if="onlineMembers.length">
-                <li v-for="(member, index) in onlineMembers" @click="popoverMember = member" :key="index" slot="reference">
+                <li v-for="(member, index) in onlineMembers"
+                  @click="popoverMember = member"
+                  :key="index"
+                  slot="reference">
                   <el-popover
                     :ref="'popover' + member.id"
                     placement="right"
@@ -416,6 +419,11 @@ export default {
       if (val === 'rooms') {
         this.initRoomList()
       }
+    },
+    'nickname_q': function (val) {
+      if (val === '') {
+        this.exitSearch()
+      }
     }
   },
   created () {
@@ -521,6 +529,9 @@ export default {
       })
     },
     search () {
+      if (this.nickname_q === '') {
+        return
+      }
       this.searchEnabled = true
       this.memberPage = 0
       this.onlineMembersEnded = false
