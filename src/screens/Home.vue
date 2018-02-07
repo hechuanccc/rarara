@@ -134,75 +134,107 @@
           </el-carousel>
         </el-dialog>
         <el-dialog
-          title="用户中心"
+          class="profile-dialog"
           :visible.sync="showProfileDiag"
           :width="'600px'"
           @open="changeProfileRes = ''"
           center>
           <div class="edit-profile">
-            <div>
-              <div
-                class="avatar"
-                v-on:mouseover="swichAvatar = true"
-                v-on:mouseout="swichAvatar = false"
-                style="overflow-y: hidden;">
-                <div>
-                  <img v-if="user.avatar && !swichAvatar" :src="currentChooseAvatar || user.avatar" width="72" height="72">
-                  <img v-else-if="!swichAvatar" :src="currentChooseAvatar || require('../assets/avatar.png')" width="72" height="72">
+            <el-tabs v-model="activePanel" type="card" @tab-click="changeProfileRes = ''">
+              <el-tab-pane class="edit-user-panel" label="用户中心" name="account">
+                <div
+                  class="avatar"
+                  v-on:mouseover="swichAvatar = true"
+                  v-on:mouseout="swichAvatar = false"
+                  style="overflow-y: hidden;">
+                  <div>
+                    <img v-if="user.avatar && !swichAvatar" :src="currentChooseAvatar || user.avatar" width="72" height="72">
+                    <img v-else-if="!swichAvatar" :src="currentChooseAvatar || require('../assets/avatar.png')" width="72" height="72">
+                  </div>
+                  <label
+                    for="preViewAvatar"
+                    class="upload-avatar">
+                    <input @change="preViewAvatar" type="file" ref="preViewAvatar" class="img-upload-input" id="preViewAvatar" accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif" />
+                    <span v-if="swichAvatar" class="el-icon-upload"></span>
+                  </label>
                 </div>
+                <p class="text-center m-b">上传新头像</p>
+                <el-form :model="editUser" status-icon :rules="rules" ref="editUser" :style="{marginLeft: '-20px'}">
+                  <el-form-item prop="nickname" label="昵称"  label-width="85px">
+                    <el-input v-model="editUser.nickname"
+                              class="inp">
+                    </el-input>
+                  </el-form-item>
 
-                <label
-                  for="preViewAvatar"
-                  class="upload-avatar">
-                  <input @change="preViewAvatar" type="file" ref="preViewAvatar" class="img-upload-input" id="preViewAvatar" accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif" />
-                  <span v-if="swichAvatar" class="el-icon-upload"></span>
-                </label>
-              </div>
-              <p class="text-center m-b">上传新头像</p>
-              <el-form :model="editUser" status-icon :rules="rules" ref="editUser" :style="{marginLeft: '-20px'}">
-                <el-form-item prop="nickname" label="昵称"  label-width="85px">
-                  <el-input v-model="editUser.nickname"
-                            class="inp">
-                  </el-input>
-                </el-form-item>
+                  <el-form-item label="邮箱" prop="email" label-width="85px">
+                    <el-input class="input-width" v-model="editUser.email"></el-input>
+                  </el-form-item>
 
-                <el-form-item label="邮箱" prop="email" label-width="85px">
-                  <el-input class="input-width" v-model="editUser.email"></el-input>
-                </el-form-item>
+                  <el-form-item prop="mobile" label="手机" label-width="85px">
+                    <el-input v-model="editUser.mobile"
+                              type="number"
+                              class="inp">
+                    </el-input>
+                  </el-form-item>
 
-                <el-form-item prop="mobile" label="手机" label-width="85px">
-                  <el-input v-model="editUser.mobile"
-                            type="number"
-                            class="inp">
-                  </el-input>
-                </el-form-item>
+                  <el-form-item prop="QQ" label="QQ"  label-width="85px">
+                    <el-input v-model="editUser.QQ"
+                              type="number"
+                              class="inp">
+                    </el-input>
+                  </el-form-item>
 
-                <el-form-item prop="QQ" label="QQ"  label-width="85px">
-                  <el-input v-model="editUser.QQ"
-                            type="number"
-                            class="inp">
-                  </el-input>
-                </el-form-item>
+                  <el-form-item class="text" label="登录IP" label-width="85px">
+                    <p class="member-info">{{user.last_login_ip}}</p>
+                  </el-form-item>
 
-                <el-form-item label="登录IP"  label-width="85px">
-                  <p class="member-info">{{user.last_login_ip}}</p>
-                </el-form-item>
+                  <el-form-item class="text" label="注册时间"  label-width="85px">
+                    <p class="member-info">{{user.date_joined | moment('YYYY-MM-HH')}}</p>
+                  </el-form-item>
 
-                <el-form-item label="注册时间"  label-width="85px">
-                  <p class="member-info">{{user.date_joined | moment('YYYY-MM-HH')}}</p>
-                </el-form-item>
-
-                <el-form-item label="推广链接"  label-width="85px">
-                  <p class="member-info">{{promoteUrl}}</p>
-                </el-form-item>
-                <el-form-item label-width="85px">
-                  <el-button class="profile-submit" type="primary" @click="submit">确认修改</el-button>
-                </el-form-item>
-                <el-form-item label-width="85px">
-                  <p :class="[changeProfileSuccess ? 'text-success' : 'text-danger']">{{changeProfileRes}}</p>
-                </el-form-item>
-              </el-form>
-            </div>
+                  <el-form-item label="推广链接"  label-width="85px">
+                    <p class="member-info">{{promoteUrl}}</p>
+                  </el-form-item>
+                  <el-form-item label-width="85px">
+                    <el-button class="profile-submit" type="primary" @click="submit" :disabled="disabledEditProfile">确认修改</el-button>
+                  </el-form-item>
+                  <el-form-item label-width="85px">
+                    <p :class="[changeProfileSuccess ? 'text-success' : 'text-danger']">{{changeProfileRes}}</p>
+                  </el-form-item>
+                </el-form>
+              </el-tab-pane>
+              <el-tab-pane class="edit-password-panel" label="修改密码" name="password">
+                <el-form class="edit-password-form" :model="editPassword" status-icon :rules="passwordRules" ref="editPassword" label-width="100px">
+                  <el-form-item prop="prev_password" label="旧密码">
+                    <el-input v-model="editPassword.prev_password"
+                              type="password"
+                              :maxlength="15"
+                              class="inp">
+                    </el-input>
+                  </el-form-item>
+                  <el-form-item prop="new_password" label="新密码">
+                    <el-input v-model="editPassword.new_password"
+                              type="password"
+                              :maxlength="15"
+                              class="inp">
+                    </el-input>
+                  </el-form-item>
+                  <el-form-item prop="repeat_password" label="确认新密码">
+                    <el-input v-model="editPassword.repeat_password"
+                              type="password"
+                              :maxlength="15"
+                              class="inp">
+                    </el-input>
+                  </el-form-item>
+                  <el-form-item>
+                    <el-button class="inp profile-submit" type="primary" @click="updatePassword" :disabled="disabledEditProfile">确认修改</el-button>
+                  </el-form-item>
+                  <el-form-item>
+                    <p :class="[changeProfileSuccess ? 'text-success' : 'text-danger']">{{changeProfileRes}}</p>
+                  </el-form-item>
+                </el-form>
+              </el-tab-pane>
+            </el-tabs>
           </div>
         </el-dialog>
       </el-container>
@@ -220,7 +252,7 @@ import 'vue-awesome/icons/search'
 import ChatRoom from '../components/ChatRoom'
 import { fetchAnnouce, fetchOnlineMembers, createRoom, updateUser, banChatUser, unbanChatUser, blockChatUser, unblockChatUser, getChatUser } from '../api'
 import { msgFormatter } from '../utils'
-import { validatePhone, validateQQ } from '../validate'
+import { validatePhone, validateQQ, validatePassword } from '../validate'
 import urls from '../api/urls'
 import Result from '../components/Result'
 import { mapState } from 'vuex'
@@ -253,6 +285,37 @@ export default {
         callback()
       }
     }
+    const passwordValidator = (form) => {
+      return (rule, value, callback) => {
+        if (value === '') {
+          callback(new Error('請輸入新密碼'))
+        } else {
+          if (this[form].repeat_password !== '') {
+            this.$refs[form].validateField('repeat_password')
+          }
+          callback()
+        }
+      }
+    }
+    const passwordFormatValidator = (rule, value, callback) => {
+      if (!validatePassword(value)) {
+        callback(new Error('请输入8~15字元，其中至少包含一大写字母及一数字'))
+      } else {
+        callback()
+      }
+    }
+    const repeatPasswordValidator = (form) => {
+      return (rule, value, callback) => {
+        if (value === '') {
+          callback(new Error('请再次输入密码'))
+        } else if (value !== this[form].new_password) {
+          callback(new Error('两次输入密码不一致'))
+        } else {
+          callback()
+        }
+      }
+    }
+
     return {
       activeRoom: {},
       popoverMember: {},
@@ -286,6 +349,12 @@ export default {
         QQ: ''
       },
       oldUser: {},
+      editPassword: {
+        prev_password: '',
+        repeat_password: '',
+        new_password: ''
+      },
+      disabledEditProfile: false,
       rules: {
         email: [
           { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur,change' }
@@ -297,12 +366,25 @@ export default {
           { validator: qqValidator, trigger: 'blur,change' }
         ]
       },
+      passwordRules: {
+        prev_password: [
+          { required: true, message: '请输入旧密码', trigger: 'blur' }
+        ],
+        new_password: [
+          { required: true, validator: passwordValidator('editPassword'), trigger: 'blur' },
+          { validator: passwordFormatValidator, trigger: 'blur,change' }
+        ],
+        repeat_password: [
+          { required: true, validator: repeatPasswordValidator('editPassword'), trigger: 'blur' }
+        ]
+      },
       currentChooseAvatar: '',
       changeProfileSuccess: true,
       changeProfileRes: '',
       createRoomLoading: false,
       lasyLoadResult: false,
-      showQR: false
+      showQR: false,
+      activePanel: 'account'
     }
   },
   computed: {
@@ -555,6 +637,7 @@ export default {
           if (file) {
             formData.append('avatar', file)
           }
+          this.disabledEditProfile = true
           updateUser(this.user.id, formData).then(result => {
             if (!result.error) {
               this.changeProfileRes = '修改资料成功'
@@ -564,6 +647,9 @@ export default {
             } else {
               this.changeProfileRes = '修改资料失败'
             }
+            setTimeout(() => {
+              this.disabledEditProfile = false
+            }, 1000)
           }, errorMsg => {
             this.$message({
               showClose: true,
@@ -571,9 +657,36 @@ export default {
               type: 'error'
             })
             this.changeProfileRes = '修改资料失败'
+            this.disabledEditProfile = false
           })
         } else {
           return false
+        }
+      })
+    },
+    updatePassword () {
+      this.$refs['editPassword'].validate((valid) => {
+        if (valid) {
+          this.disabledEditProfile = true
+          updateUser(this.user.id, {password: this.editPassword}).then(result => {
+            if (!result.error) {
+              this.changeProfileRes = '修改资料成功'
+            } else {
+              this.changeProfileRes = '修改资料失败'
+            }
+            setTimeout(() => {
+              this.disabledEditProfile = false
+              this.$refs['editPassword'].resetFields()
+            }, 1000)
+          }, errorMsg => {
+            this.$message({
+              showClose: true,
+              message: msgFormatter(errorMsg),
+              type: 'error'
+            })
+            this.changeProfileRes = '修改资料失败'
+            this.disabledEditProfile = false
+          })
         }
       })
     },
@@ -780,9 +893,7 @@ export default {
   border-radius: 50%;
   background-color: black;
 }
-
 .edit-profile {
-  width: 50%;
   border-radius: 5px;
   background: rgba(255,255,255,.93);
   margin: 0 auto ;
@@ -791,6 +902,12 @@ export default {
   text-align: center;
   z-index: 9999;
   color: #4f77ab;
+  /deep/ .el-form-item--small.el-form-item {
+    margin-bottom: 24px;
+  }
+  /deep/ .text.el-form-item--small.el-form-item {
+    margin-bottom: 0;
+  }
   .avatar-upload-tip {
     font-size: 12px;
     color: rgb(255, 127, 77);
@@ -838,6 +955,18 @@ export default {
     opacity: 0;
     position: absolute;
     top: 0;
+  }
+  .edit-user-panel {
+    width: 300px;
+    margin: 0 auto;
+  }
+  .edit-password-form {
+    width: 455px;
+    margin-left: 95px;
+    text-align: left;
+    .inp {
+      width: 235px;
+    }
   }
 }
 .results-container {
