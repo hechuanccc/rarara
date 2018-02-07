@@ -59,7 +59,9 @@ axios.interceptors.response.use(res => {
     return Promise.reject(responseData)
   }
 }, (error) => {
-  if (error.response.status !== 401 || error.response.status !== 403) {
+  if (error.response.status === 587) {
+    return Promise.reject(error)
+  } else if (error.response.status !== 401 && error.response.status !== 403) {
     let msg = error.response.data.error
     if (!msg) {
       msg = '系统发生了错误, 请联系客服'
