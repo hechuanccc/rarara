@@ -87,11 +87,6 @@ export default {
         this.roomEnded = this.roomLimit * (this.roomPage + 1) > this.roomList.length
         this.roomPage += 1
         this.roomLoading = false
-
-        console.log(this.roomList, 'this.roomList1')
-        console.log(this.roomEnded, 'this.roomEnded')
-        console.log(this.roomPage, 'this.roomPage')
-
         let temp = []
         this.roomList.forEach((room) => {
           if (room.users && room.users.length < 2 && (room.type === 2 || room.type === 3)) {
@@ -101,7 +96,6 @@ export default {
         })
 
         this.roomList = temp
-        console.log(this.roomList, 'this.roomList2')
         this.$store.dispatch('updateRoomList', this.roomList)
 
         return res
