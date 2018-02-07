@@ -44,7 +44,7 @@
             v-model="activeTab"
             type="border-card">
             <el-tab-pane
-              label="在线会员"
+              :label="`在线会员(${onlineMembers.length})`"
               name="members">
               <div class="search-form">
                 <el-form>
