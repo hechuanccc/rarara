@@ -266,14 +266,14 @@
         this.$refs['user'].validate((valid) => {
           if (valid) {
             register(this.user).then(result => {
-              return this.$store.dispatch('login', {
+              this.$store.dispatch('login', {
                 user: {
                   username: this.user.username,
                   password: this.user.password
                 }
               })
             }).then(result => {
-              this.$router.push('login')
+              this.$router.push('/')
             }, errorMsg => {
               this.$message({
                 showClose: true,
