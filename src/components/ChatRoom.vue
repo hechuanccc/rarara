@@ -179,18 +179,7 @@ export default {
       num: 0
     }
   },
-  props: {
-    routeLeave: {
-      type: Boolean,
-      default: false
-    }
-  },
   watch: {
-    'routeLeave' (val, oldVal) {
-      if (val) {
-        this.leaveRoom()
-      }
-    },
     '$store.state.roomList' (val, oldVal) {
       let roomList = this.$store.state.roomList
       roomList.forEach((item, index) => {
@@ -213,6 +202,9 @@ export default {
     'lastMessageInHall': function () {
       this.$emit('getHallLastMsg', this.lastMessageInHall)
     }
+  },
+  beforeDestroy () {
+    this.leaveRoom()
   },
   computed: {
     ...mapGetters([

@@ -103,7 +103,7 @@
         </el-aside>
 
         <el-main class="chat-area">
-          <chat-room :routeLeave="leave" @getHallLastMsg="getHallLastMsg"></chat-room>
+          <chat-room @getHallLastMsg="getHallLastMsg"></chat-room>
         </el-main>
 
         <el-aside width="395px" class="aside">
@@ -338,7 +338,6 @@ export default {
       nickname_q: '',
       showProfileDiag: false,
       searchStr: '',
-      leave: false,
       announcementStyle: {
         opacity: 1,
         translateY: 0
@@ -437,15 +436,8 @@ export default {
     }
   },
   created () {
-    this.leave = false
     this.getAnnouce()
     this.fillOnlineMembers()
-  },
-  beforeRouteLeave (to, from, next) {
-    this.leave = true
-    this.$nextTick(() => {
-      next()
-    })
   },
   methods: {
     filtAmount,
