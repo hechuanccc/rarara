@@ -1,19 +1,30 @@
 <template>
   <div class="rooms-container" v-if="roomList.length">
-    <ul class="rooms m-t m-b">
+    <ul class="rooms m-t" v-if="hallLastMsg">
+      <li :class="['public', {active: activeRoomIndex === 0}]" @click="switchRoom(roomList[0], 0)">
+        <div class="meta">
+          <div class="illustration">
+            <icon class="volume-up" name="comments" scale="1.5"></icon>
+          </div>
+          <span class="title" >
+            计划聊天室
+          </span>
+        </div>
+        <div>{{hallLastMsg | truncate(25)}}</div>
+      </li>
+    </ul>
+    <ul class="rooms m-b">
       <li v-for="(room, index) in roomList"
         :key="index"
+        v-if="room.type!==1"
         :class="{
           active: activeRoomIndex === index,
-          public: room.type === 1
         }"
         @click="switchRoom(room, index)">
         <div class="meta">
           <div class="illustration">
             <icon class="volume-up" name="comments" scale="1.5" v-if="room.type === 1"></icon>
-
             <img class="avatar" v-else-if="room.type === 2 && !myRoles.includes('customer service')" :src="require('../assets/stick_admin.png')" alt="avatar">
-
             <img class="avatar" v-else-if="room.users.length === 2" :src="room.users[1].avatar ? room.users[1].avatar : require('../assets/avatar.png')" alt="avatar">
             <img class="avatar" v-else :src="require('../assets/avatar.png')" alt="avatar">
           </div>
@@ -49,6 +60,9 @@ export default {
     },
     activeRoom: {
       type: Object
+    },
+    hallLastMsg: {
+      type: String
     }
   },
   name: 'roomlist',

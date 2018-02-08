@@ -14,6 +14,7 @@ import Vue2Filters from 'vue2-filters'
 import { fetchGlobalData } from './api'
 import qs from 'qs'
 import VueQRCodeComponent from 'vue-qrcode-component'
+import urls from './api/urls'
 
 Vue.use(require('vue-moment'))
 Vue.use(Vue2Filters)
@@ -127,6 +128,8 @@ fetchGlobalData().then(res => {
   })
   document.title = store.state.globalPreference.title
 })
+
+store.dispatch('setHost', urls.domain)
 
 Vue.mixin({
   methods: {

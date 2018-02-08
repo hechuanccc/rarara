@@ -131,7 +131,7 @@ import 'vue-awesome/icons/smile-o'
 import { fetchChatEmoji, sendImgToChat, getChatUser } from '../api'
 import config from '../../config'
 import Restraint from './Restraint'
-import { mapGetters } from 'vuex'
+import { mapGetters, mapState } from 'vuex'
 
 const WSHOST = config.chatHost
 
@@ -209,11 +209,17 @@ export default {
         this.msgCnt = ' '
       },
       deep: true
+    },
+    'lastMessageInHall': function () {
+      this.$emit('getHallLastMsg', this.lastMessageInHall)
     }
   },
   computed: {
     ...mapGetters([
       'myRoles'
+    ]),
+    ...mapState([
+      'host'
     ]),
     isLogin () {
       return this.$store.state.user.logined && this.$route.name !== 'Home'
@@ -236,6 +242,18 @@ export default {
     },
     activeRoomId () {
       return this.$store.state.activeRoomId
+    },
+    lastMessageInHall () {
+      if (this.roomMessages['1'] && this.roomMessages['1'].length) {
+        let hallMessages = this.roomMessages['1']
+        let lastIndex = hallMessages.length - 1
+        if (hallMessages[lastIndex].type === -1) {
+          lastIndex -= 1
+        }
+        return hallMessages[lastIndex].content
+      } else {
+        return ''
+      }
     }
   },
   created () {
@@ -288,6 +306,12 @@ export default {
               if (latestMsg) {
                 if (data.count) {
                   let lastMsg = latestMsg[0]
+                  latestMsg.forEach((msg) => {
+                    if (!msg.sender.avatar) {
+                      return
+                    }
+                    msg.sender.avatar = this.host + msg.sender.avatar
+                  })
                   this.$set(this.roomMessages, lastMsg.receivers, latestMsg.reverse().concat([{
                     type: -1
                   }]))
@@ -321,6 +345,7 @@ export default {
                     })
                     return
                   default:
+                    data.sender.avatar = this.host + '/' + data.sender.avatar.replace('websocket/', '')
                     this.roomMessages[this.activeRoomId].push(data)
                     this.$store.commit('NEW_MESSAGE', {
                       id: data.receivers,

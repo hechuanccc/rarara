@@ -95,6 +95,7 @@
                 <room-list
                   :user="user"
                   ref="roomList"
+                  :hallLastMsg="hallLastMsg"
                   :activeRoom="activeRoom"></room-list>
               </div>
             </el-tab-pane>
@@ -102,7 +103,7 @@
         </el-aside>
 
         <el-main class="chat-area">
-          <chat-room :routeLeave="leave"></chat-room>
+          <chat-room :routeLeave="leave" @getHallLastMsg="getHallLastMsg"></chat-room>
         </el-main>
 
         <el-aside width="395px" class="aside">
@@ -395,7 +396,8 @@ export default {
       createRoomLoading: false,
       lasyLoadResult: false,
       showQR: false,
-      activePanel: 'account'
+      activePanel: 'account',
+      hallLastMsg: ''
     }
   },
   computed: {
@@ -419,7 +421,7 @@ export default {
       return this.$store.state.user
     },
     promoteUrl () {
-      return this.user.promote_code ? window.location.origin + '?r' + this.user.promote_code : ''
+      return this.user.promote_code ? window.location.origin + '?r=' + this.user.promote_code : ''
     }
   },
   watch: {
@@ -447,6 +449,9 @@ export default {
   },
   methods: {
     filtAmount,
+    getHallLastMsg (msg) {
+      this.hallLastMsg = msg
+    },
     getUser (member) {
       getChatUser(1).then(response => {
         if (!response.banned_users.length || !response.block_users.length) {

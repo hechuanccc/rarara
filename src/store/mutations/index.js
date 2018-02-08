@@ -32,5 +32,8 @@ export default {
   },
   [types.NEW_MESSAGE]: (state, data) => {
     state.newMsg = data || {}
+  },
+  [types.SET_HOST]: (state, data) => {
+    state.host = data
   }
 }

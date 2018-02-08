@@ -87,5 +87,8 @@ export default {
   },
   updateRoomList: ({ commit, state }, data) => {
     commit(types.UPDATE_ROOMLIST, data)
+  },
+  setHost: ({ commit, state }, data) => {
+    commit(types.SET_HOST, data)
   }
 }
