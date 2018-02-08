@@ -194,7 +194,7 @@ export default {
     '$store.state.roomList' (val, oldVal) {
       let roomList = this.$store.state.roomList
       roomList.forEach((item, index) => {
-        this.roomMessages[item.id] = this.roomMessages[item.id] ? this.roomMessages[item.id] : []
+        this.$set(this.roomMessages, item.id, this.roomMessages[item.id] ? this.roomMessages[item.id] : [])
       })
     },
     '$store.state.activeRoomId' (val, oldVal) {
@@ -285,28 +285,15 @@ export default {
         if (typeof resData.data === 'string') {
           try {
             data = JSON.parse(resData.data)
-            console.log(data)
             if (!data.error_type) {
               let latestMsg = data.latest_message
               if (latestMsg) {
-                // if (data.latest_message[data.latest_message.length - 1].type === 3) {
-                //   let annouce = data.latest_message.pop()
-                //   this.announcement = annouce.content
-                // }
                 if (data.count) {
                   let lastMsg = latestMsg[0]
-                  // this.$set(this.roomMessages[lastMsg.receivers]) = latestMsg.reverse().concat([{
-                  //   type: -1
-                  // }])
                   this.$set(this.roomMessages, lastMsg.receivers, latestMsg.reverse().concat([{
                     type: -1
                   }]))
-                  // this.$set(this.$refs['popover' + member.id][0], 'showPopper', false)
                 }
-                // this.messages = this.messages.concat(data.latest_message.reverse())
-                // this.messages = this.messages.concat([{
-                //   type: -1
-                // }])
                 this.$nextTick(() => {
                   this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
                 })
@@ -335,9 +322,6 @@ export default {
                       showClose: false
                     })
                     return
-                  // case 3:
-                  //   this.announcement = data.content
-                  //   return
                   default:
                     this.roomMessages[this.activeRoomId].push(data)
                     this.$store.commit('NEW_MESSAGE', {
