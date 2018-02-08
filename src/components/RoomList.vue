@@ -73,11 +73,8 @@ export default {
   watch: {
     'activeRoom': {
       handler: function (val, oldVal) {
-        console.log(this.activeRoom, 'comin watch')
-
         this.roomPage = 0
         this.fillMemberRooms().then(() => {
-          console.log('then watch')
           this.activeRoomIndex = _.findIndex(this.roomList, room => room.id === this.activeRoom.id)
           this.$store.commit('UPDATE_NOW_ROOM_ID', this.roomList[this.activeRoomIndex].id)
         })
@@ -97,27 +94,20 @@ export default {
   },
   methods: {
     fillMemberRooms () {
-      console.log('comin')
       if (this.roomLoading || this.roomEnded) {
-        console.log('comin if')
         return
       }
       this.roomLoading = true
-
       fetchMemberRoom(this.roomLimit, this.roomPage).then(res => {
         this.roomList = this.roomPage === 0 ? res.results : this.roomList.concat(res.results)
         this.roomEnded = this.roomLimit * (this.roomPage + 1) > res.count
         this.roomPage += 1
         this.roomLoading = false
-
-        console.log('fetchRooms')
-
         let temp = []
         this.roomList.forEach((room) => {
           if (room.users && room.users.length < 2 && (room.type === 2 || room.type === 3)) {
             return
           }
-
           temp.push({...room})
         })
         this.roomList = temp

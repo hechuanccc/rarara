@@ -135,8 +135,6 @@
             </el-carousel-item>
           </el-carousel>
         </el-dialog>
-
-
         <el-dialog
           class="profile-dialog"
           :visible.sync="showProfileDiag"
@@ -729,7 +727,6 @@ export default {
       this.$refs.roomList.roomEnded = false
       this.$refs.roomList.roomPage = 0
       this.$refs.roomList.fillMemberRooms()
-      console.log('initRoomList')
     },
     loadResult (tab) {
       if (tab.index === '1') {
@@ -954,7 +951,6 @@ export default {
       cursor: pointer;
     }
   }
-
   .member-info {
     color: #999;
     text-align: left;
