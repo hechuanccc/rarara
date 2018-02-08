@@ -17,7 +17,7 @@
             <div class="lay-block clearfix" v-if="item.type >= 0">
               <div class="avatar" @click="handleAvatarClick(item)">
                 <icon name="cog" class="font-cog" v-if="item.type == 4" scale="3"></icon>
-                <img :src="item.sender && item.sender.avatar_url ? item.sender.avatar_url : require('../assets/avatar.png')" v-else>
+                <img :src="item.sender && item.sender.avatar ? item.sender.avatar : require('../assets/avatar.png')" v-else>
               </div>
               <div class="lay-content">
                 <div class="msg-header">
@@ -125,14 +125,14 @@
 </template>
 
 <script>
-// import urls from '../api/urls'
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/cog'
 import 'vue-awesome/icons/smile-o'
 import { fetchChatEmoji, sendImgToChat, getChatUser } from '../api'
-// import { getCookie } from '../utils'
 import config from '../../config'
 import Restraint from './Restraint'
+import { mapGetters } from 'vuex'
+
 const WSHOST = config.chatHost
 
 export default {
@@ -197,7 +197,7 @@ export default {
         this.$set(this.roomMessages, item.id, this.roomMessages[item.id] ? this.roomMessages[item.id] : [])
       })
     },
-    '$store.state.activeRoomId' (val, oldVal) {
+    '$store.state.activeRoomId' (val) {
       this.RECEIVER = val
       this.$nextTick(() => {
         this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
@@ -205,13 +205,16 @@ export default {
     },
     'roomMessages': {
       handler: function (val, oldVal) {
-        this.num++
+        this.num ++
         this.msgCnt = ' '
       },
       deep: true
     }
   },
   computed: {
+    ...mapGetters([
+      'myRoles'
+    ]),
     isLogin () {
       return this.$store.state.user.logined && this.$route.name !== 'Home'
     },
@@ -229,11 +232,6 @@ export default {
         })
 
         return result
-      }
-    },
-    myRoles () {
-      if (this.personal_setting.user) {
-        return this.personal_setting.user.roles.map((role) => role.name)
       }
     },
     activeRoomId () {
