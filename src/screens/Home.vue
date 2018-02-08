@@ -1,10 +1,10 @@
 <template>
-  <el-container class="chat-box">
+  <el-container class="chat-box" :style="{backgroundImage: `url(${globalPreference.web_background})`}">
     <el-header class="header" height="50px">
       <el-row>
-        <el-col :span="4" class="logo clearfix">
+        <el-col :span="4" class="logo clearfix" :style="{backgroundImage: `url(${globalPreference.logo})`}">
         </el-col>
-        <el-col :span="16">
+        <el-col :span="14">
           <div class="annouce-box clearfix" @click="announcementDialogVisible = true">
             <div class="title clearfix fl">
               <span>公告</span>
@@ -21,10 +21,17 @@
             </div>
           </div>
         </el-col>
-        <el-col class="head-right" :span="4">
+        <el-col class="head-right" :span="6">
+          <div class="mobile-promotion" @mouseover="showQR = true" @mouseleave="showQR = false">
+            <icon class="icon m-r" name="mobile-phone" scale="2"></icon>
+            <span class="text">手机版聊天室</span>
+          </div>
+          <div class="qrcode" v-show="showQR">
+            <qr-code :text="globalPreference.mobile_url"></qr-code>
+          </div>
           <div class="user-info">
             <img @click="showProfileDiag = true" :src="user.avatar ? user.avatar : require('../assets/avatar.png')" width="25">
-            <span @click="showProfileDiag = true" class="username">{{user.username}}</span>
+            <span @click="showProfileDiag = true" class="username">{{user.nickname || user.username}}</span>
             <a @click="logout">退出</a>
           </div>
         </el-col>
@@ -37,12 +44,12 @@
             v-model="activeTab"
             type="border-card">
             <el-tab-pane
-              label="在线会员"
+              :label="`在线会员(${onlineMembers.length})`"
               name="members">
               <div class="search-form">
                 <el-form>
                   <el-form-item >
-                    <el-input v-model="nickname_q" placeholder="请输入会员名称" class="ipt-search"></el-input>
+                    <el-input v-model="nickname_q" placeholder="请输入会员名称" class="ipt-search" @keyup.native.enter="search"></el-input>
                     <icon class="search-icon fl" name="search" scale="1" @click.native="search"></icon>
                   </el-form-item>
                 </el-form>
@@ -53,7 +60,10 @@
               </div>
 
               <ul class="members" v-if="onlineMembers.length">
-                <li v-for="(member, index) in onlineMembers" @click="popoverMember=member" slot="reference">
+                <li v-for="(member, index) in onlineMembers"
+                  @click="popoverMember = member"
+                  :key="index"
+                  slot="reference">
                   <el-popover
                     :ref="'popover' + member.id"
                     placement="right"
@@ -62,9 +72,11 @@
                     trigger="click">
                     <ul class="member-actions">
                       <li @click="privateChat(member)" v-if="member.id !== user.id">私聊</li>
-                      <li @click="ban(member, 15)" v-if="member.id !== user.id && myRoles.includes('manager')">禁言15分钟</li>
-                      <li @click="ban(member, 30)" v-if="member.id !== user.id && myRoles.includes('manager')">禁言30分钟</li>
-                      <li @click="block(member)" v-if="member.id !== user.id && myRoles.includes('manager')">加入黑名单</li>
+                      <li @click="ban(member, 15)" v-if="member.id !== user.id && !member.is_banned.is_banned && myRoles.includes('manager')">禁言15分钟</li>
+                      <li @click="ban(member, 30)" v-if="member.id !== user.id  && !member.is_banned.is_banned && myRoles.includes('manager')">禁言30分钟</li>
+                      <li @click="block(member)" v-if="member.id !== user.id && !member.is_blocked && myRoles.includes('manager')">加入黑名单</li>
+                      <li @click="unblock(member)" v-if="member.id !== user.id && member.is_blocked && myRoles.includes('manager')">解除拉黑</li>
+                      <li @click="unban(member)" v-if="member.id !== user.id && member.is_banned.is_banned  && myRoles.includes('manager')  ">解除禁言</li>
                     </ul>
                     <div slot="reference">
                       <img :src="member.avatar" class="avatar" v-if="member.avatar"/>
@@ -125,79 +137,111 @@
           </el-carousel>
         </el-dialog>
         <el-dialog
-          title="用户中心"
+          class="profile-dialog"
           :visible.sync="showProfileDiag"
           :width="'600px'"
           @open="changeProfileRes = ''"
           center>
           <div class="edit-profile">
-            <div>
-              <div
-                class="avatar"
-                v-on:mouseover="swichAvatar = true"
-                v-on:mouseout="swichAvatar = false"
-                style="overflow-y: hidden;">
-                <div>
-                  <img v-if="user.avatar && !swichAvatar" :src="currentChooseAvatar || user.avatar" width="72" height="72">
-                  <img v-else-if="!swichAvatar" :src="currentChooseAvatar || require('../assets/avatar.png')" width="72" height="72">
+            <el-tabs v-model="activePanel" type="card" @tab-click="changeProfileRes = ''">
+              <el-tab-pane class="edit-user-panel" label="用户中心" name="account">
+                <div
+                  class="avatar"
+                  v-on:mouseover="swichAvatar = true"
+                  v-on:mouseout="swichAvatar = false"
+                  style="overflow-y: hidden;">
+                  <div>
+                    <img v-if="user.avatar && !swichAvatar" :src="currentChooseAvatar || user.avatar" width="72" height="72">
+                    <img v-else-if="!swichAvatar" :src="currentChooseAvatar || require('../assets/avatar.png')" width="72" height="72">
+                  </div>
+                  <label
+                    for="preViewAvatar"
+                    class="upload-avatar">
+                    <input @change="preViewAvatar" type="file" ref="preViewAvatar" class="img-upload-input" id="preViewAvatar" accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif" />
+                    <span v-if="swichAvatar" class="el-icon-upload"></span>
+                  </label>
                 </div>
+                <p class="text-center m-b">上传新头像</p>
+                <el-form :model="editUser" status-icon :rules="rules" ref="editUser" :style="{marginLeft: '-20px'}">
+                  <el-form-item prop="nickname" label="昵称"  label-width="85px">
+                    <el-input v-model="editUser.nickname"
+                              class="inp">
+                    </el-input>
+                  </el-form-item>
 
-                <label
-                  for="preViewAvatar"
-                  class="upload-avatar">
-                  <input @change="preViewAvatar" type="file" ref="preViewAvatar" class="img-upload-input" id="preViewAvatar" accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif" />
-                  <span v-if="swichAvatar" class="el-icon-upload"></span>
-                </label>
-              </div>
-              <p class="text-center m-b">上传新头像</p>
-              <el-form :model="editUser" status-icon :rules="rules" ref="editUser" :style="{marginLeft: '-20px'}">
-                <el-form-item prop="nickname" label="昵称"  label-width="85px">
-                  <el-input v-model="editUser.nickname"
-                            class="inp">
-                  </el-input>
-                </el-form-item>
+                  <el-form-item label="邮箱" prop="email" label-width="85px">
+                    <el-input class="input-width" v-model="editUser.email"></el-input>
+                  </el-form-item>
 
-                <el-form-item label="邮箱" prop="email" label-width="85px">
-                  <el-input class="input-width" v-model="editUser.email"></el-input>
-                </el-form-item>
+                  <el-form-item prop="mobile" label="手机" label-width="85px">
+                    <el-input v-model="editUser.mobile"
+                              type="number"
+                              class="inp">
+                    </el-input>
+                  </el-form-item>
 
-                <el-form-item prop="mobile" label="手机" label-width="85px">
-                  <el-input v-model="editUser.mobile"
-                            type="number"
-                            class="inp">
-                  </el-input>
-                </el-form-item>
+                  <el-form-item prop="QQ" label="QQ"  label-width="85px">
+                    <el-input v-model="editUser.QQ"
+                              type="number"
+                              class="inp">
+                    </el-input>
+                  </el-form-item>
 
-                <el-form-item prop="QQ" label="QQ"  label-width="85px">
-                  <el-input v-model="editUser.QQ"
-                            type="number"
-                            class="inp">
-                  </el-input>
-                </el-form-item>
+                  <el-form-item class="text" label="登录IP" label-width="85px">
+                    <p class="member-info">{{user.last_login_ip}}</p>
+                  </el-form-item>
 
-                <el-form-item label="登录IP"  label-width="85px">
-                  <p class="member-info">{{user.last_login_ip}}</p>
-                </el-form-item>
+                  <el-form-item class="text" label="注册时间"  label-width="85px">
+                    <p class="member-info">{{user.date_joined | moment('YYYY-MM-HH')}}</p>
+                  </el-form-item>
 
-                <el-form-item label="注册时间"  label-width="85px">
-                  <p class="member-info">{{user.date_joined | moment('YYYY-MM-HH')}}</p>
-                </el-form-item>
-
-                <el-form-item label="推广链接"  label-width="85px">
-                  <p class="member-info">{{promoteUrl}}</p>
-                </el-form-item>
-                <el-form-item label-width="85px">
-                  <el-button class="profile-submit" type="primary" @click="submit">确认修改</el-button>
-                </el-form-item>
-                <el-form-item label-width="85px">
-                  <p :class="[changeProfileSuccess ? 'text-success' : 'text-danger']">{{changeProfileRes}}</p>
-                </el-form-item>
-              </el-form>
-            </div>
+                  <el-form-item label="推广链接"  label-width="85px">
+                    <p class="member-info">{{promoteUrl}}</p>
+                  </el-form-item>
+                  <el-form-item label-width="85px">
+                    <el-button class="profile-submit" type="primary" @click="submit" :disabled="disabledEditProfile">确认修改</el-button>
+                  </el-form-item>
+                  <el-form-item label-width="85px">
+                    <p :class="[changeProfileSuccess ? 'text-success' : 'text-danger']">{{changeProfileRes}}</p>
+                  </el-form-item>
+                </el-form>
+              </el-tab-pane>
+              <el-tab-pane class="edit-password-panel" label="修改密码" name="password">
+                <el-form class="edit-password-form" :model="editPassword" status-icon :rules="passwordRules" ref="editPassword" label-width="100px">
+                  <el-form-item prop="prev_password" label="旧密码">
+                    <el-input v-model="editPassword.prev_password"
+                              type="password"
+                              :maxlength="15"
+                              class="inp">
+                    </el-input>
+                  </el-form-item>
+                  <el-form-item prop="new_password" label="新密码">
+                    <el-input v-model="editPassword.new_password"
+                              type="password"
+                              :maxlength="15"
+                              class="inp">
+                    </el-input>
+                  </el-form-item>
+                  <el-form-item prop="repeat_password" label="确认新密码">
+                    <el-input v-model="editPassword.repeat_password"
+                              type="password"
+                              :maxlength="15"
+                              class="inp">
+                    </el-input>
+                  </el-form-item>
+                  <el-form-item>
+                    <el-button class="inp profile-submit" type="primary" @click="updatePassword" :disabled="disabledEditProfile">确认修改</el-button>
+                  </el-form-item>
+                  <el-form-item>
+                    <p :class="[changeProfileSuccess ? 'text-success' : 'text-danger']">{{changeProfileRes}}</p>
+                  </el-form-item>
+                </el-form>
+              </el-tab-pane>
+            </el-tabs>
           </div>
-
         </el-dialog>
       </el-container>
+
   </el-container>
 </template>
 
@@ -209,9 +253,9 @@ import 'vue-awesome/icons/mobile-phone'
 import 'vue-awesome/icons/comments'
 import 'vue-awesome/icons/search'
 import ChatRoom from '../components/ChatRoom'
-import { fetchAnnouce, fetchOnlineMembers, createRoom, updateUser, banChatUser, blockChatUser } from '../api'
+import { fetchAnnouce, fetchOnlineMembers, createRoom, updateUser, banChatUser, unbanChatUser, blockChatUser, unblockChatUser, getChatUser } from '../api'
 import { msgFormatter } from '../utils'
-import { validatePhone, validateQQ } from '../validate'
+import { validatePhone, validateQQ, validatePassword } from '../validate'
 import urls from '../api/urls'
 import Result from '../components/Result'
 import { mapState } from 'vuex'
@@ -244,6 +288,37 @@ export default {
         callback()
       }
     }
+    const passwordValidator = (form) => {
+      return (rule, value, callback) => {
+        if (value === '') {
+          callback(new Error('請輸入新密碼'))
+        } else {
+          if (this[form].repeat_password !== '') {
+            this.$refs[form].validateField('repeat_password')
+          }
+          callback()
+        }
+      }
+    }
+    const passwordFormatValidator = (rule, value, callback) => {
+      if (!validatePassword(value)) {
+        callback(new Error('请输入8~15字元，其中至少包含一大写字母及一数字'))
+      } else {
+        callback()
+      }
+    }
+    const repeatPasswordValidator = (form) => {
+      return (rule, value, callback) => {
+        if (value === '') {
+          callback(new Error('请再次输入密码'))
+        } else if (value !== this[form].new_password) {
+          callback(new Error('两次输入密码不一致'))
+        } else {
+          callback()
+        }
+      }
+    }
+
     return {
       activeRoom: {},
       popoverMember: {},
@@ -277,6 +352,12 @@ export default {
         QQ: ''
       },
       oldUser: {},
+      editPassword: {
+        prev_password: '',
+        repeat_password: '',
+        new_password: ''
+      },
+      disabledEditProfile: false,
       rules: {
         email: [
           { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur,change' }
@@ -288,11 +369,25 @@ export default {
           { validator: qqValidator, trigger: 'blur,change' }
         ]
       },
+      passwordRules: {
+        prev_password: [
+          { required: true, message: '请输入旧密码', trigger: 'blur' }
+        ],
+        new_password: [
+          { required: true, validator: passwordValidator('editPassword'), trigger: 'blur' },
+          { validator: passwordFormatValidator, trigger: 'blur,change' }
+        ],
+        repeat_password: [
+          { required: true, validator: repeatPasswordValidator('editPassword'), trigger: 'blur' }
+        ]
+      },
       currentChooseAvatar: '',
       changeProfileSuccess: true,
       changeProfileRes: '',
       createRoomLoading: false,
-      lasyLoadResult: false
+      lasyLoadResult: false,
+      showQR: false,
+      activePanel: 'account'
     }
   },
   computed: {
@@ -324,6 +419,11 @@ export default {
       if (val === 'rooms') {
         this.initRoomList()
       }
+    },
+    'nickname_q': function (val) {
+      if (val === '') {
+        this.exitSearch()
+      }
     }
   },
   created () {
@@ -338,11 +438,26 @@ export default {
     })
   },
   methods: {
+    getUser (member) {
+      getChatUser(1).then(response => {
+        if (!response.banned_users.length || !response.block_users.length) {
+          this.popoverMember.is_banned.is_banned = false
+          this.popoverMember.is_blocked = false
+        }
+
+        let newBannedUsers = response.banned_users.map((member) => member.username)
+        let newBlockUsers = response.block_users.map((member) => member.username)
+
+        this.popoverMember.is_banned.is_banned = newBannedUsers.includes(member.username)
+        this.popoverMember.is_blocked = newBlockUsers.includes(member.username)
+      })
+    },
     ban (member, mins) {
       banChatUser(RECEIVER, {
         user: member.username,
         banned_time: mins
       }).then((data) => {
+        this.getUser(member)
         this.$message({
           showClose: true,
           message: data.status,
@@ -352,6 +467,25 @@ export default {
         this.$message({
           showClose: true,
           message: errorMsg.response.data.error,
+          type: 'error'
+        })
+      })
+    },
+    unban (member, user) {
+      unbanChatUser(RECEIVER, {
+        user: member.username
+      }).then((data) => {
+        this.getUser(member)
+        this.$message({
+          showClose: true,
+          message: data.status,
+          type: 'success'
+        })
+      }, errorMsg => {
+        let data = errorMsg.response.data
+        this.$message({
+          showClose: true,
+          message: data.error,
           type: 'error'
         })
       })
@@ -360,6 +494,7 @@ export default {
       blockChatUser(RECEIVER, {
         user: member.username
       }).then((data) => {
+        this.getUser(member)
         this.$message({
           showClose: true,
           message: data.status,
@@ -373,7 +508,30 @@ export default {
         })
       })
     },
+
+    unblock (member, user) {
+      unblockChatUser(RECEIVER, {
+        user: member.username
+      }).then((data) => {
+        this.getUser(member)
+        this.$message({
+          showClose: true,
+          message: data.status,
+          type: 'success'
+        })
+      }, errorMsg => {
+        let data = errorMsg.response.data
+        this.$message({
+          showClose: true,
+          message: data.error,
+          type: 'error'
+        })
+      })
+    },
     search () {
+      if (this.nickname_q === '') {
+        return
+      }
       this.searchEnabled = true
       this.memberPage = 0
       this.onlineMembersEnded = false
@@ -393,6 +551,11 @@ export default {
       this.createRoomLoading = true
       createRoom([member.id, this.user.id])
         .then((res) => {
+          this.$message({
+            showClose: true,
+            message: res.status,
+            type: 'info'
+          })
           this.$set(this.$refs['popover' + member.id][0], 'showPopper', false)
           this.activeTab = 'rooms'
           this.activeRoom = res.room
@@ -485,6 +648,7 @@ export default {
           if (file) {
             formData.append('avatar', file)
           }
+          this.disabledEditProfile = true
           updateUser(this.user.id, formData).then(result => {
             if (!result.error) {
               this.changeProfileRes = '修改资料成功'
@@ -494,6 +658,9 @@ export default {
             } else {
               this.changeProfileRes = '修改资料失败'
             }
+            setTimeout(() => {
+              this.disabledEditProfile = false
+            }, 1000)
           }, errorMsg => {
             this.$message({
               showClose: true,
@@ -501,9 +668,36 @@ export default {
               type: 'error'
             })
             this.changeProfileRes = '修改资料失败'
+            this.disabledEditProfile = false
           })
         } else {
           return false
+        }
+      })
+    },
+    updatePassword () {
+      this.$refs['editPassword'].validate((valid) => {
+        if (valid) {
+          this.disabledEditProfile = true
+          updateUser(this.user.id, {password: this.editPassword}).then(result => {
+            if (!result.error) {
+              this.changeProfileRes = '修改资料成功'
+            } else {
+              this.changeProfileRes = '修改资料失败'
+            }
+            setTimeout(() => {
+              this.disabledEditProfile = false
+              this.$refs['editPassword'].resetFields()
+            }, 1000)
+          }, errorMsg => {
+            this.$message({
+              showClose: true,
+              message: msgFormatter(errorMsg),
+              type: 'error'
+            })
+            this.changeProfileRes = '修改资料失败'
+            this.disabledEditProfile = false
+          })
         }
       })
     },
@@ -547,7 +741,9 @@ export default {
 .chat-box {
   width: 100%;
   height: 100%;
-  background: url('../assets/chat_bg.jpg') 0px 0px / 100% 100% no-repeat scroll rgb(64, 128, 128);
+  background-color: rgba(0, 0, 0, .5);
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 .header {
   height: 50px;
@@ -561,8 +757,9 @@ export default {
     }
   }
   .logo {
-    background: url('../assets/logo.png') center center no-repeat;
+    background-position: center center;
     background-size: contain;
+    background-repeat: no-repeat;
     height: 50px;
     h1 {
       text-indent: -999px;
@@ -613,6 +810,12 @@ export default {
   img {
     vertical-align: middle;
     display: inline-block;
+  }
+  .mobile-promotion {
+    display: inline-block;
+    .icon, .text {
+      vertical-align: middle;
+    }
   }
   .user-info {
     float: right;
@@ -701,9 +904,7 @@ export default {
   border-radius: 50%;
   background-color: black;
 }
-
 .edit-profile {
-  width: 50%;
   border-radius: 5px;
   background: rgba(255,255,255,.93);
   margin: 0 auto ;
@@ -712,6 +913,12 @@ export default {
   text-align: center;
   z-index: 9999;
   color: #4f77ab;
+  /deep/ .el-form-item--small.el-form-item {
+    margin-bottom: 24px;
+  }
+  /deep/ .text.el-form-item--small.el-form-item {
+    margin-bottom: 0;
+  }
   .avatar-upload-tip {
     font-size: 12px;
     color: rgb(255, 127, 77);
@@ -760,9 +967,30 @@ export default {
     position: absolute;
     top: 0;
   }
+  .edit-user-panel {
+    width: 300px;
+    margin: 0 auto;
+  }
+  .edit-password-form {
+    width: 455px;
+    margin-left: 95px;
+    text-align: left;
+    .inp {
+      width: 235px;
+    }
+  }
 }
 .results-container {
   height: calc(100vh - 140px);
   overflow-y: auto;
 }
+.qrcode {
+  position: absolute;
+  z-index: 3;
+  img {
+    width: 280px;
+    height: 280px;
+  }
+}
+
 </style>

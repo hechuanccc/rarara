@@ -84,5 +84,8 @@ export default {
   },
   setGlobalConfig: ({ commit }, data) => {
     commit(types.SET_GLOBAL, data)
+  },
+  updateRoomList: ({ commit, state }, data) => {
+    commit(types.UPDATE_ROOMLIST, data)
   }
 }
