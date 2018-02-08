@@ -90,7 +90,12 @@ export default {
       })
     }
   },
-  components: {
+  watch: {
+    'errorMsg': function () {
+      setTimeout(() => {
+        this.errorMsg = ''
+      }, 3000)
+    }
   }
 }
 </script>
