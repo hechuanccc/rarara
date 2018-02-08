@@ -73,6 +73,7 @@ export default {
   watch: {
     'activeRoom': {
       handler: function (val, oldVal) {
+        this.roomEnded = false
         this.roomPage = 0
         this.fillMemberRooms().then(() => {
           this.activeRoomIndex = _.findIndex(this.roomList, room => room.id === this.activeRoom.id)
