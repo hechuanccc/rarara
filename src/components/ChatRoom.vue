@@ -129,6 +129,7 @@ import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/cog'
 import 'vue-awesome/icons/smile-o'
 import { fetchChatEmoji, sendImgToChat, getChatUser } from '../api'
+import urls from '../api/urls'
 import config from '../../config'
 import Restraint from './Restraint'
 import { mapGetters, mapState } from 'vuex'
@@ -176,7 +177,8 @@ export default {
         ]
       },
       roomMessages: {},
-      num: 0
+      num: 0,
+      host: urls.domain
     }
   },
   watch: {
@@ -211,7 +213,7 @@ export default {
       'myRoles'
     ]),
     ...mapState([
-      'host'
+      'activeRoomId'
     ]),
     isLogin () {
       return this.$store.state.user.logined && this.$route.name !== 'Home'
@@ -231,9 +233,6 @@ export default {
 
         return result
       }
-    },
-    activeRoomId () {
-      return this.$store.state.activeRoomId
     },
     lastMessageInHall () {
       if (this.roomMessages['1'] && this.roomMessages['1'].length) {
@@ -262,6 +261,7 @@ export default {
     joinChatRoom () {
       let token = this.$cookie.get('access_token')
       this.loading = true
+      this.$store.dispatch('startLoading')
       this.ws = new WebSocket(`${WSHOST}/chat/stream?token=${token}`)
       this.ws.onopen = () => {
         if (!this.emojis.people.length) {
@@ -283,6 +283,7 @@ export default {
     },
     handleMsg () {
       this.loading = false
+      this.$store.dispatch('endLoading')
       if (!this.ws) { return false }
       this.ws.send(JSON.stringify({
         'command': 'join',
@@ -430,11 +431,9 @@ export default {
       }
     },
     getUser () {
-      this.loading = true
       getChatUser(1).then(response => {
         this.bannedUsers = response.banned_users
         this.blockedUsers = response.block_users
-        this.loading = false
       })
     },
     updateUsers (data) {

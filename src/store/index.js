@@ -16,8 +16,7 @@ export function createStore () {
       globalPreference: {},
       roomList: [],
       activeRoomId: 1,
-      newMsg: {},
-      host: ''
+      newMsg: {}
     },
     actions,
     mutations,

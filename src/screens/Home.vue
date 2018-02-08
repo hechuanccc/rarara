@@ -89,6 +89,7 @@
               <div v-else-if="!onlineMemberLoading" class="empty">无结果</div>
             </el-tab-pane>
             <el-tab-pane
+              :disabled="loading"
               label="聊天列表"
               name="rooms">
               <div class="chat-list">
@@ -401,7 +402,8 @@ export default {
   },
   computed: {
     ...mapState([
-      'globalPreference'
+      'globalPreference',
+      'loading'
     ]),
     ...mapGetters([
       'myRoles'
