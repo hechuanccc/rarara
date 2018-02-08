@@ -1,5 +1,5 @@
 <template>
-  <div class="rooms-container">
+  <div class="rooms-container" v-if="roomList.length">
     <ul class="rooms m-t m-b">
       <li v-for="(room, index) in roomList"
         :key="index"
@@ -11,12 +11,18 @@
         <div class="meta">
           <div class="illustration">
             <icon class="volume-up" name="comments" scale="1.5" v-if="room.type === 1"></icon>
-            <img class="avatar" v-else-if="room.type === 2" :src="require('../assets/stick_admin.png')" alt="avatar">
+
+            <img class="avatar" v-else-if="room.type === 2 && !myRoles.includes('customer service')" :src="require('../assets/stick_admin.png')" alt="avatar">
+
             <img class="avatar" v-else-if="room.users.length === 2" :src="room.users[1].avatar ? room.users[1].avatar : require('../assets/avatar.png')" alt="avatar">
             <img class="avatar" v-else :src="require('../assets/avatar.png')" alt="avatar">
           </div>
           <span class="title" v-if="room.type === 2">
-            {{ `客服人员 ${room.users[1].nickname || room.users[1].username}`}}
+            <span v-if="!myRoles.includes('customer service')">{{ `客服人员 ${room.users[1].nickname || room.users[1].username}`}}</span>
+            <span v-else>{{ `与 ${room.users[1].nickname || room.users[1].username} 的私聊`}}</span>
+          </span>
+          <span class="title" v-else-if="room.type === 1">
+            计划聊天室
           </span>
           <span class="title" v-else>
             <span v-if="room.type === 3 && room.users.length === 2">{{ `与 ${room.users[1].nickname || room.users[1].username} 的私聊`}}</span>
@@ -25,6 +31,7 @@
         </div>
         <div v-if="room.last_message">{{room.last_message.content | truncate(25)}}</div>
       </li>
+      <li class="load-more pointer" @click="fillMemberRooms()" v-if="!roomEnded" >查看更多</li>
     </ul>
   </div>
 </template>
@@ -33,6 +40,8 @@
 import _ from 'lodash'
 import Icon from 'vue-awesome/components/Icon'
 import { fetchMemberRoom } from '../api'
+import { mapGetters } from 'vuex'
+
 export default {
   props: {
     user: {
@@ -56,8 +65,13 @@ export default {
       roomList: []
     }
   },
+  computed: {
+    ...mapGetters([
+      'myRoles'
+    ])
+  },
   watch: {
-    activeRoom: {
+    'activeRoom': {
       handler: function (val, oldVal) {
         this.roomEnded = false
         this.roomPage = 0
@@ -81,10 +95,13 @@ export default {
   },
   methods: {
     fillMemberRooms () {
+      if (this.roomLoading || this.roomEnded) {
+        return
+      }
       this.roomLoading = true
-      return fetchMemberRoom(this.roomLimit, this.roomPage).then(res => {
+      fetchMemberRoom(this.roomLimit, this.roomPage).then(res => {
         this.roomList = this.roomPage === 0 ? res.results : this.roomList.concat(res.results)
-        this.roomEnded = this.roomLimit * (this.roomPage + 1) > this.roomList.length
+        this.roomEnded = this.roomLimit * (this.roomPage + 1) > res.count
         this.roomPage += 1
         this.roomLoading = false
         let temp = []
@@ -94,8 +111,8 @@ export default {
           }
           temp.push({...room})
         })
-
         this.roomList = temp
+
         this.$store.dispatch('updateRoomList', this.roomList)
 
         return res
@@ -151,7 +168,7 @@ export default {
   }
 }
 .load-more {
-  text-align: center;
+  padding: 5px 10px;
 }
 .default-room {
   .fa-icon {

@@ -25,6 +25,7 @@
 
                 <el-form-item prop="qq" label="QQ*"  label-width="85px">
                   <el-input v-model="user.qq"
+                            @keypress.native="filtAmount"
                             type="number">
                   </el-input>
                 </el-form-item>

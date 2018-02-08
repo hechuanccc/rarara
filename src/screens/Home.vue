@@ -71,7 +71,6 @@
                     width="150"
                     trigger="click">
                     <ul class="member-actions">
-                      <li @click="privateChat(member)" v-if="member.id !== user.id">私聊</li>
                       <li @click="ban(member, 15)" v-if="member.id !== user.id && !member.is_banned.is_banned && myRoles.includes('manager')">禁言15分钟</li>
                       <li @click="ban(member, 30)" v-if="member.id !== user.id  && !member.is_banned.is_banned && myRoles.includes('manager')">禁言30分钟</li>
                       <li @click="block(member)" v-if="member.id !== user.id && !member.is_blocked && myRoles.includes('manager')">加入黑名单</li>
@@ -154,14 +153,22 @@
                     <img v-if="user.avatar && !swichAvatar" :src="currentChooseAvatar || user.avatar" width="72" height="72">
                     <img v-else-if="!swichAvatar" :src="currentChooseAvatar || require('../assets/avatar.png')" width="72" height="72">
                   </div>
-                  <label
-                    for="preViewAvatar"
-                    class="upload-avatar">
-                    <input @change="preViewAvatar" type="file" ref="preViewAvatar" class="img-upload-input" id="preViewAvatar" accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif" />
+                  <label for="preViewAvatar" class="pointer">
+                    <input @change="preViewAvatar"
+                      type="file"
+                      ref="preViewAvatar"
+                      class="img-upload-input"
+                      id="preViewAvatar"
+                      accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif" />
                     <span v-if="swichAvatar" class="el-icon-upload"></span>
                   </label>
                 </div>
-                <p class="text-center m-b">上传新头像</p>
+                <p class="text-center m-b">
+                  <label for="preViewAvatar"
+                    class="pointer"
+                    v-on:mouseover="swichAvatar = true"
+                    v-on:mouseout="swichAvatar = false">上传新头像</label>
+                </p>
                 <el-form :model="editUser" status-icon :rules="rules" ref="editUser" :style="{marginLeft: '-20px'}">
                   <el-form-item prop="nickname" label="昵称"  label-width="85px">
                     <el-input v-model="editUser.nickname"
@@ -182,6 +189,7 @@
 
                   <el-form-item prop="QQ" label="QQ"  label-width="85px">
                     <el-input v-model="editUser.QQ"
+                              @keypress.native="filtAmount"
                               type="number"
                               class="inp">
                     </el-input>
@@ -254,11 +262,11 @@ import 'vue-awesome/icons/comments'
 import 'vue-awesome/icons/search'
 import ChatRoom from '../components/ChatRoom'
 import { fetchAnnouce, fetchOnlineMembers, createRoom, updateUser, banChatUser, unbanChatUser, blockChatUser, unblockChatUser, getChatUser } from '../api'
-import { msgFormatter } from '../utils'
+import { msgFormatter, filtAmount } from '../utils'
 import { validatePhone, validateQQ, validatePassword } from '../validate'
 import urls from '../api/urls'
 import Result from '../components/Result'
-import { mapState } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 import RoomList from '../components/RoomList'
 const RECEIVER = 1
 
@@ -394,6 +402,9 @@ export default {
     ...mapState([
       'globalPreference'
     ]),
+    ...mapGetters([
+      'myRoles'
+    ]),
     isHome () {
       return ''
     },
@@ -409,9 +420,6 @@ export default {
     },
     promoteUrl () {
       return this.user.promote_code ? window.location.origin + '?r' + this.user.promote_code : ''
-    },
-    myRoles () {
-      return this.user.roles.map(role => role.name)
     }
   },
   watch: {
@@ -438,6 +446,7 @@ export default {
     })
   },
   methods: {
+    filtAmount,
     getUser (member) {
       getChatUser(1).then(response => {
         if (!response.banned_users.length || !response.block_users.length) {
@@ -508,7 +517,6 @@ export default {
         })
       })
     },
-
     unblock (member, user) {
       unblockChatUser(RECEIVER, {
         user: member.username
@@ -549,18 +557,18 @@ export default {
         return
       }
       this.createRoomLoading = true
-      createRoom([member.id, this.user.id])
-        .then((res) => {
-          this.$message({
-            showClose: true,
-            message: res.status,
-            type: 'info'
-          })
-          this.$set(this.$refs['popover' + member.id][0], 'showPopper', false)
-          this.activeTab = 'rooms'
-          this.activeRoom = res.room
-          this.createRoomLoading = false
+      createRoom([member.id, this.user.id]).then((res) => {
+        this.$message({
+          showClose: false,
+          message: res.status,
+          type: 'info'
         })
+        this.$set(this.$refs['popover' + member.id][0], 'showPopper', false)
+
+        this.activeTab = 'rooms'
+        this.activeRoom = res.room
+        this.createRoomLoading = false
+      })
     },
     fillOnlineMembers () {
       if (this.onlineMembersEnded || this.onlineMemberLoading) {
@@ -617,13 +625,6 @@ export default {
       }).catch(err => {
         console.log(err)
       })
-    },
-    receiveMember (user) {
-      this.user = user
-      // 登录聊天室后才去出发 RoomList 的获取
-      this.activeRoom = {
-        id: 1
-      }
     },
     logout () {
       this.$store.dispatch('logout')
@@ -723,8 +724,8 @@ export default {
       this.currentChooseAvatar = URL.createObjectURL(file)
     },
     initRoomList () {
-      // this.$refs.roomList.roomEnded = false
-      // this.$refs.roomList.roomPage = 0
+      this.$refs.roomList.roomEnded = false
+      this.$refs.roomList.roomPage = 0
       this.$refs.roomList.fillMemberRooms()
     },
     loadResult (tab) {
@@ -761,6 +762,7 @@ export default {
     background-size: contain;
     background-repeat: no-repeat;
     height: 50px;
+    margin-left: -10px;
     h1 {
       text-indent: -999px;
     }
@@ -949,9 +951,6 @@ export default {
       cursor: pointer;
     }
   }
-  p {
-    cursor: pointer;
-  }
   .member-info {
     color: #999;
     text-align: left;
@@ -993,4 +992,10 @@ export default {
   }
 }
 
+.text-success {
+  color: $green;
+}
+.text-danger {
+  color: $red;
+}
 </style>

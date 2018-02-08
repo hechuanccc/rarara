@@ -86,7 +86,7 @@ export default {
         const next = this.$route.query.next
         this.$router.push(next || '/')
       }, errorMsg => {
-        this.errorMsg = errorMsg.response.data.error
+        this.errorMsg = errorMsg.response.data.message
       })
     }
   },
