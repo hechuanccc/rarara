@@ -18,5 +18,6 @@ export default {
   latest_results: ghost + '/latest_results/',
   memberRoom: host + '/v1/member/room/',
   room: host + '/v1/room/',
-  global_preference: host + '/v1/global-data/'
+  global_preference: host + '/v1/global-data/',
+  check_username: host + '/v1/user/check'
 }
