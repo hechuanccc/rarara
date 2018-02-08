@@ -114,3 +114,7 @@ export function unblockChatUser (id, data) {
 export function getChatUser (id) {
   return axios.get(`${urls.room}${id}/`)
 }
+
+export function checkUserName (username) {
+  return axios.get(urls.check_username, { params: { username: username } })
+}

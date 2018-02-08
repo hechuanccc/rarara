@@ -11,51 +11,30 @@
           <el-main>
             <div class="register">
               <el-form :model="user" status-icon :rules="rules" ref="user">
-                <el-form-item prop="username" label="用户名*"  label-width="85px">
+                <el-form-item prop="username" label="用户名"  label-width="85px">
                   <el-input v-model="user.username"
                             :maxlength="15"
                             auto-complete="off">
                   </el-input>
                 </el-form-item>
-
-                <el-form-item prop="nickname" label="昵称*"  label-width="85px">
-                  <el-input v-model="user.nickname">
-                  </el-input>
-                </el-form-item>
-
-                <el-form-item prop="qq" label="QQ*"  label-width="85px">
-                  <el-input v-model="user.qq"
-                            type="number">
-                  </el-input>
-                </el-form-item>
-
-                <el-form-item label="邮箱*" prop="email" label-width="85px">
-                  <el-input class="input-width" v-model="user.email"></el-input>
-                </el-form-item>
-
-                <el-form-item prop="password" label="密码*" label-width="85px">
+                <el-form-item prop="password" label="密码" label-width="85px">
                   <el-input v-model="user.password"
                             :maxlength="15"
                             auto-complete="off"
                             type="password">
                   </el-input>
                 </el-form-item>
-
-                <el-form-item prop="confirmation_password" label="确认密码*" label-width="85px">
+                <el-form-item prop="confirmation_password" label="确认密码" label-width="85px">
                   <el-input v-model="user.confirmation_password"
                             :maxlength="15"
                             auto-complete="off"
                             type="password">
                   </el-input>
                 </el-form-item>
-
-                <el-form-item prop="phone" label="手机*" label-width="85px">
-                  <el-input v-model="user.phone"
-                            type="number">
+                <el-form-item prop="nickname" label="昵称"  label-width="85px">
+                  <el-input v-model="user.nickname">
                   </el-input>
                 </el-form-item>
-
-
                 <div class="register-actions">
                   <el-form-item>
                     <el-button type="primary" class="inp" @click="submit">同意条款并注册</el-button>
@@ -151,8 +130,8 @@
 
 </template>
 <script>
-  import { register } from '../api'
-  import { validateUserName, validatePassword, validatePhone, validateQQ } from '../validate'
+  import { register, checkUserName } from '../api'
+  import { validateUserName, validatePassword } from '../validate'
   import { msgFormatter } from '../utils'
   export default {
     name: 'register',
@@ -163,7 +142,13 @@
         } else if (!validateUserName(value)) {
           callback(new Error('请输入6~15位英数字'))
         } else {
-          callback()
+          checkUserName(value).then(response => {
+            if (response.existed) {
+              callback(new Error('用户名已经存在'))
+            } else {
+              callback()
+            }
+          })
         }
       }
       const nickNameValidator = (rule, value, callback) => {
@@ -201,30 +186,13 @@
           callback()
         }
       }
-      const qqValidator = (rule, value, callback) => {
-        if (!validateQQ(value)) {
-          callback(new Error('qq号码格式无效'))
-        } else {
-          callback()
-        }
-      }
-      const phoneValidator = (rule, value, callback) => {
-        if (!validatePhone(value)) {
-          callback(new Error('手机号码格式无效'))
-        } else {
-          callback()
-        }
-      }
       return {
         clientH: document.documentElement.clientHeight || document.body.clientHeight,
         user: {
           username: '',
           nickname: '',
-          email: '',
-          qq: '',
           password: '',
           confirmation_password: '',
-          phone: '',
           hasAgree: ['hasAgree']
         },
         dialogVisible: false,
@@ -241,22 +209,10 @@
             { validator: passwordFormatValidator, trigger: 'blur,change' }
           ],
           confirmation_password: [
-            { required: true, validator: confirmPasswordValidator, trigger: 'blur' }
-          ],
-          qq: [
-            { required: true, message: '该栏位必须输入', trigger: 'blur' },
-            { validator: qqValidator, trigger: 'blur,change' }
-          ],
-          phone: [
-            { required: true, message: '该栏位必须输入', trigger: 'blur' },
-            { validator: phoneValidator, trigger: 'blur,change' }
+            { required: true, validator: confirmPasswordValidator, trigger: 'blur,change' }
           ],
           hasAgree: [
             { type: 'array', required: true, message: '请阅读并同意用户协议', trigger: 'change' }
-          ],
-          email: [
-            { required: true, message: '该栏位必须输入', trigger: 'blur' },
-            { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur,change' }
           ]
         }
       }
@@ -301,7 +257,6 @@
 }
 .register-container {
   width: 500px;
-  height: 636px;
   border-radius: 4px;
   background-color: #ffffff;
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
