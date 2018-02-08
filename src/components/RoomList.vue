@@ -57,13 +57,16 @@ export default {
     }
   },
   watch: {
-    activeRoom (val, oldVal) {
-      this.roomEnded = false
-      this.roomPage = 0
-      this.fillMemberRooms().then(() => {
-        this.activeRoomIndex = _.findIndex(this.roomList, room => room.id === this.activeRoom.id)
-        this.$store.commit('UPDATE_NOW_ROOM_ID', this.roomList[this.activeRoomIndex].id)
-      })
+    activeRoom: {
+      handler: function (val, oldVal) {
+        this.roomEnded = false
+        this.roomPage = 0
+        this.fillMemberRooms().then(() => {
+          this.activeRoomIndex = _.findIndex(this.roomList, room => room.id === this.activeRoom.id)
+          this.$store.commit('UPDATE_NOW_ROOM_ID', this.roomList[this.activeRoomIndex].id)
+        })
+      },
+      deep: true
     },
     '$store.state.newMsg': {
       handler: function (val, oldVal) {
@@ -78,9 +81,6 @@ export default {
   },
   methods: {
     fillMemberRooms () {
-      if (this.roomEnded || this.roomLoading) {
-        return
-      }
       this.roomLoading = true
       return fetchMemberRoom(this.roomLimit, this.roomPage).then(res => {
         this.roomList = this.roomPage === 0 ? res.results : this.roomList.concat(res.results)
@@ -94,8 +94,11 @@ export default {
           }
           temp.push({...room})
         })
+
         this.roomList = temp
-        this.$store.commit('UPDATE_ROOMLIST', this.roomList)
+        this.$store.dispatch('updateRoomList', this.roomList)
+
+        return res
       })
     },
     switchRoom (room, index) {
