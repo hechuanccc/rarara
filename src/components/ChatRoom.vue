@@ -338,7 +338,12 @@ export default {
                     })
                     return
                   default:
+                  // websocket/upload/user-avatar/54fa2ca4059245f29be5e9da2c55e14a.jpg
+                  // /upload/user-avatar/c82833fa36b54aa7ab40ce8ab3eac68b.jpg
                     data.sender.avatar = this.host + '/' + data.sender.avatar.replace('websocket/', '')
+                    if (data.sender.avatar.indexOf('//')) {
+                      data.sender.avatar.replace('//', '')
+                    }
                     this.roomMessages[this.activeRoomId].push(data)
                     this.$store.commit('NEW_MESSAGE', {
                       id: data.receivers,
