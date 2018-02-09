@@ -139,6 +139,9 @@ body {
     margin: 0;
     background: #3d4650;
   }
+  .el-tabs--border-card.alone>.el-tabs__header .el-tabs__item {
+    width: 100%;
+  }
   .el-tabs--border-card>.el-tabs__header .el-tabs__item.is-active {
     background-color: rgba(255, 255, 255, 0.2);
     border: none;

@@ -90,6 +90,7 @@
             </el-tab-pane>
             <el-tab-pane
               :disabled="loading"
+              v-if="myRoles.includes('customer service') || myRoles.includes('manager')"
               label="聊天列表"
               name="rooms">
               <div class="chat-list">
@@ -108,12 +109,12 @@
         </el-main>
 
         <el-aside width="395px" class="aside">
-          <el-tabs type="border-card" @tab-click="loadResult">
-            <el-tab-pane :label="'在线投注'">
+          <el-tabs type="border-card" class="alone"> <!-- @tab-click="loadResult" -->
+            <!-- <el-tab-pane :label="'在线投注'">
               <iframe :src="globalPreference.mobile_lottery_url" width="100%" style="height: calc(100vh - 110px)" frameborder="0"></iframe>
-            </el-tab-pane>
-            <el-tab-pane :label="'文字开奖'">
-              <div class="results-container" v-if="lasyLoadResult">
+            </el-tab-pane> -->
+            <el-tab-pane :label="'文字开奖'"> <!-- v-if="lasyLoadResult" -->
+              <div class="results-container">
                 <result></result>
               </div>
             </el-tab-pane>
