@@ -128,7 +128,7 @@
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/cog'
 import 'vue-awesome/icons/smile-o'
-import { fetchChatEmoji, sendImgToChat, getChatUser } from '../api'
+import { fetchChatEmoji, sendImgToChat, getChatUser, checkLiving } from '../api'
 import urls from '../api/urls'
 import config from '../../config'
 import Restraint from './Restraint'
@@ -207,19 +207,18 @@ export default {
   },
   beforeDestroy () {
     this.leaveRoom()
+    clearInterval(this.liveInterval)
   },
   computed: {
     ...mapGetters([
       'myRoles'
     ]),
     ...mapState([
-      'activeRoomId'
+      'activeRoomId',
+      'user'
     ]),
     isLogin () {
       return this.$store.state.user.logined && this.$route.name !== 'Home'
-    },
-    user () {
-      return this.$store.state.user
     },
     formattedBannerUsers () {
       let result = []
@@ -255,6 +254,11 @@ export default {
     }
   },
   methods: {
+    checkLiving () {
+      this.liveInterval = setInterval(() => {
+        checkLiving(this.user.id)
+      }, 5000)
+    },
     getRoles (message) {
       return message.sender.roles.map((role) => role.name)
     },
@@ -264,6 +268,7 @@ export default {
       this.$store.dispatch('startLoading')
       this.ws = new WebSocket(`${WSHOST}/chat/stream?token=${token}`)
       this.ws.onopen = () => {
+        this.checkLiving()
         if (!this.emojis.people.length) {
           fetchChatEmoji().then((resData) => {
             resData.people = resData.people.reverse()
@@ -338,7 +343,13 @@ export default {
                     })
                     return
                   default:
+                  // websocket/upload/user-avatar/54fa2ca4059245f29be5e9da2c55e14a.jpg
+                  // /upload/user-avatar/c82833fa36b54aa7ab40ce8ab3eac68b.jpg
+
                     data.sender.avatar = this.host + '/' + data.sender.avatar.replace('websocket/', '')
+                    if (data.sender.avatar.indexOf('//upload') !== -1) {
+                      data.sender.avatar = data.sender.avatar.replace('//upload', '/upload')
+                    }
                     this.roomMessages[this.activeRoomId].push(data)
                     this.$store.commit('NEW_MESSAGE', {
                       id: data.receivers,
