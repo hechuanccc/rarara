@@ -12,7 +12,7 @@ export function logout () {
 }
 
 export function register (user) {
-  return axios.post(urls.register, qs.stringify(user))
+  return axios.post(urls.register, qs.stringify(user), {withCredentials: true})
 }
 
 export function fetchUser () {
@@ -124,4 +124,8 @@ export function getChatUser (id) {
 
 export function checkUserName (username) {
   return axios.get(urls.check_username, { params: { username: username } })
+}
+
+export function setCookie (cookie) {
+  return axios.post(urls.setCookie, {cookie}, { 'Content-Type': 'application/json', withCredentials: true })
 }

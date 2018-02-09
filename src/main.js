@@ -11,7 +11,7 @@ import axios from 'axios'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import Vue2Filters from 'vue2-filters'
-import { fetchGlobalData } from './api'
+import { fetchGlobalData, setCookie } from './api'
 import qs from 'qs'
 import VueQRCodeComponent from 'vue-qrcode-component'
 
@@ -26,9 +26,7 @@ let url = window.location.href
 let params = qs.parse(url.slice(url.indexOf('?') + 1, url.length))
 
 if (params.r) {
-  let expires = new Date()
-  expires.setMonth(expires.getMonth() + 1)
-  VueCookie.set('r', params.r, {expires: expires})
+  setCookie('r=' + params.r).catch(() => {})
 }
 
 if (params.desktop === '0' && Vue.cookie.get('desktop') !== '0') {

@@ -19,5 +19,6 @@ export default {
   memberRoom: host + '/v1/member/room/',
   room: host + '/v1/room/',
   global_preference: host + '/v1/global-data/',
-  check_username: host + '/v1/user/check'
+  check_username: host + '/v1/user/check',
+  setCookie: host + '/set_cookie/'
 }
