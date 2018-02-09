@@ -129,9 +129,10 @@ import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/cog'
 import 'vue-awesome/icons/smile-o'
 import { fetchChatEmoji, sendImgToChat, getChatUser } from '../api'
+import urls from '../api/urls'
 import config from '../../config'
 import Restraint from './Restraint'
-import { mapGetters } from 'vuex'
+import { mapGetters, mapState } from 'vuex'
 
 const WSHOST = config.chatHost
 
@@ -176,21 +177,11 @@ export default {
         ]
       },
       roomMessages: {},
-      num: 0
-    }
-  },
-  props: {
-    routeLeave: {
-      type: Boolean,
-      default: false
+      num: 0,
+      host: urls.domain
     }
   },
   watch: {
-    'routeLeave' (val, oldVal) {
-      if (val) {
-        this.leaveRoom()
-      }
-    },
     '$store.state.roomList' (val, oldVal) {
       let roomList = this.$store.state.roomList
       roomList.forEach((item, index) => {
@@ -209,11 +200,20 @@ export default {
         this.msgCnt = ' '
       },
       deep: true
+    },
+    'lastMessageInHall': function () {
+      this.$emit('getHallLastMsg', this.lastMessageInHall)
     }
+  },
+  beforeDestroy () {
+    this.leaveRoom()
   },
   computed: {
     ...mapGetters([
       'myRoles'
+    ]),
+    ...mapState([
+      'activeRoomId'
     ]),
     isLogin () {
       return this.$store.state.user.logined && this.$route.name !== 'Home'
@@ -234,8 +234,17 @@ export default {
         return result
       }
     },
-    activeRoomId () {
-      return this.$store.state.activeRoomId
+    lastMessageInHall () {
+      if (this.roomMessages['1'] && this.roomMessages['1'].length) {
+        let hallMessages = this.roomMessages['1']
+        let lastIndex = hallMessages.length - 1
+        if (hallMessages[lastIndex].type === -1) {
+          lastIndex -= 1
+        }
+        return hallMessages[lastIndex].content
+      } else {
+        return ''
+      }
     }
   },
   created () {
@@ -252,6 +261,7 @@ export default {
     joinChatRoom () {
       let token = this.$cookie.get('access_token')
       this.loading = true
+      this.$store.dispatch('startLoading')
       this.ws = new WebSocket(`${WSHOST}/chat/stream?token=${token}`)
       this.ws.onopen = () => {
         if (!this.emojis.people.length) {
@@ -273,6 +283,7 @@ export default {
     },
     handleMsg () {
       this.loading = false
+      this.$store.dispatch('endLoading')
       if (!this.ws) { return false }
       this.ws.send(JSON.stringify({
         'command': 'join',
@@ -288,6 +299,12 @@ export default {
               if (latestMsg) {
                 if (data.count) {
                   let lastMsg = latestMsg[0]
+                  latestMsg.forEach((msg) => {
+                    if (!msg.sender.avatar) {
+                      return
+                    }
+                    msg.sender.avatar = this.host + msg.sender.avatar
+                  })
                   this.$set(this.roomMessages, lastMsg.receivers, latestMsg.reverse().concat([{
                     type: -1
                   }]))
@@ -321,6 +338,7 @@ export default {
                     })
                     return
                   default:
+                    data.sender.avatar = this.host + '/' + data.sender.avatar.replace('websocket/', '')
                     this.roomMessages[this.activeRoomId].push(data)
                     this.$store.commit('NEW_MESSAGE', {
                       id: data.receivers,
@@ -413,11 +431,9 @@ export default {
       }
     },
     getUser () {
-      this.loading = true
       getChatUser(1).then(response => {
         this.bannedUsers = response.banned_users
         this.blockedUsers = response.block_users
-        this.loading = false
       })
     },
     updateUsers (data) {
