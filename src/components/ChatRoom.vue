@@ -351,7 +351,6 @@ export default {
                   // /upload/user-avatar/c82833fa36b54aa7ab40ce8ab3eac68b.jpg
                     if (data.sender && data.sender.avatar !== null) {
                       data.sender.avatar = this.host + '/' + data.sender.avatar.replace('websocket/', '')
-
                       if (data.sender.avatar.indexOf('//upload') !== -1) {
                         data.sender.avatar = data.sender.avatar.replace('//upload', '/upload')
                       }
@@ -390,6 +389,15 @@ export default {
                     this.personal_setting.block = true
                     this.personal_setting.chat.status = 0
                     this.errMsgCnt = data.msg
+                    break
+                  case 6:
+                    this.errMsgCnt = data.msg
+                    setTimeout(() => {
+                      this.errMsgCnt = ''
+                      this.$store.dispatch('logout').then(res => {
+                        this.$router.push({name: 'Login'})
+                      })
+                    }, 3000)
                     break
                   default:
                     this.errMsgCnt = data.msg
