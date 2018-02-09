@@ -428,7 +428,7 @@ export default {
       return this.$store.state.user
     },
     promoteUrl () {
-      return this.user.promote_code ? window.location.origin + '?r=' + this.user.promote_code : ''
+      return this.user.promote_code ? window.location.origin + '/#/?r=' + this.user.promote_code : ''
     }
   },
   watch: {
