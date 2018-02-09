@@ -256,10 +256,10 @@ export default {
   methods: {
     checkLiving (ws) {
       this.liveInterval = setInterval(() => {
-        ws.send({
+        ws.send(JSON.stringify({
           command: 'live',
           user_id: this.user.username
-        })
+        }))
       }, 300000)
     },
     getRoles (message) {
