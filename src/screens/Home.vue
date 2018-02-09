@@ -701,6 +701,7 @@ export default {
               message: msgFormatter(errorMsg),
               type: 'error'
             })
+            this.changeProfileSuccess = false
             this.changeProfileRes = '修改资料失败'
             this.disabledEditProfile = false
           })
