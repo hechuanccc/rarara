@@ -31,6 +31,13 @@ export function createRoom (users) {
   })
 }
 
+export function checkLiving (id) {
+  return axios.post(urls.room, {
+    command: 'live',
+    user_id: id
+  })
+}
+
 export function fetchOnlineMembers (limit, page, nickname) {
   return axios.get(`${urls.member}?logined=True&offset=${page * limit}&limit=${limit}${nickname ? '&nickname_q=' + nickname : ''}`)
 }
