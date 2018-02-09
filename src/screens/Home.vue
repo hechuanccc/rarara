@@ -41,6 +41,7 @@
       <el-container>
         <el-aside width="250px" class="aside">
           <el-tabs
+            :class="[{'alone': !myRoles.includes('customer service') && !myRoles.includes('manager')}]"
             v-model="activeTab"
             type="border-card">
             <el-tab-pane
@@ -88,6 +89,7 @@
               </ul>
               <div v-else-if="!onlineMemberLoading" class="empty">无结果</div>
             </el-tab-pane>
+
             <el-tab-pane
               :disabled="loading"
               v-if="myRoles.includes('customer service') || myRoles.includes('manager')"
@@ -101,6 +103,7 @@
                   :activeRoom="activeRoom"></room-list>
               </div>
             </el-tab-pane>
+
           </el-tabs>
         </el-aside>
 
