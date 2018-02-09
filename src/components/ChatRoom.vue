@@ -257,7 +257,7 @@ export default {
     checkLiving () {
       this.liveInterval = setInterval(() => {
         checkLiving(this.user.id)
-      }, 5000)
+      }, 300000)
     },
     getRoles (message) {
       return message.sender.roles.map((role) => role.name)

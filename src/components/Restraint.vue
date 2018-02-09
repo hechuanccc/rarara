@@ -47,9 +47,11 @@
       </div>
     </div>
     <div slot="footer" class="m-t-lg actions text-center">
-      <el-button type="danger" @click.native="ban(15)">禁言15分钟</el-button>
-      <el-button type="danger" @click.native="ban(30)">禁言30分钟</el-button>
-      <el-button type="danger" @click.native="block()">加入黑名单</el-button>
+      <el-button type="danger" v-if="!isBanned" @click.native="ban(15)">禁言15分钟</el-button>
+      <el-button type="danger" v-if="!isBanned" @click.native="ban(30)">禁言30分钟</el-button>
+      <el-button type="danger" v-if="!isBlocked" @click.native="block()">加入黑名单</el-button>
+      <el-button type="danger" v-if="isBlocked" @click.native="unblock(restraint.user.username)">解除拉黑</el-button>
+      <el-button type="danger" v-if="isBanned" @click.native="unban(restraint.user.username)">解除禁言</el-button>
     </div>
   </div>
 </div>
@@ -76,6 +78,12 @@ export default {
       type: Number
     }
   },
+  data () {
+    return {
+      isBanned: false,
+      isBlocked: false
+    }
+  },
   methods: {
     switchBlockTab (index) {
       this.restraint.nowTab = index + ''
@@ -85,6 +93,7 @@ export default {
         user: this.restraint.user.username,
         banned_time: mins
       }).then((data) => {
+        this.getUser()
         this.restraint.dialogVisible = false
         this.$message({
           showClose: true,
@@ -105,12 +114,14 @@ export default {
         user: user
       }).then((data) => {
         this.getUser()
+        this.restraint.dialogVisible = false
         this.$message({
           showClose: true,
           message: data.status,
           type: 'success'
         })
       }, errorMsg => {
+        this.restraint.dialogVisible = false
         let data = errorMsg.response.data
         this.$message({
           showClose: true,
@@ -123,6 +134,7 @@ export default {
       blockChatUser(this.RECEIVER, {
         user: this.restraint.user.username
       }).then((data) => {
+        this.getUser()
         this.restraint.dialogVisible = false
         this.$message({
           showClose: true,
@@ -143,12 +155,14 @@ export default {
         user: user
       }).then((data) => {
         this.getUser()
+        this.restraint.dialogVisible = false
         this.$message({
           showClose: true,
           message: data.status,
           type: 'success'
         })
       }, errorMsg => {
+        this.restraint.dialogVisible = false
         let data = errorMsg.response.data
         this.$message({
           showClose: true,
@@ -160,6 +174,16 @@ export default {
     getUser () {
       getChatUser(1).then(response => {
         this.$emit('updateUsers', {banned_users: response.banned_users, block_users: response.block_users})
+
+        if (!response.banned_users.length || !response.block_users.length) {
+          this.isBanned = false
+          this.isBlocked = false
+        }
+        let newBannedUsers = response.banned_users.map((member) => member.username)
+        let newBlockUsers = response.block_users.map((member) => member.username)
+
+        this.isBanned = newBannedUsers.includes(this.restraint.user.username)
+        this.isBlocked = newBlockUsers.includes(this.restraint.user.username)
       })
     }
   }
