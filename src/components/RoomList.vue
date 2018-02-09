@@ -1,32 +1,40 @@
 <template>
-  <div class="rooms-container" v-if="roomList.length">
-    <ul class="rooms m-t m-b">
+  <div class="rooms-container" v-if="roomList.length && hallLastMsg">
+    <ul class="rooms m-t">
+      <li :class="['public', {active: activeRoomIndex === 0}]" @click="switchRoom(roomList[0], 0)">
+        <div class="meta">
+          <div class="illustration">
+            <icon class="volume-up" name="comments" scale="1.5"></icon>
+          </div>
+          <span class="title" >
+            计划聊天室
+          </span>
+        </div>
+        <div>{{hallLastMsg | truncate(25)}}</div>
+      </li>
+    </ul>
+    <ul class="rooms m-b">
       <li v-for="(room, index) in roomList"
         :key="index"
+        v-if="room.type === 2"
         :class="{
           active: activeRoomIndex === index,
-          public: room.type === 1
         }"
         @click="switchRoom(room, index)">
         <div class="meta">
           <div class="illustration">
-            <icon class="volume-up" name="comments" scale="1.5" v-if="room.type === 1"></icon>
-
-            <img class="avatar" v-else-if="room.type === 2 && !myRoles.includes('customer service')" :src="require('../assets/stick_admin.png')" alt="avatar">
-
-            <img class="avatar" v-else-if="room.users.length === 2" :src="room.users[1].avatar ? room.users[1].avatar : require('../assets/avatar.png')" alt="avatar">
-            <img class="avatar" v-else :src="require('../assets/avatar.png')" alt="avatar">
+            <img class="avatar"
+              v-if="getRoles(room.users[1]).includes('customer service')"
+              :src="require('../assets/stick_admin.png')"
+              alt="avatar">
+            <img class="avatar"
+              :src="room.users[1].avatar? room.users[1].avatar :require('../assets/avatar.png')"
+              v-else
+              alt="avatar">
           </div>
-          <span class="title" v-if="room.type === 2">
-            <span v-if="!myRoles.includes('customer service')">{{ `客服人员 ${room.users[1].nickname || room.users[1].username}`}}</span>
+          <span class="title">
+            <span v-if="getRoles(room.users[1]).includes('customer service')">{{ `客服人员 ${room.users[1].nickname || room.users[1].username}`}}</span>
             <span v-else>{{ `与 ${room.users[1].nickname || room.users[1].username} 的私聊`}}</span>
-          </span>
-          <span class="title" v-else-if="room.type === 1">
-            计划聊天室
-          </span>
-          <span class="title" v-else>
-            <span v-if="room.type === 3 && room.users.length === 2">{{ `与 ${room.users[1].nickname || room.users[1].username} 的私聊`}}</span>
-            <span v-else>{{room.title}}</span>
           </span>
         </div>
         <div v-if="room.last_message">{{room.last_message.content | truncate(25)}}</div>
@@ -49,6 +57,9 @@ export default {
     },
     activeRoom: {
       type: Object
+    },
+    hallLastMsg: {
+      type: String
     }
   },
   name: 'roomlist',
@@ -94,6 +105,9 @@ export default {
     }
   },
   methods: {
+    getRoles (user) {
+      return user.roles.map((role) => role.name)
+    },
     fillMemberRooms () {
       if (this.roomLoading || this.roomEnded) {
         return

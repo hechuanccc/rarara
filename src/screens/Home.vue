@@ -89,12 +89,14 @@
               <div v-else-if="!onlineMemberLoading" class="empty">无结果</div>
             </el-tab-pane>
             <el-tab-pane
+              :disabled="loading"
               label="聊天列表"
               name="rooms">
               <div class="chat-list">
                 <room-list
                   :user="user"
                   ref="roomList"
+                  :hallLastMsg="hallLastMsg"
                   :activeRoom="activeRoom"></room-list>
               </div>
             </el-tab-pane>
@@ -102,7 +104,7 @@
         </el-aside>
 
         <el-main class="chat-area">
-          <chat-room :routeLeave="leave"></chat-room>
+          <chat-room @getHallLastMsg="getHallLastMsg"></chat-room>
         </el-main>
 
         <el-aside width="395px" class="aside">
@@ -337,7 +339,6 @@ export default {
       nickname_q: '',
       showProfileDiag: false,
       searchStr: '',
-      leave: false,
       announcementStyle: {
         opacity: 1,
         translateY: 0
@@ -395,12 +396,14 @@ export default {
       createRoomLoading: false,
       lasyLoadResult: false,
       showQR: false,
-      activePanel: 'account'
+      activePanel: 'account',
+      hallLastMsg: ''
     }
   },
   computed: {
     ...mapState([
-      'globalPreference'
+      'globalPreference',
+      'loading'
     ]),
     ...mapGetters([
       'myRoles'
@@ -419,7 +422,7 @@ export default {
       return this.$store.state.user
     },
     promoteUrl () {
-      return this.user.promote_code ? window.location.origin + '?r' + this.user.promote_code : ''
+      return this.user.promote_code ? window.location.origin + '?r=' + this.user.promote_code : ''
     }
   },
   watch: {
@@ -435,18 +438,14 @@ export default {
     }
   },
   created () {
-    this.leave = false
     this.getAnnouce()
     this.fillOnlineMembers()
   },
-  beforeRouteLeave (to, from, next) {
-    this.leave = true
-    this.$nextTick(() => {
-      next()
-    })
-  },
   methods: {
     filtAmount,
+    getHallLastMsg (msg) {
+      this.hallLastMsg = msg
+    },
     getUser (member) {
       getChatUser(1).then(response => {
         if (!response.banned_users.length || !response.block_users.length) {
