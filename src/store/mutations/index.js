@@ -10,7 +10,8 @@ export default {
   },
   [types.RESET_USER]: (state) => {
     state.user = {
-      logined: false
+      logined: false,
+      roles: []
     }
     Vue.cookie.delete('access_token')
     Vue.cookie.delete('refresh_token')

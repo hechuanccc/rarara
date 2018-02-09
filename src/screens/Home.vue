@@ -39,12 +39,12 @@
     </el-header>
 
       <el-container>
-        <el-aside width="250px" class="aside">
+        <el-aside :width="myRoles.includes('customer service') || myRoles.includes('manager') ? '250px' : '0px'" class="aside">
           <el-tabs
-            :class="[{'alone': !myRoles.includes('customer service') && !myRoles.includes('manager')}]"
+            class="alone"
             v-model="activeTab"
             type="border-card">
-            <el-tab-pane
+            <!-- <el-tab-pane
               v-if="myRoles.includes('customer service') || myRoles.includes('manager')"
               :label="`在线会员(${onlineMembers.length})`"
               name="members">
@@ -89,9 +89,10 @@
                 <li v-if="!onlineMembersEnded" class="load-more" @click="fillOnlineMembers">{{ onlineMemberLoading ? '正在加载...' : '查看更多' }}</li>
               </ul>
               <div v-else-if="!onlineMemberLoading" class="empty">无结果</div>
-            </el-tab-pane>
+            </el-tab-pane> -->
 
             <el-tab-pane
+              v-if="myRoles.includes('customer service') || myRoles.includes('manager')"
               :disabled="loading"
               label="聊天列表"
               name="rooms">
@@ -730,9 +731,11 @@ export default {
       this.currentChooseAvatar = URL.createObjectURL(file)
     },
     initRoomList () {
-      this.$refs.roomList.roomEnded = false
-      this.$refs.roomList.roomPage = 0
-      this.$refs.roomList.fillMemberRooms()
+      if (this.myRoles.includes('customer service') || this.myRoles.includes('manager')) {
+        this.$refs.roomList.roomEnded = false
+        this.$refs.roomList.roomPage = 0
+        this.$refs.roomList.fillMemberRooms()
+      }
     },
     loadResult (tab) {
       if (tab.index === '1') {
@@ -768,7 +771,6 @@ export default {
     background-size: contain;
     background-repeat: no-repeat;
     height: 50px;
-    margin-left: -10px;
     h1 {
       text-indent: -999px;
     }
