@@ -45,6 +45,7 @@
             v-model="activeTab"
             type="border-card">
             <el-tab-pane
+              v-if="myRoles.includes('customer service') || myRoles.includes('manager')"
               :label="`在线会员(${onlineMembers.length})`"
               name="members">
               <div class="search-form">
@@ -92,7 +93,6 @@
 
             <el-tab-pane
               :disabled="loading"
-              v-if="myRoles.includes('customer service') || myRoles.includes('manager')"
               label="聊天列表"
               name="rooms">
               <div class="chat-list">
@@ -100,7 +100,8 @@
                   :user="user"
                   ref="roomList"
                   :hallLastMsg="hallLastMsg"
-                  :activeRoom="activeRoom"></room-list>
+                  :activeRoom="activeRoom">
+                </room-list>
               </div>
             </el-tab-pane>
 
@@ -337,7 +338,7 @@ export default {
       activeRoom: {},
       popoverMember: {},
       searchEnabled: false,
-      activeTab: 'members',
+      activeTab: 'rooms',
       swichAvatar: false,
       uploadUrl: urls.user,
       nickname_q: '',
@@ -430,7 +431,7 @@ export default {
     }
   },
   watch: {
-    'activeTab': function (val, oldVal) {
+    'activeTab': function (val) {
       if (val === 'rooms') {
         this.initRoomList()
       }
@@ -449,6 +450,7 @@ export default {
     filtAmount,
     getHallLastMsg (msg) {
       this.hallLastMsg = msg
+      this.initRoomList()
     },
     getUser (member) {
       getChatUser(1).then(response => {

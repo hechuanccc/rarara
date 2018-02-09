@@ -1,5 +1,5 @@
 <template>
-  <div class="rooms-container" v-if="roomList.length && hallLastMsg">
+  <div class="rooms-container" v-if="roomList.length && roomList[0].type === 1 && hallLastMsg">
     <ul class="rooms m-t">
       <li :class="['public', {active: activeRoomIndex === 0}]" @click="switchRoom(roomList[0], 0)">
         <div class="meta">
