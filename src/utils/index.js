@@ -82,6 +82,7 @@ export function formatPlayGroup (raw, formatting) {
 export function msgFormatter (error) {
   let formatMsg
   let msgs = error.msg
+  let responseMsg = error.response.data.message
   if (Array.isArray(msgs)) {
     let arr = []
     msgs.forEach(msg => {
@@ -95,8 +96,11 @@ export function msgFormatter (error) {
     })
     formatMsg = arr.join(', ')
   } else {
-    if (msgs.message) {
+    if (msgs && msgs.message) {
       formatMsg = msgs.message
+      return formatMsg
+    } else if (responseMsg) {
+      formatMsg = responseMsg
       return formatMsg
     }
     formatMsg = msgs

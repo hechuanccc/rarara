@@ -128,7 +128,7 @@
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/cog'
 import 'vue-awesome/icons/smile-o'
-import { fetchChatEmoji, sendImgToChat, getChatUser, checkLiving } from '../api'
+import { fetchChatEmoji, sendImgToChat, getChatUser } from '../api'
 import urls from '../api/urls'
 import config from '../../config'
 import Restraint from './Restraint'
@@ -254,9 +254,12 @@ export default {
     }
   },
   methods: {
-    checkLiving () {
+    checkLiving (ws) {
       this.liveInterval = setInterval(() => {
-        checkLiving(this.user.id)
+        ws.send(JSON.stringify({
+          command: 'live',
+          user_id: this.user.username
+        }))
       }, 300000)
     },
     getRoles (message) {
@@ -268,7 +271,8 @@ export default {
       this.$store.dispatch('startLoading')
       this.ws = new WebSocket(`${WSHOST}/chat/stream?token=${token}`)
       this.ws.onopen = () => {
-        this.checkLiving()
+        this.checkLiving(this.ws)
+
         if (!this.emojis.people.length) {
           fetchChatEmoji().then((resData) => {
             resData.people = resData.people.reverse()
