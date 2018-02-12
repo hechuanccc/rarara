@@ -197,7 +197,6 @@ export default {
     'roomMessages': {
       handler: function (val, oldVal) {
         this.num ++
-        // this.msgCnt = ' '
       },
       deep: true
     },
