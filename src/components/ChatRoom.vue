@@ -355,7 +355,8 @@ export default {
                       }
                     }
 
-                    this.roomMessages[this.activeRoomId].push(data)
+                    this.roomMessages[data.receivers].push(data)
+
                     this.$store.commit('NEW_MESSAGE', {
                       id: data.receivers,
                       content: data.content
