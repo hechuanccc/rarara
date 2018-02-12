@@ -1,4 +1,6 @@
 'use strict'
+console.log(process.env, 'process.env')
+
 module.exports = {
   NODE_ENV: '"production"',
   HOST: '"' + process.env.HOST + '"',
