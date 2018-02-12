@@ -4,6 +4,7 @@ const env = process.env.NODE_ENV === 'development' ? config.dev.env : config.bui
 const host = env.HOST.replace(/"/g, '')
 const apiv1 = host + '/v1/member'
 const ghost = 'http://a546542.eastasia.cloudapp.azure.com:8000'
+const decode = env.decode_key
 
 export default {
   domain: host,
@@ -20,5 +21,6 @@ export default {
   room: host + '/v1/room/',
   global_preference: host + '/v1/global-data/',
   check_username: host + '/v1/user/check',
-  setCookie: host + '/set_cookie/'
+  setCookie: host + '/set_cookie/',
+  decode
 }
