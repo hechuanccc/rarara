@@ -173,3 +173,23 @@ body {
 .pointer {
   cursor: pointer;
 }
+
+@mixin scrollbars($size, $foreground-color, $round, $background-color: rgba(0, 0, 0, .3)) {
+  ::-webkit-scrollbar {
+    width:  $size;
+    height: $size;
+    border-radius: $round;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: $foreground-color;
+    border-radius: $round;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: $background-color;
+    border-radius: $round;
+  }
+
+}
+@include scrollbars(10px, #333, 10px);

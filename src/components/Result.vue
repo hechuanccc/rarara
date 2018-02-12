@@ -202,7 +202,7 @@ export default {
     display: inline-block;
   }
   .name, .issue {
-    font-size: 14px;
+    font-size: 12px;
   }
 }
 
@@ -213,6 +213,5 @@ export default {
     width: 290px;
   }
 }
-
 </style>
 
