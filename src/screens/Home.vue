@@ -146,6 +146,7 @@
           :visible.sync="showProfileDiag"
           :width="'600px'"
           @open="changeProfileRes = ''"
+          @close="currentChooseAvatar = null"
           center>
           <div class="edit-profile">
             <el-tabs v-model="activePanel" type="card" @tab-click="changeProfileRes = ''">
