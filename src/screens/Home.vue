@@ -784,9 +784,10 @@ export default {
 
 .annouce-box {
   display: inline-block;
+  width: 50%;
   height: 50px;
   line-height: 50px;
-  width: 50%;
+  margin-left: 5px;
   .text {
     cursor: pointer;
   }
