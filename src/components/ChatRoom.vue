@@ -197,7 +197,6 @@ export default {
     'roomMessages': {
       handler: function (val, oldVal) {
         this.num ++
-        this.msgCnt = ' '
       },
       deep: true
     },
@@ -394,6 +393,7 @@ export default {
                     this.errMsgCnt = data.msg
                     setTimeout(() => {
                       this.errMsgCnt = ''
+                      this.errMsg = false
                       this.$store.dispatch('logout').then(res => {
                         this.$router.push({name: 'Login'})
                       })
@@ -503,6 +503,7 @@ export default {
   overflow-x: hidden;
   height: 100%;
   z-index: 1;
+
 }
 .title {
   line-height: 40px;

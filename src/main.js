@@ -57,6 +57,13 @@ axios.interceptors.response.use(res => {
     return Promise.reject(responseData)
   }
 }, (error) => {
+  if (!error.response && error.message === 'Network Error') {
+    Vue.prototype.$message({
+      showClose: true,
+      message: '系统发生了错误, 请联系客服',
+      type: 'error'
+    })
+  }
   if (error.response.status === 401 || error.response.status === 403) {
     toHomeAndLogin(router)
   } else if (error.response.status !== 587) { // 表示為意料之外的錯誤
