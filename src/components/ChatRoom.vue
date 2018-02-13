@@ -60,7 +60,11 @@
               </a>
             </div>
           </el-popover>
-          <a v-popover:popover4 href="javascript:void(0)" title="发送表情" class="btn-control btn-smile">
+          <a v-popover:popover4
+            v-if="emojiSuccess"
+            href="javascript:void(0)"
+            title="发送表情"
+            class="btn-control btn-smile">
             <icon scale="1.3" name="smile-o"></icon>
           </a>
           <a href="javascript:void(0)" class="btn-control btn-smile">
@@ -178,7 +182,8 @@ export default {
       },
       roomMessages: {},
       num: 0,
-      host: urls.domain
+      host: urls.domain,
+      emojiSuccess: true
     }
   },
   watch: {
@@ -276,10 +281,11 @@ export default {
           fetchChatEmoji().then((resData) => {
             resData.people = resData.people.reverse()
             this.emojis = resData
-          }).catch(err => {
-            console.log(err)
+          }).catch(() => {
+            this.emojiSuccess = false
           })
         }
+
         this.handleMsg()
       }
       this.ws.onclose = () => {

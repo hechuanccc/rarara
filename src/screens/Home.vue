@@ -170,7 +170,7 @@
                     <span v-if="swichAvatar" class="el-icon-upload"></span>
                   </label>
                 </div>
-                <p class="text-center m-b">
+                <p class="text-center m-b m-t">
                   <label for="preViewAvatar"
                     class="pointer new-avatarbtn m-l"
                     @mouseover="swichAvatar = true"
@@ -186,10 +186,6 @@
                     <el-input v-model="editUser.nickname"
                               class="inp">
                     </el-input>
-                  </el-form-item>
-
-                  <el-form-item label="邮箱" prop="email" label-width="85px">
-                    <el-input class="input-width" v-model="editUser.email"></el-input>
                   </el-form-item>
 
                   <el-form-item prop="mobile" label="手机" label-width="85px">

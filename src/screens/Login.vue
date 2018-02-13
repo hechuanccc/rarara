@@ -21,6 +21,7 @@
                    <el-input v-model="user.password"
                              type="password"
                              ref="password"
+                             @keyup.enter.native="submit"
                              class="inp">
                    </el-input>
                  </el-form-item>
