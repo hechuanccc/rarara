@@ -12,7 +12,7 @@
             :class="
               ['clearfix',
                 'item',
-                item.sender && ((item.sender.nickname && item.sender.nickname === user.nickname) || user.username === item.sender.username) ? 'item-right' : 'item-left', item.type < 0 ? 'sys-msg' : ''
+                item.sender && (user.username === item.sender.username) ? 'item-right' : 'item-left', item.type < 0 ? 'sys-msg' : ''
               ]">
             <div class="lay-block clearfix" v-if="item.type >= 0">
               <div class="avatar" @click="handleAvatarClick(item)">
@@ -21,7 +21,7 @@
               </div>
               <div class="lay-content">
                 <div class="msg-header">
-                  <h4 v-html="item.type === 4 ? '计划消息' : item.sender && item.sender.username === user.username && user.nickname ? user.nickname : item.sender && (item.sender.nickname || item.sender.username)"></h4>
+                  <h4>{{item.type === 4 ? '计划消息' : item.sender && item.sender.username === user.username && user.nickname ? user.nickname : item.sender && (item.sender.nickname || item.sender.username)}}</h4>
                   <span class="common-member" v-if="item.type !== 4">
                     {{item.sender && item.sender.roles.length && getRoles(item).includes('manager') ? '管理员' : '普通会员'}}
                   </span>
@@ -29,7 +29,7 @@
                 </div>
                 <div :class="['bubble', 'bubble' + item.type]">
                   <p>
-                    <span v-if="item.type === 0 || item.type === 4" v-html="item.content"></span>
+                    <span v-if="item.type === 0 || item.type === 4">{{item.content}}</span>
                     <img @click="showImageMsg = true; showImageMsgUrl = item.content" v-else-if="item.type === 1" :src="item.content">
                   </p>
                 </div>
@@ -60,7 +60,11 @@
               </a>
             </div>
           </el-popover>
-          <a v-popover:popover4 href="javascript:void(0)" title="发送表情" class="btn-control btn-smile">
+          <a v-popover:popover4
+            v-if="emojiSuccess"
+            href="javascript:void(0)"
+            title="发送表情"
+            class="btn-control btn-smile">
             <icon scale="1.3" name="smile-o"></icon>
           </a>
           <a href="javascript:void(0)" class="btn-control btn-smile">
@@ -178,7 +182,8 @@ export default {
       },
       roomMessages: {},
       num: 0,
-      host: urls.domain
+      host: urls.domain,
+      emojiSuccess: true
     }
   },
   watch: {
@@ -276,10 +281,11 @@ export default {
           fetchChatEmoji().then((resData) => {
             resData.people = resData.people.reverse()
             this.emojis = resData
-          }).catch(err => {
-            console.log(err)
+          }).catch(() => {
+            this.emojiSuccess = false
           })
         }
+
         this.handleMsg()
       }
       this.ws.onclose = () => {
