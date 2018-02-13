@@ -222,7 +222,7 @@
         this.$refs['user'].validate((valid) => {
           if (valid) {
             register(this.user).then(result => {
-              this.$store.dispatch('login', {
+              return this.$store.dispatch('login', {
                 user: {
                   username: this.user.username,
                   password: this.user.password
