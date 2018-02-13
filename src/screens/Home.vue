@@ -170,7 +170,7 @@
                     <span v-if="swichAvatar" class="el-icon-upload"></span>
                   </label>
                 </div>
-                <p class="text-center m-b">
+                <p class="text-center m-b m-t">
                   <label for="preViewAvatar"
                     class="pointer new-avatarbtn m-l"
                     @mouseover="swichAvatar = true"
