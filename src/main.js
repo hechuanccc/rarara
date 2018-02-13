@@ -91,25 +91,14 @@ router.beforeEach((to, from, next) => {
   // fisrMacthed might be the top-level parent route of others
   const firstMatched = to.matched.length ? to.matched[0] : null
   if ((firstMatched || to).meta.requiresAuth) {
-    if (from && from.matched[0] && from.matched[0].path === to.matched[0].path) {
-      next()
-    } else {
-      store.dispatch('fetchUser')
+    store.dispatch('fetchUser')
         .then(res => {
-          // got user info
-          if (res.account_type === 0 && to.matched[0].path === '/account') {
-            toHomeAndLogin(router)
-          } else {
-            next()
-          }
+          next()
         })
         .catch(error => {
-          // can't get user info
-          console.log(error)
           toHomeAndLogin(router)
           return Promise.resolve(error)
         })
-    }
   } else {
     next()
   }
