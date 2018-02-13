@@ -446,6 +446,11 @@ export default {
       if (val === '') {
         this.exitSearch()
       }
+    },
+    'showProfileDiag': function () {
+      this.$nextTick(() => {
+        this.$refs['editUser'].clearValidate()
+      })
     }
   },
   created () {
@@ -679,7 +684,10 @@ export default {
       }
       let fileInp = this.$refs.preViewAvatar
       let file = fileInp.files[0]
-      if (!file && !hasChanged) { return false }
+      if (!file && !hasChanged) {
+        this.changeProfileRes = '请作出修改再送出'
+        return false
+      }
       this.$refs['editUser'].validate((valid) => {
         if (valid) {
           if (file) {
@@ -692,6 +700,7 @@ export default {
               this.$store.commit('SET_USER', {
                 user: result
               })
+              this.showProfileDiag = false
             } else {
               this.changeProfileRes = '修改资料失败'
             }
