@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="container">
     <div
       v-for="(value, key, index) in resultsMap"
       :key="index" class="result m-b">
@@ -174,6 +174,12 @@ export default {
 
 <style lang="scss" scoped>
 @import '../style/resultnumbers.scss';
+
+.container {
+  width: 100%;
+  height: calc(100% - 60px);
+  overflow-y: auto;
+}
 
 .result {
   box-sizing: border-box;
