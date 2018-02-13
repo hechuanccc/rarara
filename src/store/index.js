@@ -14,7 +14,9 @@ export function createStore () {
         roles: []
       },
       loading: false,
-      globalPreference: {},
+      globalPreference: {
+        mobile_url: ''
+      },
       roomList: [],
       activeRoomId: 1,
       newMsg: {}

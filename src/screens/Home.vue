@@ -4,7 +4,6 @@
       <el-row>
         <el-col :span="4" class="logo clearfix" :style="{backgroundImage: `url(${globalPreference.logo})`}">
         </el-col>
-        <el-col :span="14">
           <div class="annouce-box clearfix" @click="announcementDialogVisible = true">
             <div class="title clearfix fl">
               <span>公告</span>
@@ -20,8 +19,7 @@
               </p>
             </div>
           </div>
-        </el-col>
-        <el-col class="head-right" :span="6">
+        <el-col class="head-right fr" :span="6">
           <div class="mobile-promotion" @mouseover="showQR = true" @mouseleave="showQR = false">
             <icon class="icon m-r" name="mobile-phone" scale="2"></icon>
             <span class="text">手机版聊天室</span>
@@ -118,7 +116,7 @@
             <!-- <el-tab-pane :label="'在线投注'">
               <iframe :src="globalPreference.mobile_lottery_url" width="100%" style="height: calc(100vh - 110px)" frameborder="0"></iframe>
             </el-tab-pane> -->
-            <el-tab-pane :label="'文字开奖'"> <!-- v-if="lasyLoadResult" -->
+            <el-tab-pane :label="'文字开奖'" class="text-result"> <!-- v-if="lasyLoadResult" -->
               <div class="results-container">
                 <result></result>
               </div>
@@ -148,6 +146,7 @@
           :visible.sync="showProfileDiag"
           :width="'600px'"
           @open="changeProfileRes = ''"
+          @close="currentChooseAvatar = null"
           center>
           <div class="edit-profile">
             <el-tabs v-model="activePanel" type="card" @tab-click="changeProfileRes = ''">
@@ -770,7 +769,9 @@ export default {
     background-position: center center;
     background-size: contain;
     background-repeat: no-repeat;
+    width: 230px;
     height: 50px;
+    margin-left: -10px;
     h1 {
       text-indent: -999px;
     }
@@ -782,9 +783,11 @@ export default {
 }
 
 .annouce-box {
+  display: inline-block;
+  width: 50%;
   height: 50px;
-  display: flex;
-  align-items: center;
+  line-height: 50px;
+  margin-left: 5px;
   .text {
     cursor: pointer;
   }
@@ -844,6 +847,9 @@ export default {
   }
   /deep/ .el-form-item--small.el-form-item {
     margin-bottom: 0;
+  }
+  .text-result {
+    height: 100%;
   }
 }
 .chat-area {
@@ -988,8 +994,8 @@ export default {
   }
 }
 .results-container {
-  height: calc(100vh - 140px);
-  overflow-y: auto;
+  height: 100%;
+  overflow-y: hidden;
 }
 .qrcode {
   position: absolute;

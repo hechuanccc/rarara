@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="container">
     <div
       v-for="(value, key, index) in resultsMap"
       :key="index" class="result m-b">
@@ -37,10 +37,9 @@ import urls from '../api/urls'
 import _ from 'lodash'
 const jsonp = require('jsonp')
 const CryptoJS = require('crypto-js')
-
 const encoded = (data) => {
   const ciphertext = CryptoJS.enc.Base64.parse(data)
-  const key = CryptoJS.enc.Utf8.parse('61Q3hC6jEvfQrwQvMd80fPm2XEqDPJhB')
+  const key = CryptoJS.enc.Utf8.parse(urls.decode.replace(/"/g, ''))
   const decryped = CryptoJS.AES.decrypt({ciphertext: ciphertext}, key, {
     mode: CryptoJS.mode.ECB
   })
@@ -176,6 +175,12 @@ export default {
 <style lang="scss" scoped>
 @import '../style/resultnumbers.scss';
 
+.container {
+  width: 100%;
+  height: calc(100% - 60px);
+  overflow-y: auto;
+}
+
 .result {
   box-sizing: border-box;
   width: 100%;
@@ -202,7 +207,7 @@ export default {
     display: inline-block;
   }
   .name, .issue {
-    font-size: 14px;
+    font-size: 12px;
   }
 }
 
@@ -213,6 +218,5 @@ export default {
     width: 290px;
   }
 }
-
 </style>
 
