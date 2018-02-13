@@ -21,6 +21,7 @@ ARG CDN_ENDPOINT
 ARG HOST
 ARG chatHost
 ARG MAX_AGE
+ARG decode_key
 
 # Cannot be made into one line as it has a possibility that it will return a 'text file busy' making the shell script unexecutable
 # Disable autobuild first.
