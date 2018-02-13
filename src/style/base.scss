@@ -130,6 +130,9 @@ body {
   .el-tabs__nav {
     width: 100%;
   }
+  .el-tabs__content {
+    height: 100%;
+  }
   .el-tabs--border-card>.el-tabs__header .el-tabs__item {
     border: none;
     width: 50%;

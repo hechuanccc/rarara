@@ -116,7 +116,7 @@
             <!-- <el-tab-pane :label="'在线投注'">
               <iframe :src="globalPreference.mobile_lottery_url" width="100%" style="height: calc(100vh - 110px)" frameborder="0"></iframe>
             </el-tab-pane> -->
-            <el-tab-pane :label="'文字开奖'"> <!-- v-if="lasyLoadResult" -->
+            <el-tab-pane :label="'文字开奖'" class="text-result"> <!-- v-if="lasyLoadResult" -->
               <div class="results-container">
                 <result></result>
               </div>
@@ -848,6 +848,9 @@ export default {
   /deep/ .el-form-item--small.el-form-item {
     margin-bottom: 0;
   }
+  .text-result {
+    height: 100%;
+  }
 }
 .chat-area {
   padding: 0 0px 10px 0;
@@ -991,8 +994,8 @@ export default {
   }
 }
 .results-container {
-  height: calc(100vh - 140px);
-  overflow-y: auto;
+  height: 100%;
+  overflow-y: hidden;
 }
 .qrcode {
   position: absolute;
