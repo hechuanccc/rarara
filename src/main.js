@@ -57,7 +57,7 @@ axios.interceptors.response.use(res => {
     return Promise.reject(responseData)
   }
 }, (error) => {
-  if (!error.response && error.message === 'Network Error') {
+  if (!error.response) {
     Vue.prototype.$message({
       showClose: true,
       message: '系统发生了错误, 请联系客服',
