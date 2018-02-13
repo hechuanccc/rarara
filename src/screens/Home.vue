@@ -188,10 +188,6 @@
                     </el-input>
                   </el-form-item>
 
-                  <el-form-item label="邮箱" prop="email" label-width="85px">
-                    <el-input class="input-width" v-model="editUser.email"></el-input>
-                  </el-form-item>
-
                   <el-form-item prop="mobile" label="手机" label-width="85px">
                     <el-input v-model="editUser.mobile"
                               type="number"
