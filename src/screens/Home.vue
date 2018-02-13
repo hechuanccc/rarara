@@ -172,9 +172,14 @@
                 </div>
                 <p class="text-center m-b">
                   <label for="preViewAvatar"
-                    class="pointer"
-                    v-on:mouseover="swichAvatar = true"
-                    v-on:mouseout="swichAvatar = false">上传新头像</label>
+                    class="pointer new-avatarbtn m-l"
+                    @mouseover="swichAvatar = true"
+                    @mouseout="swichAvatar = false">上传新头像</label>
+                  <label class="pointer"
+                    v-if="user.avatar !== null"
+                    @click="restoreAvatar"
+                    @mouseover="currentChooseAvatar = require('../assets/avatar.png')"
+                    @mouseout="currentChooseAvatar = tempAvatar ? tempAvatar : user.avatar">恢复预设头像</label>
                 </p>
                 <el-form :model="editUser" status-icon :rules="rules" ref="editUser" :style="{marginLeft: '-20px'}">
                   <el-form-item prop="nickname" label="昵称"  label-width="85px">
@@ -402,7 +407,8 @@ export default {
       lasyLoadResult: false,
       showQR: false,
       activePanel: 'account',
-      hallLastMsg: ''
+      hallLastMsg: '',
+      tempAvatar: ''
     }
   },
   computed: {
@@ -447,6 +453,31 @@ export default {
     this.fillOnlineMembers()
   },
   methods: {
+    restoreAvatar () {
+      this.disabledEditProfile = true
+      updateUser(this.user.id, {avatar: ''}).then(result => {
+        if (!result.error) {
+          this.changeProfileRes = '已恢复预设头像'
+          this.currentChooseAvatar = result.avatar
+
+          this.$store.commit('SET_USER', {
+            user: result
+          })
+        } else {
+          this.changeProfileRes = '修改资料失败'
+        }
+        this.disabledEditProfile = false
+      }, errorMsg => {
+        this.$message({
+          showClose: true,
+          message: msgFormatter(errorMsg),
+          type: 'error'
+        })
+        this.changeProfileRes = '修改资料失败'
+
+        this.disabledEditProfile = false
+      })
+    },
     filtAmount,
     getHallLastMsg (msg) {
       this.hallLastMsg = msg
@@ -727,6 +758,7 @@ export default {
         })
         return
       }
+      this.tempAvatar = URL.createObjectURL(file)
       this.currentChooseAvatar = URL.createObjectURL(file)
     },
     initRoomList () {
@@ -1011,5 +1043,9 @@ export default {
 }
 .text-danger {
   color: $red;
+}
+
+.new-avatarbtn {
+  display: inline-block;
 }
 </style>
