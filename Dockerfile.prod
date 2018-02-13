@@ -1,6 +1,6 @@
 
 # Take note that the image itself is already logged-in in the cloud CLI
-FROM unnotechlottery/caracal:latest as caracal
+FROM unnotechlottery/caracal:production as caracal
 
 FROM node:6.11.4
 
