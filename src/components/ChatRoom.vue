@@ -291,8 +291,8 @@ export default {
       this.ws.onclose = () => {
         this.ws = null
       }
-      this.ws.onerror = () => {
-        this.toHomeAndLogin()
+      this.ws.onerror = (err) => {
+        console.log(err)
       }
     },
     handleMsg () {
