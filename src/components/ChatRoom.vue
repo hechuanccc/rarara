@@ -806,7 +806,7 @@ export default {
     .txtinput {
       display: block;
       width: auto;
-      margin-right: 58px;
+      margin-right: 80px;
     }
     .el-textarea {
       vertical-align: bottom;
