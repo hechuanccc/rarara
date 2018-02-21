@@ -962,7 +962,7 @@ export default {
 }
 
 .emoji-container {
-  overflow-y: scroll;
+  overflow-y: auto;
   .emoji {
     padding: 2px 6px 0 4px;
     display: inline-block;
