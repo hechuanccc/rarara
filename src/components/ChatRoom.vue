@@ -291,8 +291,8 @@ export default {
       this.ws.onclose = () => {
         this.ws = null
       }
-      this.ws.onerror = (err) => {
-        console.log(err)
+      this.ws.onerror = () => {
+        this.toHomeAndLogin()
       }
     },
     handleMsg () {
@@ -649,6 +649,10 @@ export default {
         margin-right: 15px;
         .msg-header {
           h4 {
+            width: calc(100% - 110px);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
             text-align: right;
             float: right;
             padding-top: 2px;
@@ -712,21 +716,20 @@ export default {
   margin-bottom: 5px;
   h4 {
     display: inline-block;
-    font-size: 12px;
     color: #fff;
-    display: inline-block;
+    white-space: nowrap;
+    font-size: 12px;
     font-weight: 400;
-    cursor: pointer;
-    max-width: 73px;
-    overflow:hidden;
-    text-overflow:ellipsis;
+    width: calc(100% - 110px);
+    overflow: hidden;
+    text-overflow: ellipsis;
     line-height: 12px;
+    cursor: pointer;
   }
 
   .msg-time {
     display: inline-block;
     color: #ccc;
-    margin: 0 2px;
   }
 }
 .bubble {
