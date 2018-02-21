@@ -482,8 +482,8 @@ export default {
     },
     filtAmount,
     getHallLastMsg (msg) {
-      this.hallLastMsg = msg
       this.initRoomList()
+      this.hallLastMsg = msg
     },
     getUser (member) {
       getChatUser(1).then(response => {
@@ -769,9 +769,11 @@ export default {
     },
     initRoomList () {
       if (this.myRoles.includes('customer service') || this.myRoles.includes('manager')) {
-        this.$refs.roomList.roomEnded = false
+        if (!this.hallLastMsg) {
+          this.$refs.roomList.roomEnded = false
+          this.$refs.roomList.fillMemberRooms()
+        }
         this.$refs.roomList.roomPage = 0
-        this.$refs.roomList.fillMemberRooms()
       }
     },
     loadResult (tab) {
