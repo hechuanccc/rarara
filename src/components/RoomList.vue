@@ -37,7 +37,7 @@
             <span v-else>{{ `与 ${room.users[1].nickname || room.users[1].username} 的私聊`}}</span>
           </span>
         </div>
-        <div v-if="room.last_message" class="last-message">{{room.last_message.content}}</div>
+        <div v-if="room.latest_message" class="last-message">{{room.latest_message}}</div>
       </li>
       <li class="load-more pointer" @click="fillMemberRooms()" v-if="!roomEnded" >查看更多</li>
     </ul>
@@ -97,7 +97,7 @@ export default {
       handler: function (val, oldVal) {
         this.roomList.forEach((item, index) => {
           if (item.id === val.id) {
-            item.last_message.content = val.content
+            item.latest_message = val.content
           }
         })
       },
