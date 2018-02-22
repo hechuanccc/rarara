@@ -170,9 +170,9 @@
                     <span v-if="swichAvatar" class="el-icon-upload"></span>
                   </label>
                 </div>
-                <p class="text-center m-b m-t">
+                <p class="text-center m-b-lg m-t">
                   <label for="preViewAvatar"
-                    class="pointer new-avatarbtn m-l"
+                    class="pointer new-avatarbtn m-r-lg m-l"
                     @mouseover="swichAvatar = true"
                     @mouseout="swichAvatar = false">上传新头像</label>
                   <label class="pointer"
@@ -190,6 +190,7 @@
 
                   <el-form-item prop="mobile" label="手机" label-width="85px">
                     <el-input v-model="editUser.mobile"
+                              @keypress.native="filtAmount"
                               type="number"
                               class="inp">
                     </el-input>
@@ -481,8 +482,8 @@ export default {
     },
     filtAmount,
     getHallLastMsg (msg) {
-      this.hallLastMsg = msg
       this.initRoomList()
+      this.hallLastMsg = msg
     },
     getUser (member) {
       getChatUser(1).then(response => {
@@ -768,9 +769,11 @@ export default {
     },
     initRoomList () {
       if (this.myRoles.includes('customer service') || this.myRoles.includes('manager')) {
-        this.$refs.roomList.roomEnded = false
+        if (!this.hallLastMsg) {
+          this.$refs.roomList.roomEnded = false
+          this.$refs.roomList.fillMemberRooms()
+        }
         this.$refs.roomList.roomPage = 0
-        this.$refs.roomList.fillMemberRooms()
       }
     },
     loadResult (tab) {
