@@ -195,7 +195,7 @@ export default {
 
 .last-message {
   display: inline-block;
-  width: 210px; // .left-aside w250px - p20px - .public p20px = 210px
+  width: 210px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
