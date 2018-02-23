@@ -87,18 +87,22 @@ const toHomeAndLogin = function (router) {
   })
 }
 
+let firstEnter = true
 router.beforeEach((to, from, next) => {
-  // fisrMacthed might be the top-level parent route of others
-  const firstMatched = to.matched.length ? to.matched[0] : null
-  if ((firstMatched || to).meta.requiresAuth) {
-    store.dispatch('fetchUser')
-        .then(res => {
-          next()
-        })
-        .catch(error => {
-          toHomeAndLogin(router)
-          return Promise.resolve(error)
-        })
+  if (firstEnter && to.meta.requiresAuth === true) {
+    let token = VueCookie.get('access_token')
+    if (token) {
+      store.dispatch('fetchUser')
+      .then(res => {
+        firstEnter = false
+        next()
+      })
+      .catch(() => {
+        toHomeAndLogin(router)
+      })
+    } else {
+      toHomeAndLogin(router)
+    }
   } else {
     next()
   }
