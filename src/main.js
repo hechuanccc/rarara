@@ -94,6 +94,7 @@ router.beforeEach((to, from, next) => {
     if (token) {
       store.dispatch('fetchUser')
       .then(res => {
+        firstEnter = false
         next()
       })
       .catch(() => {
