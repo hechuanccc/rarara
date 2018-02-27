@@ -649,7 +649,7 @@ export default {
         margin-right: 15px;
         .msg-header {
           h4 {
-            width: calc(100% - 110px);
+            max-width: 150px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -696,7 +696,7 @@ export default {
 
 .common-member {
   display: inline-block;
-  margin: 0 8px;
+  margin: 0 5px;
   background: #cb9b64;
   color: #fff;
   padding: 0 6px;
@@ -720,7 +720,7 @@ export default {
     white-space: nowrap;
     font-size: 12px;
     font-weight: 400;
-    width: calc(100% - 110px);
+    max-width: 150px;
     overflow: hidden;
     text-overflow: ellipsis;
     line-height: 12px;
