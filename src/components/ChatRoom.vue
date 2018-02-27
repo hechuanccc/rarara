@@ -696,7 +696,7 @@ export default {
 
 .common-member {
   display: inline-block;
-  margin: 0 8px;
+  margin: 0 5px;
   background: #cb9b64;
   color: #fff;
   padding: 0 6px;
