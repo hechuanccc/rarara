@@ -147,10 +147,11 @@
           :width="'600px'"
           @open="changeProfileRes = ''"
           @close="currentChooseAvatar = null"
+          top="10vh"
           center>
           <div class="edit-profile">
             <el-tabs v-model="activePanel" type="card" @tab-click="changeProfileRes = ''">
-              <el-tab-pane class="edit-user-panel" label="用户中心" name="account">
+              <el-tab-pane class="edit-user-panel" label="帐号信息" name="account">
                 <div
                   class="avatar"
                   v-on:mouseover="swichAvatar = true"
@@ -204,15 +205,11 @@
                     </el-input>
                   </el-form-item>
 
-                  <el-form-item class="text" label="登录IP" label-width="85px">
-                    <p class="member-info">{{user.last_login_ip}}</p>
-                  </el-form-item>
-
-                  <el-form-item class="text" label="注册时间"  label-width="85px">
+                  <el-form-item label="注册时间"  label-width="85px">
                     <p class="member-info">{{user.date_joined | moment('YYYY-MM-HH')}}</p>
                   </el-form-item>
 
-                  <el-form-item label="推广链接"  label-width="85px">
+                  <el-form-item v-if="promoteUrl" label="推广链接"  label-width="85px">
                     <p class="member-info">{{promoteUrl}}</p>
                   </el-form-item>
                   <el-form-item label-width="85px">
