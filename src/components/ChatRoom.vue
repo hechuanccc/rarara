@@ -279,7 +279,6 @@ export default {
 
         if (!this.emojis.people.length) {
           fetchChatEmoji().then((resData) => {
-            resData.people = resData.people.reverse()
             this.emojis = resData
           }).catch(() => {
             this.emojiSuccess = false
