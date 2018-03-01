@@ -188,7 +188,6 @@
                               class="inp">
                     </el-input>
                   </el-form-item>
-
                   <el-form-item prop="mobile" label="手机" label-width="85px">
                     <el-input v-model="editUser.mobile"
                               @keypress.native="filtAmount"
@@ -204,13 +203,14 @@
                               class="inp">
                     </el-input>
                   </el-form-item>
-
                   <el-form-item label="注册时间"  label-width="85px">
                     <p class="member-info">{{user.date_joined | moment('YYYY-MM-HH')}}</p>
                   </el-form-item>
-
                   <el-form-item v-if="promoteUrl" label="推广链接"  label-width="85px">
                     <p class="member-info">{{promoteUrl}}</p>
+                  </el-form-item>
+                  <el-form-item v-if="promoter" label="代理商"  label-width="85px">
+                    <p class="member-info">{{promoter}}</p>
                   </el-form-item>
                   <el-form-item label-width="85px">
                     <el-button class="profile-submit" type="primary" @click="submit" :disabled="disabledEditProfile">确认修改</el-button>
@@ -428,6 +428,9 @@ export default {
     },
     promoteUrl () {
       return this.user.promote_code ? window.location.origin + '/#/?r=' + this.user.promote_code : ''
+    },
+    promoter () {
+      return this.user.promoter ? this.user.promoter : ''
     }
   },
   watch: {
