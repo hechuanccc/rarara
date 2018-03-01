@@ -430,7 +430,7 @@ export default {
       return this.user.promote_code ? window.location.origin + '/#/?r=' + this.user.promote_code : ''
     },
     promoter () {
-      return this.user.promoter ? this.user.promoter : ''
+      return this.user.promoter || ''
     }
   },
   watch: {
