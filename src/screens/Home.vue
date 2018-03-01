@@ -209,8 +209,8 @@
                   <el-form-item v-if="promoteUrl" label="推广链接"  label-width="85px">
                     <p class="member-info">{{promoteUrl}}</p>
                   </el-form-item>
-                  <el-form-item v-if="promoter" label="代理商"  label-width="85px">
-                    <p class="member-info">{{promoter}}</p>
+                  <el-form-item v-if="agent" label="代理商"  label-width="85px">
+                    <p class="member-info">{{agent}}</p>
                   </el-form-item>
                   <el-form-item label-width="85px">
                     <el-button class="profile-submit" type="primary" @click="submit" :disabled="disabledEditProfile">确认修改</el-button>
@@ -429,8 +429,8 @@ export default {
     promoteUrl () {
       return this.user.promote_code ? window.location.origin + '/#/?r=' + this.user.promote_code : ''
     },
-    promoter () {
-      return this.user.promoter || ''
+    agent () {
+      return this.user.agent || ''
     }
   },
   watch: {
