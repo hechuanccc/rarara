@@ -85,8 +85,8 @@ export default {
   setGlobalConfig: ({ commit }, data) => {
     commit(types.SET_GLOBAL, data)
   },
-  updateRoomList: ({ commit, state }, data) => {
-    commit(types.UPDATE_ROOMLIST, data)
+  updateChatList: ({ commit, state }, data) => {
+    commit(types.UPDATE_CHATLIST, data)
   },
   startPrivateChat: ({ commit, state }, data) => {
     commit(types.START_PRIVATECHAT, data)

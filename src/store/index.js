@@ -17,14 +17,15 @@ export function createStore () {
       globalPreference: {
         mobile_url: ''
       },
-      roomList: [],
-      activeRoomId: 1,
-      newMsg: {},
+      chatList: [],
       privateChat: {
         dialogVisible: false,
-        roomId: 0,
-        messages: []
+        current: {
+          roomId: 1,
+          messages: []
+        }
       },
+      rooms: [],
       ws: null
     },
     actions,
