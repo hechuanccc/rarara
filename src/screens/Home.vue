@@ -37,7 +37,7 @@
     </el-header>
 
       <el-container>
-        <el-aside :width="myRoles.includes('customer service') || myRoles.includes('manager') ? '250px' : '0px'" class="aside">
+        <el-aside v-if="myRoles.includes('customer service')" width="250px" class="aside">
           <el-tabs
             class="alone"
             v-model="activeTab"

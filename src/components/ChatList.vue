@@ -51,7 +51,7 @@ export default {
   },
   data () {
     return {
-      roomLoading: false,
+      loading: false,
       activeChatIndex: 1
     }
   },
@@ -64,19 +64,18 @@ export default {
       'user'
     ])
   },
-
   methods: {
     getRoles (user) {
       return user.roles.map((role) => role.name)
     },
     fillMemberRooms () {
-      if (this.roomLoading) {
+      if (this.loading) {
         return
       }
-      this.roomLoading = true
+      this.loading = true
 
       getChatList().then(res => {
-        this.roomLoading = false
+        this.loading = false
 
         this.$store.dispatch('updateChatList', res.results)
         return res
@@ -86,6 +85,7 @@ export default {
       this.activeChatIndex = index
 
       if (index !== 1) {
+        this.loading = true
         buildRoom({
           type: 2,
           status: 1,
@@ -93,6 +93,7 @@ export default {
           users: [this.user.id, chat.id]
         }).then(res => {
           this.$store.dispatch('startPrivateChat', res.room)
+          this.loading = false
         })
       } else {
         this.$store.dispatch('startPrivateChat', {id: 1})
