@@ -78,9 +78,6 @@
           <span v-if="personal_setting.user && myRoles.includes('manager')" class="btn-control right" @click="openManageDialog()" >
             <icon name="cog" class="font-cog" scale="1.4"></icon>
           </span>
-
-
-
           <div class="chat-buttons" v-if="!myRoles.includes('customer service')">
             <el-button type="warning"
               :key="index"
@@ -90,9 +87,6 @@
               {{`客服 ${index + 1}`}}
             </el-button>
           </div>
-
-
-
         </div>
         <div class="typing">
           <div :class="['txtinput', 'el-textarea', !personal_setting.chat.status ? 'is-disabled' : '']">
