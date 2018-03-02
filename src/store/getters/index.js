@@ -4,8 +4,5 @@ export default {
   },
   myRoles: (state, getters) => {
     return state.user.roles.map(role => role.name)
-  },
-  privateChats: (state, getters) => {
-    return state.chatList.filter(obj => obj.id !== 1)
   }
 }

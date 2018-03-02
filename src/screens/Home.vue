@@ -94,15 +94,11 @@
               :disabled="loading"
               label="聊天列表"
               name="rooms">
-
-
               <div class="chat-list">
                 <ChatList ref="chatList">
                 </ChatList>
               </div>
             </el-tab-pane>
-
-
           </el-tabs>
         </el-aside>
 
@@ -457,7 +453,6 @@ export default {
   created () {
     this.getAnnouce()
     this.fillOnlineMembers()
-
     this.getChatList()
   },
   methods: {
