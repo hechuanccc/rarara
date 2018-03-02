@@ -122,6 +122,10 @@ export function getChatUser (id) {
   return axios.get(`${urls.room}${id}/`)
 }
 
+export function getChatList () {
+  return axios.get(`${urls.member}chat_list/`)
+}
+
 export function checkUserName (username) {
   return axios.get(urls.check_username, { params: { username: username } })
 }

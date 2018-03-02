@@ -19,7 +19,13 @@ export function createStore () {
       },
       roomList: [],
       activeRoomId: 1,
-      newMsg: {}
+      newMsg: {},
+      privateChat: {
+        dialogVisible: false,
+        roomId: 0,
+        messages: []
+      },
+      ws: null
     },
     actions,
     mutations,
