@@ -267,13 +267,14 @@ import 'vue-awesome/icons/mobile-phone'
 import 'vue-awesome/icons/comments'
 import 'vue-awesome/icons/search'
 import ChatRoom from '../components/ChatRoom'
-import { fetchAnnouce, fetchOnlineMembers, createRoom, updateUser, banChatUser, unbanChatUser, blockChatUser, unblockChatUser, getChatUser } from '../api'
+import { fetchAnnouce, fetchOnlineMembers, createRoom, updateUser, banChatUser, unbanChatUser, blockChatUser, unblockChatUser, getChatUser, fetchMemberRoom } from '../api'
 import { msgFormatter, filtAmount } from '../utils'
 import { validatePhone, validateQQ, validatePassword } from '../validate'
 import urls from '../api/urls'
 import Result from '../components/Result'
 import { mapState, mapGetters } from 'vuex'
 import RoomList from '../components/RoomList'
+import PrivateChat from '../components/PrivateChat'
 const RECEIVER = 1
 
 Vue.filter('truncate', function (text, stop) {
@@ -285,7 +286,8 @@ export default {
     Icon,
     ChatRoom,
     Result,
-    RoomList
+    RoomList,
+    PrivateChat
   },
   data () {
     const qqValidator = (rule, value, callback) => {
@@ -408,7 +410,8 @@ export default {
   computed: {
     ...mapState([
       'globalPreference',
-      'loading'
+      'loading',
+      'privateChat'
     ]),
     ...mapGetters([
       'myRoles'
@@ -453,8 +456,15 @@ export default {
   created () {
     this.getAnnouce()
     this.fillOnlineMembers()
+    this.fetchMemberRooms()
   },
   methods: {
+    fetchMemberRooms () {
+      // no passing will get the privaterooms
+      fetchMemberRoom().then(data => {
+        this.$store.dispatch('updateRoomList', data)
+      })
+    },
     restoreAvatar () {
       this.disabledEditProfile = true
       updateUser(this.user.id, {avatar: ''}).then(result => {
@@ -1055,5 +1065,9 @@ export default {
 
 .new-avatarbtn {
   display: inline-block;
+}
+
+.privatechat-dialog /deep/ .el-dialog--center .el-dialog__header {
+  padding-top: 0;
 }
 </style>

@@ -78,6 +78,15 @@
           <span v-if="personal_setting.user && myRoles.includes('manager')" class="btn-control right" @click="openManageDialog()" >
             <icon name="cog" class="font-cog" scale="1.4"></icon>
           </span>
+          <div class="chat-buttons" v-if="!myRoles.includes('customer service')">
+            <el-button type="warning"
+              :key="index"
+              size="mini"
+              @click.native="openPrivateChatDialog(room.id)"
+              v-for="(room, index) in privateRooms">
+              {{`客服 ${index + 1}`}}
+            </el-button>
+          </div>
         </div>
         <div class="typing">
           <div :class="['txtinput', 'el-textarea', !personal_setting.chat.status ? 'is-disabled' : '']">
@@ -124,6 +133,15 @@
         @updateUsers="updateUsers"
         />
     </el-dialog>
+     <el-dialog
+       class="privatechat-dialog"
+       :visible.sync="privateChat.dialogVisible"
+       :width="'550px'"
+       @close="$store.dispatch('endPrivateChat')"
+       top="10vh"
+       center>
+      <PrivateChat :personalSetting="personal_setting" :emojis="emojis" :joinChatRoom="joinChatRoom" v-if="privateChat.roomId"/>
+    </el-dialog>
   </div>
 
 </template>
@@ -137,13 +155,15 @@ import urls from '../api/urls'
 import config from '../../config'
 import Restraint from './Restraint'
 import { mapGetters, mapState } from 'vuex'
+import PrivateChat from '../components/PrivateChat'
 
 const WSHOST = config.chatHost
 
 export default {
   components: {
     Icon,
-    Restraint
+    Restraint,
+    PrivateChat
   },
   data () {
     return {
@@ -205,6 +225,11 @@ export default {
       },
       deep: true
     },
+    'privateChat.roomId': function (val) {
+      if (this.roomMessages[val]) {
+        this.$store.dispatch('getChatMessages', this.roomMessages[val])
+      }
+    },
     'lastMessageInHall': function () {
       this.$emit('getHallLastMsg', this.lastMessageInHall)
     }
@@ -215,11 +240,13 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'myRoles'
+      'myRoles',
+      'privateRooms'
     ]),
     ...mapState([
       'activeRoomId',
-      'user'
+      'user',
+      'privateChat'
     ]),
     isLogin () {
       return this.$store.state.user.logined && this.$route.name !== 'Home'
@@ -258,6 +285,9 @@ export default {
     }
   },
   methods: {
+    openPrivateChatDialog (roomId) {
+      this.$store.dispatch('startPrivateChat', roomId)
+    },
     checkLiving (ws) {
       this.liveInterval = setInterval(() => {
         ws.send(JSON.stringify({
@@ -275,6 +305,7 @@ export default {
       this.$store.dispatch('startLoading')
       this.ws = new WebSocket(`${WSHOST}/chat/stream?token=${token}`)
       this.ws.onopen = () => {
+        this.$store.dispatch('setWebsocket', this.ws)
         this.checkLiving(this.ws)
 
         if (!this.emojis.people.length) {
@@ -289,6 +320,7 @@ export default {
       }
       this.ws.onclose = () => {
         this.ws = null
+        this.$store.dispatch('setWebsocket', this.ws)
       }
       this.ws.onerror = (err) => {
         console.log(err)
@@ -361,7 +393,7 @@ export default {
                     }
 
                     this.roomMessages[data.receivers].push(data)
-
+                    this.$store.dispatch('getChatMessages', this.roomMessages[this.privateChat.roomId])
                     this.$store.commit('NEW_MESSAGE', {
                       id: data.receivers,
                       content: data.content
@@ -981,4 +1013,12 @@ export default {
   height: 100%;
 }
 
+.chat-buttons {
+  float: left;
+  padding-top: 2px;
+}
+
+.privatechat-dialog /deep/ .el-dialog--center .el-dialog__header {
+  padding-top: 0;
+}
 </style>

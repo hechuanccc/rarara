@@ -107,6 +107,9 @@ body {
 .p-t {
   padding-top: 10px;
 }
+.p-t-xlg {
+  padding-top: 40px;
+}
 
 /*breadcrumb & the line*/
 
@@ -195,4 +198,4 @@ body {
   }
 
 }
-@include scrollbars(10px, #333, 10px);
+@include scrollbars(10px, #666, 10px);

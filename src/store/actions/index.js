@@ -87,5 +87,17 @@ export default {
   },
   updateRoomList: ({ commit, state }, data) => {
     commit(types.UPDATE_ROOMLIST, data)
+  },
+  startPrivateChat: ({ commit, state }, data) => {
+    commit(types.START_PRIVATECHAT, data)
+  },
+  getChatMessages: ({ commit, state }, data) => {
+    commit(types.GET_CHATMESSAGES, data)
+  },
+  endPrivateChat: ({ commit, state }) => {
+    commit(types.END_PRIVATECHAT)
+  },
+  setWebsocket: ({ commit, state }, data) => {
+    commit(types.SET_WEBSOCKET, data)
   }
 }

@@ -25,6 +25,9 @@ export default {
   [types.SET_GLOBAL]: (state, data) => {
     state.globalPreference = data
   },
+  [types.SET_WEBSOCKET]: (state, data) => {
+    state.ws = data
+  },
   [types.UPDATE_ROOMLIST]: (state, data) => {
     state.roomList = data || []
   },
@@ -33,5 +36,16 @@ export default {
   },
   [types.NEW_MESSAGE]: (state, data) => {
     state.newMsg = data || {}
+  },
+  [types.GET_CHATMESSAGES]: (state, data) => {
+    state.privateChat.messages = [...data]
+  },
+  [types.START_PRIVATECHAT]: (state, data) => {
+    state.privateChat.roomId = data
+    state.privateChat.dialogVisible = true
+  },
+  [types.END_PRIVATECHAT]: (state, data) => {
+    state.privateChat.roomId = 0
+    state.privateChat.dialogVisible = false
   }
 }
