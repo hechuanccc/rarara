@@ -82,6 +82,9 @@ export default {
       })
     },
     switchChat (chat, index) {
+      if (this.loading) {
+        return
+      }
       this.activeChatIndex = index
 
       if (index !== 1) {
