@@ -270,8 +270,7 @@ import { fetchAnnouce,
   unbanChatUser,
   blockChatUser,
   unblockChatUser,
-  getChatUser,
-  getChatList } from '../api'
+  getChatUser } from '../api'
 import { msgFormatter, filtAmount } from '../utils'
 import { validatePhone, validateQQ, validatePassword } from '../validate'
 import urls from '../api/urls'
@@ -453,14 +452,8 @@ export default {
   created () {
     this.getAnnouce()
     this.fillOnlineMembers()
-    this.getChatList()
   },
   methods: {
-    getChatList () {
-      getChatList().then(data => {
-        this.$store.dispatch('updateChatList', data.results)
-      })
-    },
     restoreAvatar () {
       this.disabledEditProfile = true
       updateUser(this.user.id, {avatar: ''}).then(result => {

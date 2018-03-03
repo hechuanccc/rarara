@@ -156,7 +156,7 @@
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/cog'
 import 'vue-awesome/icons/smile-o'
-import { fetchChatEmoji, sendImgToChat, getChatUser, buildRoom } from '../api'
+import { fetchChatEmoji, sendImgToChat, getChatUser, buildRoom, getChatList } from '../api'
 import urls from '../api/urls'
 import config from '../../config'
 import Restraint from './Restraint'
@@ -223,6 +223,9 @@ export default {
       this.$nextTick(() => {
         this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
       })
+    },
+    'roomMessages': function (val) {
+      this.$store.dispatch('setRoomMsgs', val)
     }
   },
   beforeDestroy () {
@@ -260,6 +263,7 @@ export default {
     }
   },
   created () {
+    this.getChatList()
     if (this.$route.name !== 'Home') {
       this.leaveRoom()
     } else {
@@ -267,6 +271,11 @@ export default {
     }
   },
   methods: {
+    getChatList () {
+      getChatList().then(data => {
+        this.$store.dispatch('updateChatList', data.results)
+      })
+    },
     openPrivateChatDialog (chat) {
       let obj = {
         type: 2,
@@ -276,7 +285,19 @@ export default {
       }
 
       buildRoom(obj).then(res => {
+        let currentMsg = this.roomMessages[res.room.id]
+
         this.$store.dispatch('startPrivateChat', res.room)
+        this.$store.dispatch('updateChatRead', {username: chat.username, read: true})
+
+        let lastMessage = currentMsg[currentMsg.length - 2]
+        this.ws.send(JSON.stringify({
+          command: 'read_msg',
+          message: lastMessage.id,
+          sender: lastMessage.sender.username,
+          room: res.room.id,
+          user: this.user.username
+        }))
       })
     },
     checkLiving (ws) {
@@ -386,6 +407,9 @@ export default {
                     }
 
                     this.roomMessages[data.receivers].push(data)
+                    if (data.sender.username !== this.user.username) {
+                      this.$store.dispatch('updateChatRead', {username: data.sender.username, read: false})
+                    }
                     this.$forceUpdate()
 
                     this.$store.dispatch('getChatMessages', this.roomMessages[this.privateChat.current.roomId])
