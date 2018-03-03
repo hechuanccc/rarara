@@ -230,6 +230,7 @@ export default {
   },
   beforeDestroy () {
     this.leaveRoom()
+    this.$store.dispatch('endPrivateChat')
     clearInterval(this.liveInterval)
   },
   computed: {
