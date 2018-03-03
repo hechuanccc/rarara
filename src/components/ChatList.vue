@@ -1,5 +1,4 @@
 <template>
-<div>
   <div class="rooms-container">
     <ul class="rooms m-t">
       <li :class="['public', {active: activeChatIndex === 1}]"
@@ -36,7 +35,6 @@
       </li>
     </ul>
   </div>
-</div>
 </template>
 
 <script>
