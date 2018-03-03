@@ -3,10 +3,10 @@
     <h1 class="title text-center m-b">在线客服</h1>
     <div>
       <ul class="chat-records m-b"
-        v-if="privateChat.messages.length">
+        v-if="privateChat.current.messages && privateChat.current.messages.length">
         <li class="record m-t m-b"
           v-if="msg.type !== -1"
-          v-for="(msg, index) in privateChat.messages"
+          v-for="(msg, index) in privateChat.current.messages"
           :key="index">
           <div :class="['speaker', {'self': msg.sender.username === user.username}]">
             <div class="avatar">
@@ -14,7 +14,9 @@
             </div>
             <div class="information">
               <span class="user">{{msg.sender.nickname || msg.sender.username}}</span>
-              <span class="character">{{msg.sender && msg.sender.roles.length && getRoles(msg).includes('manager') ? '管理员' : '普通会员'}}</span>
+              <span class="character">
+                {{getCharacter(msg)}}
+              </span>
               <span class="time">{{msg.created_at | moment('HH:mm:ss')}}</span>
               <div class="content-box">
                 <div v-if="msg.type === 0" class="content p-l p-r m-t-sm">{{msg.content}}</div>
@@ -119,7 +121,7 @@ export default {
     }
   },
   watch: {
-    'privateChat.messages.length': function () {
+    'privateChat.current.messages.length': function () {
       this.$nextTick(() => {
         this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
       })
@@ -134,7 +136,7 @@ export default {
       }
       this.ws.send(JSON.stringify({
         'command': 'send',
-        'receivers': [this.privateChat.roomId],
+        'receivers': [this.privateChat.current.roomId],
         'type': 0,
         'content': this.speakingContent
       }))
@@ -152,15 +154,28 @@ export default {
         return
       }
       let formData = new FormData()
-      formData.append('receiver', this.privateChat.roomId)
+      formData.append('receiver', this.privateChat.current.roomId)
       formData.append('image', file)
-      console.log(formData)
       sendImgToChat(formData).then((data) => {
         fileInp.value = ''
       })
     },
     getRoles (message) {
       return message.sender.roles.map((role) => role.name)
+    },
+    getCharacter (msg) {
+      let display = msg.sender.roles.map(obj => obj.display_name)
+      let char = ''
+      if (msg.sender && msg.sender.roles.length) {
+        if (this.getRoles(msg).length > 1) {
+          display.shift()
+          char = display.join('&')
+        } else {
+          char = '一般会员'
+        }
+      }
+
+      return char
     },
     openMessageBox (content, type) {
       this.$message({

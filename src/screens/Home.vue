@@ -37,7 +37,7 @@
     </el-header>
 
       <el-container>
-        <el-aside :width="myRoles.includes('customer service') || myRoles.includes('manager') ? '250px' : '0px'" class="aside">
+        <el-aside v-if="myRoles.includes('customer service')" width="250px" class="aside">
           <el-tabs
             class="alone"
             v-model="activeTab"
@@ -95,20 +95,15 @@
               label="聊天列表"
               name="rooms">
               <div class="chat-list">
-                <room-list
-                  :user="user"
-                  ref="roomList"
-                  :hallLastMsg="hallLastMsg"
-                  :activeRoom="activeRoom">
-                </room-list>
+                <ChatList ref="chatList">
+                </ChatList>
               </div>
             </el-tab-pane>
-
           </el-tabs>
         </el-aside>
 
         <el-main class="chat-area">
-          <chat-room @getHallLastMsg="getHallLastMsg"></chat-room>
+          <chat-room></chat-room>
         </el-main>
 
         <el-aside width="395px" class="aside">
@@ -267,13 +262,22 @@ import 'vue-awesome/icons/mobile-phone'
 import 'vue-awesome/icons/comments'
 import 'vue-awesome/icons/search'
 import ChatRoom from '../components/ChatRoom'
-import { fetchAnnouce, fetchOnlineMembers, createRoom, updateUser, banChatUser, unbanChatUser, blockChatUser, unblockChatUser, getChatUser, fetchMemberRoom } from '../api'
+import { fetchAnnouce,
+  fetchOnlineMembers,
+  createRoom,
+  updateUser,
+  banChatUser,
+  unbanChatUser,
+  blockChatUser,
+  unblockChatUser,
+  getChatUser,
+  getChatList } from '../api'
 import { msgFormatter, filtAmount } from '../utils'
 import { validatePhone, validateQQ, validatePassword } from '../validate'
 import urls from '../api/urls'
 import Result from '../components/Result'
 import { mapState, mapGetters } from 'vuex'
-import RoomList from '../components/RoomList'
+import ChatList from '../components/ChatList'
 import PrivateChat from '../components/PrivateChat'
 const RECEIVER = 1
 
@@ -286,7 +290,7 @@ export default {
     Icon,
     ChatRoom,
     Result,
-    RoomList,
+    ChatList,
     PrivateChat
   },
   data () {
@@ -357,9 +361,7 @@ export default {
       onlineMemberLoading: false,
       onlineMembersEnded: false,
       roomLoading: false,
-      roomEnded: false,
       onlineMembers: [],
-      roomList: [],
       editUser: {
         mobile: '',
         email: '',
@@ -437,11 +439,6 @@ export default {
     }
   },
   watch: {
-    'activeTab': function (val) {
-      if (val === 'rooms') {
-        this.initRoomList()
-      }
-    },
     'nickname_q': function (val) {
       if (val === '') {
         this.exitSearch()
@@ -456,13 +453,12 @@ export default {
   created () {
     this.getAnnouce()
     this.fillOnlineMembers()
-    this.fetchMemberRooms()
+    this.getChatList()
   },
   methods: {
-    fetchMemberRooms () {
-      // no passing will get the privaterooms
-      fetchMemberRoom().then(data => {
-        this.$store.dispatch('updateRoomList', data)
+    getChatList () {
+      getChatList().then(data => {
+        this.$store.dispatch('updateChatList', data.results)
       })
     },
     restoreAvatar () {
@@ -491,10 +487,6 @@ export default {
       })
     },
     filtAmount,
-    getHallLastMsg (msg) {
-      this.initRoomList()
-      this.hallLastMsg = msg
-    },
     getUser (member) {
       getChatUser(1).then(response => {
         if (!response.banned_users.length || !response.block_users.length) {
@@ -776,15 +768,6 @@ export default {
       }
       this.tempAvatar = URL.createObjectURL(file)
       this.currentChooseAvatar = URL.createObjectURL(file)
-    },
-    initRoomList () {
-      if (this.myRoles.includes('customer service') || this.myRoles.includes('manager')) {
-        if (!this.hallLastMsg) {
-          this.$refs.roomList.roomEnded = false
-          this.$refs.roomList.fillMemberRooms()
-        }
-        this.$refs.roomList.roomPage = 0
-      }
     },
     loadResult (tab) {
       if (tab.index === '1') {

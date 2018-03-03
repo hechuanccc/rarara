@@ -7,7 +7,7 @@
       element-loading-text="正在登录计划聊天室">
       <el-main class="content" id="chatBox">
         <ul class="lay-scroll">
-          <li v-for="(item, index) in roomMessages[activeRoomId]"
+          <li v-for="(item, index) in showingMessages"
             :key="index"
             :class="
               ['clearfix',
@@ -78,15 +78,18 @@
           <span v-if="personal_setting.user && myRoles.includes('manager')" class="btn-control right" @click="openManageDialog()" >
             <icon name="cog" class="font-cog" scale="1.4"></icon>
           </span>
-          <div class="chat-buttons" v-if="!myRoles.includes('customer service')">
-            <el-button type="warning"
+
+          <div class="chat-buttons" v-if="!myRoles.includes('customer service') || !myRoles.includes('manager')">
+            <el-button :type="chat.read ? '' : 'warning'"
+              :plain="chat.read"
               :key="index"
               size="mini"
-              @click.native="openPrivateChatDialog(room.id)"
-              v-for="(room, index) in privateRooms">
+              @click.native="openPrivateChatDialog(chat)"
+              v-for="(chat, index) in chatList">
               {{`客服 ${index + 1}`}}
             </el-button>
           </div>
+
         </div>
         <div class="typing">
           <div :class="['txtinput', 'el-textarea', !personal_setting.chat.status ? 'is-disabled' : '']">
@@ -140,7 +143,10 @@
        @close="$store.dispatch('endPrivateChat')"
        top="10vh"
        center>
-      <PrivateChat :personalSetting="personal_setting" :emojis="emojis" :joinChatRoom="joinChatRoom" v-if="privateChat.roomId"/>
+      <PrivateChat :personalSetting="personal_setting"
+        :emojis="emojis"
+        :joinChatRoom="joinChatRoom"
+        v-if="privateChat.current.roomId && privateChat.current.roomId !== 1"/>
     </el-dialog>
   </div>
 
@@ -150,7 +156,7 @@
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/cog'
 import 'vue-awesome/icons/smile-o'
-import { fetchChatEmoji, sendImgToChat, getChatUser } from '../api'
+import { fetchChatEmoji, sendImgToChat, getChatUser, buildRoom } from '../api'
 import urls from '../api/urls'
 import config from '../../config'
 import Restraint from './Restraint'
@@ -201,37 +207,22 @@ export default {
         ]
       },
       roomMessages: {},
-      num: 0,
       host: urls.domain,
       emojiSuccess: true
     }
   },
   watch: {
-    '$store.state.roomList' (val, oldVal) {
-      let roomList = this.$store.state.roomList
-      roomList.forEach((item, index) => {
-        this.$set(this.roomMessages, item.id, this.roomMessages[item.id] ? this.roomMessages[item.id] : [])
-      })
-    },
-    '$store.state.activeRoomId' (val) {
+    'privateChat.current.roomId' (val) {
       this.RECEIVER = val
+      if (!this.roomMessages[val]) {
+        this.roomMessages[val] = []
+      }
+
+      this.$store.dispatch('getChatMessages', this.roomMessages[val])
+
       this.$nextTick(() => {
         this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
       })
-    },
-    'roomMessages': {
-      handler: function (val, oldVal) {
-        this.num ++
-      },
-      deep: true
-    },
-    'privateChat.roomId': function (val) {
-      if (this.roomMessages[val]) {
-        this.$store.dispatch('getChatMessages', this.roomMessages[val])
-      }
-    },
-    'lastMessageInHall': function () {
-      this.$emit('getHallLastMsg', this.lastMessageInHall)
     }
   },
   beforeDestroy () {
@@ -240,13 +231,12 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'myRoles',
-      'privateRooms'
+      'myRoles'
     ]),
     ...mapState([
-      'activeRoomId',
       'user',
-      'privateChat'
+      'privateChat',
+      'chatList'
     ]),
     isLogin () {
       return this.$store.state.user.logined && this.$route.name !== 'Home'
@@ -264,17 +254,9 @@ export default {
         return result
       }
     },
-    lastMessageInHall () {
-      if (this.roomMessages['1'] && this.roomMessages['1'].length) {
-        let hallMessages = this.roomMessages['1']
-        let lastIndex = hallMessages.length - 1
-        if (hallMessages[lastIndex].type === -1) {
-          lastIndex -= 1
-        }
-        return hallMessages[lastIndex].content
-      } else {
-        return ''
-      }
+    showingMessages () {
+      const showing = this.myRoles.includes('customer service') ? this.roomMessages[this.privateChat.current.roomId] : this.roomMessages[1]
+      return showing
     }
   },
   created () {
@@ -285,8 +267,17 @@ export default {
     }
   },
   methods: {
-    openPrivateChatDialog (roomId) {
-      this.$store.dispatch('startPrivateChat', roomId)
+    openPrivateChatDialog (chat) {
+      let obj = {
+        type: 2,
+        status: 1,
+        latest_message: '',
+        users: [this.user.id, chat.id]
+      }
+
+      buildRoom(obj).then(res => {
+        this.$store.dispatch('startPrivateChat', res.room)
+      })
     },
     checkLiving (ws) {
       this.liveInterval = setInterval(() => {
@@ -330,10 +321,12 @@ export default {
       this.loading = false
       this.$store.dispatch('endLoading')
       if (!this.ws) { return false }
+
       this.ws.send(JSON.stringify({
         'command': 'join',
         'receivers': [this.RECEIVER]
       }))
+
       this.ws.onmessage = (resData) => {
         let data
         if (typeof resData.data === 'string') {
@@ -393,11 +386,9 @@ export default {
                     }
 
                     this.roomMessages[data.receivers].push(data)
-                    this.$store.dispatch('getChatMessages', this.roomMessages[this.privateChat.roomId])
-                    this.$store.commit('NEW_MESSAGE', {
-                      id: data.receivers,
-                      content: data.content
-                    })
+                    this.$forceUpdate()
+
+                    this.$store.dispatch('getChatMessages', this.roomMessages[this.privateChat.current.roomId])
                 }
 
                 let chatBox = document.getElementById('chatBox')
@@ -1016,6 +1007,10 @@ export default {
 .chat-buttons {
   float: left;
   padding-top: 2px;
+  .is-plain {
+    background: transparent;
+    color: #fff;
+  }
 }
 
 .privatechat-dialog /deep/ .el-dialog--center .el-dialog__header {

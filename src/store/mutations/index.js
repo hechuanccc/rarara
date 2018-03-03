@@ -28,24 +28,24 @@ export default {
   [types.SET_WEBSOCKET]: (state, data) => {
     state.ws = data
   },
-  [types.UPDATE_ROOMLIST]: (state, data) => {
-    state.roomList = data || []
-  },
-  [types.UPDATE_NOW_ROOM_ID]: (state, data) => {
-    state.activeRoomId = data || 1
-  },
-  [types.NEW_MESSAGE]: (state, data) => {
-    state.newMsg = data || {}
+  [types.UPDATE_CHATLIST]: (state, data) => {
+    state.chatList = data || []
   },
   [types.GET_CHATMESSAGES]: (state, data) => {
-    state.privateChat.messages = [...data]
+    state.privateChat.current.messages = [...data]
   },
   [types.START_PRIVATECHAT]: (state, data) => {
-    state.privateChat.roomId = data
-    state.privateChat.dialogVisible = true
+    let roles = state.user.roles.map(role => role.name)
+    state.privateChat.current.roomId = data.id
+    if (!roles.includes('customer service')) {
+      state.privateChat.dialogVisible = true
+    }
   },
   [types.END_PRIVATECHAT]: (state, data) => {
-    state.privateChat.roomId = 0
     state.privateChat.dialogVisible = false
+    state.privateChat.current = {
+      roomId: 1,
+      messages: []
+    }
   }
 }

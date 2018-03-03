@@ -19,10 +19,6 @@ export function fetchUser () {
   return axios.get(urls.user)
 }
 
-export function fetchMemberRoom (limit, page) {
-  return axios.get(`${urls.memberRoom}?offset=${page * limit}&limit=${limit}`)
-}
-
 export function createRoom (users) {
   return axios.post(urls.room, {
     users: users,
@@ -123,7 +119,7 @@ export function getChatUser (id) {
 }
 
 export function getChatList () {
-  return axios.get(`${urls.member}chat_list/`)
+  return axios.get(`${urls.member}chat_list/?offset=0&limit=40`)
 }
 
 export function checkUserName (username) {
@@ -132,4 +128,13 @@ export function checkUserName (username) {
 
 export function setCookie (cookie) {
   return axios.post(urls.setCookie, {cookie}, { 'Content-Type': 'application/json', withCredentials: true })
+}
+
+export function buildRoom (data) {
+  return axios.post(`${urls.room}`, {
+    type: data.type,
+    status: data.status,
+    last_message: '',
+    users: data.users
+  })
 }
