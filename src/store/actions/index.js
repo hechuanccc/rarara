@@ -99,5 +99,11 @@ export default {
   },
   setWebsocket: ({ commit, state }, data) => {
     commit(types.SET_WEBSOCKET, data)
+  },
+  updateChatRead: ({ commit, state }, data) => {
+    commit(types.UPDATE_CHATREAD, data)
+  },
+  setRoomMsgs: ({ commit, state }, data) => {
+    commit(types.SET_ROOMMSGS, data)
   }
 }

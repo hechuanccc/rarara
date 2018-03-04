@@ -20,6 +20,7 @@
         v-if="chat.type !== 1"
         :class="{
           active: activeChatIndex === (index + 2),
+          unread: !chat.read
         }"
         @click="switchChat(chat, index + 2)">
         <div class="meta">
@@ -58,8 +59,10 @@ export default {
       'myRoles'
     ]),
     ...mapState([
+      'roomMsgs',
       'chatList',
-      'user'
+      'user',
+      'ws'
     ])
   },
   methods: {
@@ -94,7 +97,18 @@ export default {
           users: [this.user.id, chat.id]
         }).then(res => {
           this.$store.dispatch('startPrivateChat', res.room)
+          this.$store.dispatch('updateChatRead', {username: chat.username, read: true})
           this.loading = false
+          let currentMsg = this.roomMsgs[res.room.id]
+
+          let lastMessage = currentMsg[currentMsg.length - 2]
+          this.ws.send(JSON.stringify({
+            command: 'read_msg',
+            message: lastMessage.id,
+            sender: lastMessage.sender.username,
+            room: res.room.id,
+            user: this.user.username
+          }))
         })
       } else {
         this.$store.dispatch('startPrivateChat', {id: 1})
@@ -143,9 +157,10 @@ export default {
   .active {
     background: #FFB74D;
     color: #fff;
-    &:hover {
-      background: #FFB74D;
-    }
+    font-weight: 700;
+  }
+  .unread {
+    background: #FFB74D;
   }
 }
 .load-more {

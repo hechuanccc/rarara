@@ -25,7 +25,7 @@ export function createStore () {
           messages: []
         }
       },
-      rooms: [],
+      roomMsgs: {},
       ws: null
     },
     actions,

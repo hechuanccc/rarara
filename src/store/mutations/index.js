@@ -34,6 +34,10 @@ export default {
   [types.GET_CHATMESSAGES]: (state, data) => {
     state.privateChat.current.messages = [...data]
   },
+  [types.UPDATE_CHATREAD]: (state, data) => {
+    let chat = state.chatList.find(chat => chat.username === data.username)
+    chat.read = data.read
+  },
   [types.START_PRIVATECHAT]: (state, data) => {
     let roles = state.user.roles.map(role => role.name)
     state.privateChat.current.roomId = data.id
@@ -47,5 +51,8 @@ export default {
       roomId: 1,
       messages: []
     }
+  },
+  [types.SET_ROOMMSGS]: (state, data) => {
+    state.roomMsgs = data
   }
 }
