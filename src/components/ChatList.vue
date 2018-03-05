@@ -62,7 +62,7 @@ export default {
       handler: function (val, oldval) {
         this.previousChat = {
           id: oldval.roomId,
-          other: oldval.chatWith,
+          other: oldval.chatWith ? oldval.chatWith : val.chatWith,
           messages: oldval.messages
         }
       },
@@ -105,12 +105,13 @@ export default {
       if (this.previousChat) {
         let oldMsgs = this.previousChat.messages.filter(msg => msg.type !== -1)
         let oldLastMsg = oldMsgs[oldMsgs.length - 1]
-        let oldLastMsgData = {
-          id: oldLastMsg.id,
-          other: this.previousChat.chatWith
+        if (oldLastMsg) {
+          let oldLastMsgData = {
+            id: oldLastMsg.id,
+            other: this.previousChat.other
+          }
+          this.read(this.ws, this.previousChat.id, oldLastMsgData)
         }
-
-        this.read(this.ws, this.previousChat.id, oldLastMsgData)
       }
       this.activeChatIndex = index
 
@@ -190,7 +191,7 @@ export default {
     }
   }
   .active {
-    background: #FFB74D;
+    background: #1976D2;
     color: #fff;
     font-weight: 700;
   }
