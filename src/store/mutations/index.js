@@ -41,6 +41,7 @@ export default {
   [types.START_PRIVATECHAT]: (state, data) => {
     let roles = state.user.roles.map(role => role.name)
     state.privateChat.current.roomId = data.id
+    state.privateChat.current.chatWith = data.chatWith
     if (!roles.includes('customer service')) {
       state.privateChat.dialogVisible = true
     }
