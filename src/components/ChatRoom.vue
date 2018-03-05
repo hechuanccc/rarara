@@ -140,7 +140,7 @@
        class="privatechat-dialog"
        :visible.sync="privateChat.dialogVisible"
        :width="'550px'"
-       @close="$store.dispatch('endPrivateChat')"
+       @close="closePrivateChatDialog()"
        top="10vh"
        center>
       <PrivateChat :personalSetting="personal_setting"
@@ -208,7 +208,8 @@ export default {
       },
       roomMessages: {},
       host: urls.domain,
-      emojiSuccess: true
+      emojiSuccess: true,
+      currentChat: null
     }
   },
   watch: {
@@ -286,20 +287,53 @@ export default {
       }
 
       buildRoom(obj).then(res => {
-        let currentMsg = this.roomMessages[res.room.id]
-
-        this.$store.dispatch('startPrivateChat', res.room)
+        this.$store.dispatch('startPrivateChat', {id: res.room.id, chatWith: chat.username})
         this.$store.dispatch('updateChatRead', {username: chat.username, read: true})
 
-        let lastMessage = currentMsg[currentMsg.length - 2]
-        this.ws.send(JSON.stringify({
+        let currentMsg = this.roomMessages[res.room.id] ? this.roomMessages[res.room.id] : []
+        if (currentMsg.length) {
+          let msgs = currentMsg.filter(msg => msg.type !== -1)
+          let lastMessage = msgs[msgs.length - 1]
+          let lastMsgData = {
+            msgId: lastMessage.id,
+            other: chat.username
+          }
+          this.read(this.ws, res.room.id, lastMsgData)
+          this.currentChat = {
+            chat: chat,
+            roomId: res.room.id
+          }
+        }
+      })
+    },
+    closePrivateChatDialog () {
+      if (!this.currentChat) {
+        return
+      }
+      let room = this.currentChat.roomId
+      let currentMsg = this.privateChat.current.messages ? this.privateChat.current.messages : []
+      if (currentMsg.length) {
+        let msgs = currentMsg.filter(msg => msg.type !== -1)
+        let lastMessage = msgs[msgs.length - 1]
+        let lastMsgData = {
+          msgId: lastMessage.id,
+          other: this.currentChat.chat.username
+        }
+        this.read(this.ws, room, lastMsgData)
+        this.currentChat = null
+      }
+      this.$store.dispatch('endPrivateChat')
+    },
+    read (connection, roomId, lastMsg) {
+      if (connection) {
+        connection.send(JSON.stringify({
           command: 'read_msg',
-          message: lastMessage.id,
-          sender: lastMessage.sender.username,
-          room: res.room.id,
+          message: lastMsg.msgId,
+          chat_with: lastMsg.other,
+          room: roomId,
           user: this.user.username
         }))
-      })
+      }
     },
     checkLiving (ws) {
       this.liveInterval = setInterval(() => {

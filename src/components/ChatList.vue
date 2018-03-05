@@ -1,5 +1,6 @@
 <template>
   <div class="rooms-container">
+
     <ul class="rooms m-t">
       <li :class="['public', {active: activeChatIndex === 1}]"
         @click="switchChat(1, 1)">
@@ -35,6 +36,7 @@
         </div>
       </li>
     </ul>
+
   </div>
 </template>
 
@@ -51,7 +53,20 @@ export default {
   data () {
     return {
       loading: false,
-      activeChatIndex: 1
+      activeChatIndex: 1,
+      previousChat: null
+    }
+  },
+  watch: {
+    'privateChat.current': {
+      handler: function (val, oldval) {
+        this.previousChat = {
+          id: oldval.roomId,
+          other: oldval.chatWith ? oldval.chatWith : val.chatWith,
+          messages: oldval.messages
+        }
+      },
+      deep: true
     }
   },
   computed: {
@@ -59,6 +74,7 @@ export default {
       'myRoles'
     ]),
     ...mapState([
+      'privateChat',
       'roomMsgs',
       'chatList',
       'user',
@@ -74,7 +90,6 @@ export default {
         return
       }
       this.loading = true
-
       getChatList().then(res => {
         this.loading = false
 
@@ -86,6 +101,18 @@ export default {
       if (this.loading) {
         return
       }
+
+      if (this.previousChat) {
+        let oldMsgs = this.previousChat.messages.filter(msg => msg.type !== -1)
+        let oldLastMsg = oldMsgs[oldMsgs.length - 1]
+        if (oldLastMsg) {
+          let oldLastMsgData = {
+            id: oldLastMsg.id,
+            other: this.previousChat.other
+          }
+          this.read(this.ws, this.previousChat.id, oldLastMsgData)
+        }
+      }
       this.activeChatIndex = index
 
       if (index !== 1) {
@@ -96,23 +123,32 @@ export default {
           last_message: '',
           users: [this.user.id, chat.id]
         }).then(res => {
-          this.$store.dispatch('startPrivateChat', res.room)
+          this.$store.dispatch('startPrivateChat', {id: res.room.id, chatWith: chat.username})
           this.$store.dispatch('updateChatRead', {username: chat.username, read: true})
           this.loading = false
-          let currentMsg = this.roomMsgs[res.room.id]
-
-          let lastMessage = currentMsg[currentMsg.length - 2]
-          this.ws.send(JSON.stringify({
-            command: 'read_msg',
-            message: lastMessage.id,
-            sender: lastMessage.sender.username,
-            room: res.room.id,
-            user: this.user.username
-          }))
+          let currentMsg = this.roomMsgs[res.room.id] ? this.roomMsgs[res.room.id] : []
+          let msgs = currentMsg.filter(msg => msg.type !== -1)
+          let lastMessage = msgs[msgs.length - 1]
+          if (lastMessage) {
+            let lastMessageData = {
+              id: lastMessage.id,
+              other: chat.username
+            }
+            this.read(this.ws, res.room.id, lastMessageData)
+          }
         })
       } else {
         this.$store.dispatch('startPrivateChat', {id: 1})
       }
+    },
+    read (connection, roomId, lastMsg) {
+      connection.send(JSON.stringify({
+        command: 'read_msg',
+        message: lastMsg.id,
+        chat_with: lastMsg.other,
+        room: roomId,
+        user: this.user.username
+      }))
     }
   },
   created () {
@@ -155,7 +191,7 @@ export default {
     }
   }
   .active {
-    background: #FFB74D;
+    background: #1976D2;
     color: #fff;
     font-weight: 700;
   }
