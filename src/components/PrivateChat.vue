@@ -1,6 +1,6 @@
 <template>
   <div class="privatechat-container">
-    <h1 class="title text-center m-b">在线客服</h1>
+    <h1 class="title text-center m-b">联系客服</h1>
     <div>
       <ul class="chat-records m-b"
         v-if="privateChat.current.messages && privateChat.current.messages.length">
@@ -31,7 +31,7 @@
       <div ref="msgEnd"></div>
       </ul>
       <div class="text-center chat-records" v-else>
-        <div class="p-t-xlg">还没开启对话呢...</div>
+        <div class="p-t-xlg">暂无聊天记录</div>
       </div>
     </div>
     <div class="speaking">
