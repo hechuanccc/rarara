@@ -265,7 +265,9 @@ export default {
     }
   },
   created () {
-    this.getChatList()
+    if (!this.myRoles.includes('customer service')) {
+      this.getChatList({offset: 0, limit: 20})
+    }
     if (this.$route.name !== 'Home') {
       this.leaveRoom()
     } else {
@@ -273,8 +275,8 @@ export default {
     }
   },
   methods: {
-    getChatList () {
-      getChatList().then(data => {
+    getChatList (pagination) {
+      getChatList(pagination).then(data => {
         this.$store.dispatch('updateChatList', data.results)
       })
     },
@@ -287,7 +289,7 @@ export default {
       }
 
       buildRoom(obj).then(res => {
-        this.$store.dispatch('startPrivateChat', {id: res.room.id, chatWith: chat.username})
+        this.$store.dispatch('startPrivateChat', {id: res.room.id, chatWith: chat.id})
         this.$store.dispatch('updateChatRead', {username: chat.username, read: true})
 
         let currentMsg = this.roomMessages[res.room.id] ? this.roomMessages[res.room.id] : []
@@ -296,7 +298,7 @@ export default {
           let lastMessage = msgs[msgs.length - 1]
           let lastMsgData = {
             msgId: lastMessage.id,
-            other: chat.username
+            other: chat.id
           }
           this.read(this.ws, res.room.id, lastMsgData)
           this.currentChat = {
@@ -331,7 +333,7 @@ export default {
           message: lastMsg.msgId,
           chat_with: lastMsg.other,
           room: roomId,
-          user: this.user.username
+          user: this.user.id
         }))
       }
     },

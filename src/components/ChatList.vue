@@ -1,8 +1,7 @@
 <template>
-  <div class="rooms-container">
-
-    <ul class="rooms m-t">
-      <li :class="['public', {active: activeChatIndex === 1}]"
+  <div>
+    <ul class="rooms" v-if="unread">
+      <li :class="['public', {active: privateChat.current.roomId === 1}]"
         @click="switchChat(1, 1)">
         <div class="meta">
           <div class="illustration">
@@ -14,29 +13,31 @@
         </div>
       </li>
     </ul>
-
-    <ul class="rooms m-b" v-if="chatList.length">
-      <li v-for="(chat, index) in chatList"
-        :key="index"
-        v-if="chat.type !== 1"
-        :class="{
-          active: activeChatIndex === (index + 2),
-          unread: !chat.read
-        }"
-        @click="switchChat(chat, index + 2)">
-        <div class="meta">
-          <div class="illustration">
-            <img class="avatar"
-              :src="chat.avatar? chat.avatar : require('../assets/avatar.png')"
-              alt="avatar">
+    <div class="rooms-container">
+      <ul class="rooms m-b" v-if="showing.length">
+        <li v-for="(chat, index) in showing"
+          :key="index"
+          v-if="chat.type !== 1"
+          :class="{
+            active: activeChatIndex === (index + 2),
+            unread: !chat.read
+          }"
+          @click="switchChat(chat, index + 2)">
+          <div class="meta">
+            <div class="illustration">
+              <img class="avatar"
+                :src="chat.avatar? chat.avatar : require('../assets/avatar.png')"
+                alt="avatar">
+            </div>
+            <span class="title">
+              <span>{{ chat.username }}</span>
+            </span>
           </div>
-          <span class="title">
-            <span>{{ chat.username }}</span>
-          </span>
-        </div>
-      </li>
-    </ul>
-
+        </li>
+        <li v-if="pagination.total > chats.length" @click="fillMemberChats">更多...</li>
+      </ul>
+      <ul class="text-center m-t" v-else>暂无进行中的聊天</ul>
+    </div>
   </div>
 </template>
 
@@ -50,11 +51,25 @@ export default {
   components: {
     Icon
   },
+  props: {
+    unread: {
+      type: Boolean,
+      default: false
+    }
+  },
   data () {
     return {
       loading: false,
       activeChatIndex: 1,
-      previousChat: null
+      chats: [],
+      pagination: {
+        total: 0,
+        offset: 0,
+        limit: this.unread ? 10000 : 40
+      },
+      unreadChats: [],
+      previousChat: null,
+      interval: null
     }
   },
   watch: {
@@ -79,21 +94,29 @@ export default {
       'chatList',
       'user',
       'ws'
-    ])
+    ]),
+    showing () {
+      const showing = this.unread ? this.chats.filter(chat => chat.read === false) : this.chats
+      return showing
+    }
   },
   methods: {
     getRoles (user) {
       return user.roles.map((role) => role.name)
     },
-    fillMemberRooms () {
+    fillMemberChats () {
       if (this.loading) {
         return
       }
       this.loading = true
-      getChatList().then(res => {
+      getChatList(this.pagination).then(res => {
         this.loading = false
 
-        this.$store.dispatch('updateChatList', res.results)
+        this.chats.push(...res.results)
+        this.pagination.total = res.count
+
+        this.$store.dispatch('updateChatList', this.chats)
+        this.pagination.offset += this.pagination.limit
         return res
       })
     },
@@ -102,15 +125,17 @@ export default {
         return
       }
 
-      if (this.previousChat) {
+      if (this.previousChat && !this.unread) {
         let oldMsgs = this.previousChat.messages.filter(msg => msg.type !== -1)
         let oldLastMsg = oldMsgs[oldMsgs.length - 1]
         if (oldLastMsg) {
           let oldLastMsgData = {
             id: oldLastMsg.id,
-            other: this.previousChat.other
+            other: this.previousChat.id
           }
+
           this.read(this.ws, this.previousChat.id, oldLastMsgData)
+          this.$store.dispatch('updateChatRead', {username: chat.username, read: true})
         }
       }
       this.activeChatIndex = index
@@ -123,8 +148,8 @@ export default {
           last_message: '',
           users: [this.user.id, chat.id]
         }).then(res => {
-          this.$store.dispatch('startPrivateChat', {id: res.room.id, chatWith: chat.username})
-          this.$store.dispatch('updateChatRead', {username: chat.username, read: true})
+          this.$store.dispatch('startPrivateChat', {id: res.room.id, chatWith: chat.id})
+
           this.loading = false
           let currentMsg = this.roomMsgs[res.room.id] ? this.roomMsgs[res.room.id] : []
           let msgs = currentMsg.filter(msg => msg.type !== -1)
@@ -132,7 +157,7 @@ export default {
           if (lastMessage) {
             let lastMessageData = {
               id: lastMessage.id,
-              other: chat.username
+              other: chat.id
             }
             this.read(this.ws, res.room.id, lastMessageData)
           }
@@ -147,18 +172,24 @@ export default {
         message: lastMsg.id,
         chat_with: lastMsg.other,
         room: roomId,
-        user: this.user.username
+        user: this.user.id
       }))
     }
   },
   created () {
-    this.fillMemberRooms()
+    this.fillMemberChats(this.pagination)
+    this.interval = setInterval(() => {
+      this.fillMemberChats()
+    }, 120000)
+  },
+  beforeDestroy () {
+    clearInterval(this.interval)
   }
 }
 </script>
 <style lang="scss" scoped>
 .rooms-container {
-   height: calc(100vh - 110px);
+   height: calc(100vh - 160px);
    overflow-y: auto;
 }
 .rooms {

@@ -39,7 +39,6 @@
       <el-container>
         <el-aside v-if="myRoles.includes('customer service')" width="250px" class="aside">
           <el-tabs
-            class="alone"
             v-model="activeTab"
             type="border-card">
             <!-- <el-tab-pane
@@ -90,15 +89,25 @@
             </el-tab-pane> -->
 
             <el-tab-pane
-              v-if="myRoles.includes('customer service') || myRoles.includes('manager')"
+              :disabled="loading"
+              label="会员列表"
+              name="chats">
+              <div class="chat-list">
+                <ChatList v-if="activeTab === 'chats'" ref="chatList">
+                </ChatList>
+              </div>
+            </el-tab-pane>
+
+            <el-tab-pane
               :disabled="loading"
               label="聊天列表"
               name="rooms">
               <div class="chat-list">
-                <ChatList ref="chatList">
+                <ChatList v-if="activeTab === 'rooms'" :unread="true" ref="chatList">
                 </ChatList>
               </div>
             </el-tab-pane>
+
           </el-tabs>
         </el-aside>
 
@@ -342,7 +351,7 @@ export default {
       activeRoom: {},
       popoverMember: {},
       searchEnabled: false,
-      activeTab: 'rooms',
+      activeTab: 'chats',
       swichAvatar: false,
       uploadUrl: urls.user,
       nickname_q: '',
@@ -411,8 +420,7 @@ export default {
   computed: {
     ...mapState([
       'globalPreference',
-      'loading',
-      'privateChat'
+      'loading'
     ]),
     ...mapGetters([
       'myRoles'
@@ -598,7 +606,7 @@ export default {
         })
         this.$set(this.$refs['popover' + member.id][0], 'showPopper', false)
 
-        this.activeTab = 'rooms'
+        this.activeTab = 'chats'
         this.activeRoom = res.room
         this.createRoomLoading = false
       })
