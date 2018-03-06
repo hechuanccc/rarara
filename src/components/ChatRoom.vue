@@ -306,6 +306,13 @@ export default {
             roomId: res.room.id
           }
         }
+      }, errRes => {
+        let msg = errRes.response.data.message
+        this.$message({
+          showClose: true,
+          message: msg,
+          type: 'error'
+        })
       })
     },
     closePrivateChatDialog () {
