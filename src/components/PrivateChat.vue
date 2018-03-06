@@ -14,7 +14,7 @@
             </div>
             <div class="information">
               <span class="user">{{msg.sender.nickname || msg.sender.username}}</span>
-              <span class="character">
+              <span :class="['character', {service: getRoles(msg).includes('customer service')}]">
                 {{getCharacter(msg)}}
               </span>
               <span class="time">{{msg.created_at | moment('HH:mm:ss')}}</span>
@@ -164,15 +164,9 @@ export default {
       return message.sender.roles.map((role) => role.name)
     },
     getCharacter (msg) {
-      let display = msg.sender.roles.map(obj => obj.display_name)
       let char = ''
       if (msg.sender && msg.sender.roles.length) {
-        if (this.getRoles(msg).length > 1) {
-          display.shift()
-          char = display.join('&')
-        } else {
-          char = '一般会员'
-        }
+        char = this.getRoles(msg).includes('customer service') ? '客服人员' : '普通会员'
       }
 
       return char
@@ -242,6 +236,9 @@ export default {
       color: #fff;
       font-weight: 400;
       border-radius: 10px;
+      &.service {
+        background: #4a90e2;
+      }
     }
     .content-box {
       text-align: left;
