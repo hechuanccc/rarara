@@ -36,7 +36,9 @@ export default {
   },
   [types.UPDATE_CHATREAD]: (state, data) => {
     let chat = state.chatList.find(chat => chat.username === data.username)
-    chat.read = data.read
+    if (chat) {
+      chat.read = data.read
+    }
   },
   [types.START_PRIVATECHAT]: (state, data) => {
     let roles = state.user.roles.map(role => role.name)

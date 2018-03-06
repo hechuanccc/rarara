@@ -118,8 +118,8 @@ export function getChatUser (id) {
   return axios.get(`${urls.room}${id}/`)
 }
 
-export function getChatList () {
-  return axios.get(`${urls.member}chat_list/?offset=0&limit=40`)
+export function getChatList (pagination) {
+  return axios.get(`${urls.member}chat_list/?offset=${pagination.offset}&limit=${pagination.limit}`)
 }
 
 export function checkUserName (username) {
