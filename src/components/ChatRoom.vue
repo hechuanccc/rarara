@@ -158,6 +158,7 @@ import 'vue-awesome/icons/cog'
 import 'vue-awesome/icons/smile-o'
 import { fetchChatEmoji, sendImgToChat, getChatUser, buildRoom, getChatList } from '../api'
 import urls from '../api/urls'
+import { msgFormatter } from '../utils'
 import config from '../../config'
 import Restraint from './Restraint'
 import { mapGetters, mapState } from 'vuex'
@@ -306,6 +307,12 @@ export default {
             roomId: res.room.id
           }
         }
+      }, errRes => {
+        this.$message({
+          showClose: true,
+          message: msgFormatter(errRes),
+          type: 'error'
+        })
       })
     },
     closePrivateChatDialog () {
@@ -333,7 +340,7 @@ export default {
           message: lastMsg.msgId,
           chat_with: lastMsg.other,
           room: roomId,
-          user: this.user.id
+          user: this.user.username
         }))
       }
     },

@@ -172,7 +172,7 @@ export default {
         message: lastMsg.id,
         chat_with: lastMsg.other,
         room: roomId,
-        user: this.user.id
+        user: this.user.username
       }))
     }
   },
