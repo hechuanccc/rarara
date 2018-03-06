@@ -158,6 +158,7 @@ import 'vue-awesome/icons/cog'
 import 'vue-awesome/icons/smile-o'
 import { fetchChatEmoji, sendImgToChat, getChatUser, buildRoom, getChatList } from '../api'
 import urls from '../api/urls'
+import { msgFormatter } from '../utils'
 import config from '../../config'
 import Restraint from './Restraint'
 import { mapGetters, mapState } from 'vuex'
@@ -307,10 +308,9 @@ export default {
           }
         }
       }, errRes => {
-        let msg = errRes.response.data.message
         this.$message({
           showClose: true,
-          message: msg,
+          message: msgFormatter(errRes),
           type: 'error'
         })
       })
