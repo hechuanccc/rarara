@@ -466,8 +466,6 @@ export default {
                       this.$store.dispatch('updateChatRead', {username: data.sender.username, read: false})
                     }
 
-                    console.log(data.receivers, 'data.receivers in onmessage')
-                    console.log(this.roomMessages[data.receivers], 'data.receivers in onmessage')
                     this.$store.dispatch('getChatMessages', this.roomMessages[data.receivers])
                     this.$forceUpdate()
                 }
