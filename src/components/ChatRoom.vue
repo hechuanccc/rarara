@@ -609,7 +609,6 @@ export default {
 @import '../style/vars.scss';
 
 .container-chat {
-  width: 100%;
   height: 100%;
 }
 .chat-box {
@@ -1093,11 +1092,11 @@ export default {
 }
 
 .chat-buttons {
-  float: left;
-  padding-top: 2px;
+  float: right;
+  padding-top: 3px;
+  margin-right: 10px;
   .is-plain {
-    background: transparent;
-    color: #fff;
+    border: none;
   }
 }
 
