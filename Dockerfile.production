@@ -28,11 +28,11 @@ ARG PROD_HOST
 ARG PROD_chatHost
 ARG PROD_decode_key
 
-ARG ENV_CONTAINER=${PROD_ENV_CONTAINER}
-ARG CDN_ENDPOINT=${PROD_CDN_ENDPOINT}
-ARG HOST=${PROD_HOST}
-ARG chatHost=${PROD_chatHost}
-ARG decode_key=${PROD_decode_key}
+ENV ENV_CONTAINER=${PROD_ENV_CONTAINER}
+ENV CDN_ENDPOINT=${PROD_CDN_ENDPOINT}
+ENV HOST=${PROD_HOST}
+ENV chatHost=${PROD_chatHost}
+ENV decode_key=${PROD_decode_key}
 
 # Cannot be made into one line as it has a possibility that it will return a 'text file busy' making the shell script unexecutable
 RUN chmod u+x cloud_deploy.sh
