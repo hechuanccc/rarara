@@ -84,6 +84,7 @@ export default {
       interval: null,
       previousChat: null,
       roomMap: {},
+      allChatList: [],
       searchData: {
         input: '',
         result: []
@@ -138,13 +139,19 @@ export default {
     },
     search () {
       this.loading = true
-      getChatList({offset: 0, limit: 10000}).then(res => {
-        let all = res.results
-        let filtered = all.filter(obj => obj.username.toLowerCase().indexOf(this.searchData.input.toLowerCase()) !== -1)
+      if (!this.allChatList.length) {
+        getChatList().then(res => {
+          this.allChatList = res
+          let filtered = this.allChatList.filter(obj => obj.username.toLowerCase().indexOf(this.searchData.input.toLowerCase()) !== -1)
 
+          this.searchData.result = filtered
+
+          this.loading = false
+        })
+      } else {
+        let filtered = this.allChatList.filter(obj => obj.username.toLowerCase().indexOf(this.searchData.input.toLowerCase()) !== -1)
         this.searchData.result = filtered
-        this.loading = false
-      })
+      }
     },
     getRoles (user) {
       return user.roles.map((role) => role.name)

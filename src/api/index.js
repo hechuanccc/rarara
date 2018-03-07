@@ -119,6 +119,9 @@ export function getChatUser (id) {
 }
 
 export function getChatList (pagination) {
+  if (!pagination) {
+    return axios.get(`${urls.member}chat_list/`)
+  }
   return axios.get(`${urls.member}chat_list/?offset=${pagination.offset}&limit=${pagination.limit}`)
 }
 
