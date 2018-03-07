@@ -948,7 +948,7 @@ export default {
 }
 .edit-profile {
   border-radius: 5px;
-  background: rgba(255,255,255,.93);
+  background: rgba(255, 255, 255, .8);
   margin: 0 auto ;
   position: relative;
   min-height: 200px;

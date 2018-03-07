@@ -191,7 +191,7 @@ export default {
    overflow-y: auto;
 }
 .rooms {
-  border-top: 1px solid rgba(255, 255, 255, .2);
+  border-top: 1px solid rgba(255, 255, 255, .1);
   .fa-icon {
     vertical-align: middle;
     fill: #fff;
@@ -219,14 +219,15 @@ export default {
       background: rgba(255, 255, 255, .2);
     }
   }
+  .unread {
+    background: #FFB74D;
+  }
   .active {
     background: #1976D2;
     color: #fff;
     font-weight: 700;
   }
-  .unread {
-    background: #FFB74D;
-  }
+
 }
 .load-more {
   padding: 5px 10px;
