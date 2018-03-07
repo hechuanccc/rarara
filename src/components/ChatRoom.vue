@@ -613,8 +613,8 @@ export default {
 }
 .chat-box {
   width: 100%;
-  overflow-x: hidden;
   height: 100%;
+  overflow-x: hidden;
   z-index: 1;
 
 }
@@ -648,6 +648,7 @@ export default {
 }
 
 .content {
+  height: 100%;
   background-color: rgba(255, 255, 255, .2);
   background-attachment: fixed;
   background-size: cover;

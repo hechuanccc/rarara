@@ -36,99 +36,47 @@
       </el-row>
     </el-header>
 
-      <el-container>
-        <el-aside v-if="asideShown" width="250px" class="aside">
-          <el-tabs
-            v-model="activeTab"
-            type="border-card">
-            <!-- <el-tab-pane
-              v-if="myRoles.includes('customer service') || myRoles.includes('manager')"
-              :label="`在线会员(${onlineMembers.length})`"
-              name="members">
-              <div class="search-form">
-                <el-form>
-                  <el-form-item >
-                    <el-input v-model="nickname_q" placeholder="请输入会员名称" class="ipt-search" @keyup.native.enter="search"></el-input>
-                    <icon class="search-icon fl" name="search" scale="1" @click.native="search"></icon>
-                  </el-form-item>
-                </el-form>
-                <div class="search-tip" v-if="nickname_q && searchEnabled">
-                  搜索 「{{nickname_q}}」
-                  <span class="exit-search" @click="exitSearch">退出搜索</span>
-                </div>
-              </div>
+    <el-container class="home-container full-height">
+      <el-aside v-if="asideShown" width="250px" class="aside">
+        <el-tabs
+          v-model="activeTab"
+          type="border-card">
+          <el-tab-pane
+            :disabled="loading"
+            label="会员列表"
+            class="full-height"
+            name="chats">
+            <div class="chat-list full-height">
+              <ChatList v-if="activeTab === 'chats'" ref="chatList">
+              </ChatList>
+            </div>
+          </el-tab-pane>
+          <el-tab-pane
+            :disabled="loading"
+            label="聊天列表"
+            class="full-height"
+            name="rooms">
+            <div class="chat-list full-height">
+              <ChatList v-if="activeTab === 'rooms'" :unread="true" ref="chatList">
+              </ChatList>
+            </div>
+          </el-tab-pane>
+        </el-tabs>
+      </el-aside>
 
-              <ul class="members" v-if="onlineMembers.length">
-                <li v-for="(member, index) in onlineMembers"
-                  @click="popoverMember = member"
-                  :key="index"
-                  slot="reference">
-                  <el-popover
-                    :ref="'popover' + member.id"
-                    placement="right"
-                    :title="member.nickname || '会员'"
-                    width="150"
-                    trigger="click">
-                    <ul class="member-actions">
-                      <li @click="ban(member, 15)" v-if="member.id !== user.id && !member.is_banned.is_banned && myRoles.includes('manager')">禁言15分钟</li>
-                      <li @click="ban(member, 30)" v-if="member.id !== user.id  && !member.is_banned.is_banned && myRoles.includes('manager')">禁言30分钟</li>
-                      <li @click="block(member)" v-if="member.id !== user.id && !member.is_blocked && myRoles.includes('manager')">加入黑名单</li>
-                      <li @click="unblock(member)" v-if="member.id !== user.id && member.is_blocked && myRoles.includes('manager')">解除拉黑</li>
-                      <li @click="unban(member)" v-if="member.id !== user.id && member.is_banned.is_banned  && myRoles.includes('manager')  ">解除禁言</li>
-                    </ul>
-                    <div slot="reference">
-                      <img :src="member.avatar" class="avatar" v-if="member.avatar"/>
-                      <img :src="require('../assets/avatar.png')" v-else class="avatar" />
-                      {{ member.nickname || '会员' }}
-                    </div>
-                  </el-popover>
-                </li>
-                <li v-if="!onlineMembersEnded" class="load-more" @click="fillOnlineMembers">{{ onlineMemberLoading ? '正在加载...' : '查看更多' }}</li>
-              </ul>
-              <div v-else-if="!onlineMemberLoading" class="empty">无结果</div>
-            </el-tab-pane> -->
+      <el-main class="chat-area full-height">
+        <chat-room :class="{'p-l': !asideShown}"></chat-room>
+      </el-main>
 
-            <el-tab-pane
-              :disabled="loading"
-              label="会员列表"
-              class="full-height"
-              name="chats">
-              <div class="chat-list full-height">
-                <ChatList v-if="activeTab === 'chats'" ref="chatList">
-                </ChatList>
-              </div>
-            </el-tab-pane>
-
-            <el-tab-pane
-              :disabled="loading"
-              label="聊天列表"
-              class="full-height"
-              name="rooms">
-              <div class="chat-list full-height">
-                <ChatList v-if="activeTab === 'rooms'" :unread="true" ref="chatList">
-                </ChatList>
-              </div>
-            </el-tab-pane>
-
-          </el-tabs>
-        </el-aside>
-
-        <el-main class="chat-area">
-          <chat-room :class="{'p-l': !asideShown}"></chat-room>
-        </el-main>
-
-        <el-aside width="395px" class="aside">
-          <el-tabs type="border-card" class="alone"> <!-- @tab-click="loadResult" -->
-            <!-- <el-tab-pane :label="'在线投注'">
-              <iframe :src="globalPreference.mobile_lottery_url" width="100%" style="height: calc(100vh - 110px)" frameborder="0"></iframe>
-            </el-tab-pane> -->
-            <el-tab-pane :label="'文字开奖'" class="full-height"> <!-- v-if="lasyLoadResult" -->
-              <div class="results-container">
-                <result></result>
-              </div>
-            </el-tab-pane>
-          </el-tabs>
-        </el-aside>
+      <el-aside width="395px" class="aside">
+        <el-tabs type="border-card" class="alone">
+          <el-tab-pane :label="'文字开奖'" class="full-height">
+            <div class="results-container">
+              <result></result>
+            </div>
+          </el-tab-pane>
+        </el-tabs>
+      </el-aside>
 
         <el-dialog
           title="最新消息"
@@ -273,22 +221,13 @@ import 'vue-awesome/icons/mobile-phone'
 import 'vue-awesome/icons/comments'
 import 'vue-awesome/icons/search'
 import ChatRoom from '../components/ChatRoom'
-import { fetchAnnouce,
-  fetchOnlineMembers,
-  createRoom,
-  updateUser,
-  banChatUser,
-  unbanChatUser,
-  blockChatUser,
-  unblockChatUser,
-  getChatUser } from '../api'
+import { fetchAnnouce, updateUser } from '../api'
 import { msgFormatter, filtAmount } from '../utils'
 import { validatePhone, validateQQ, validatePassword } from '../validate'
 import urls from '../api/urls'
 import Result from '../components/Result'
 import { mapState, mapGetters } from 'vuex'
 import ChatList from '../components/ChatList'
-const RECEIVER = 1
 
 Vue.filter('truncate', function (text, stop) {
   return text.slice(0, stop) + (stop < text.length ? '...' : '')
@@ -420,7 +359,8 @@ export default {
   computed: {
     ...mapState([
       'globalPreference',
-      'loading'
+      'loading',
+      'user'
     ]),
     ...mapGetters([
       'myRoles'
@@ -462,7 +402,9 @@ export default {
   },
   created () {
     this.getAnnouce()
-    this.fillOnlineMembers()
+  },
+  mounted () {
+    this.initUser()
   },
   methods: {
     restoreAvatar () {
@@ -491,142 +433,6 @@ export default {
       })
     },
     filtAmount,
-    getUser (member) {
-      getChatUser(1).then(response => {
-        if (!response.banned_users.length || !response.block_users.length) {
-          this.popoverMember.is_banned.is_banned = false
-          this.popoverMember.is_blocked = false
-        }
-
-        let newBannedUsers = response.banned_users.map((member) => member.username)
-        let newBlockUsers = response.block_users.map((member) => member.username)
-
-        this.popoverMember.is_banned.is_banned = newBannedUsers.includes(member.username)
-        this.popoverMember.is_blocked = newBlockUsers.includes(member.username)
-      })
-    },
-    ban (member, mins) {
-      banChatUser(RECEIVER, {
-        user: member.username,
-        banned_time: mins
-      }).then((data) => {
-        this.getUser(member)
-        this.$message({
-          showClose: true,
-          message: data.status,
-          type: 'success'
-        })
-      }, errorMsg => {
-        this.$message({
-          showClose: true,
-          message: errorMsg.response.data.error,
-          type: 'error'
-        })
-      })
-    },
-    unban (member, user) {
-      unbanChatUser(RECEIVER, {
-        user: member.username
-      }).then((data) => {
-        this.getUser(member)
-        this.$message({
-          showClose: true,
-          message: data.status,
-          type: 'success'
-        })
-      }, errorMsg => {
-        let data = errorMsg.response.data
-        this.$message({
-          showClose: true,
-          message: data.error,
-          type: 'error'
-        })
-      })
-    },
-    block (member) {
-      blockChatUser(RECEIVER, {
-        user: member.username
-      }).then((data) => {
-        this.getUser(member)
-        this.$message({
-          showClose: true,
-          message: data.status,
-          type: 'success'
-        })
-      }, errorMsg => {
-        this.$message({
-          showClose: true,
-          message: errorMsg.response.data.error,
-          type: 'error'
-        })
-      })
-    },
-    unblock (member, user) {
-      unblockChatUser(RECEIVER, {
-        user: member.username
-      }).then((data) => {
-        this.getUser(member)
-        this.$message({
-          showClose: true,
-          message: data.status,
-          type: 'success'
-        })
-      }, errorMsg => {
-        let data = errorMsg.response.data
-        this.$message({
-          showClose: true,
-          message: data.error,
-          type: 'error'
-        })
-      })
-    },
-    search () {
-      if (this.nickname_q === '') {
-        return
-      }
-      this.searchEnabled = true
-      this.memberPage = 0
-      this.onlineMembersEnded = false
-      this.fillOnlineMembers()
-    },
-    exitSearch () {
-      this.searchEnabled = false
-      this.nickname_q = ''
-      this.memberPage = 0
-      this.onlineMembersEnded = false
-      this.fillOnlineMembers()
-    },
-    privateChat (member) {
-      if (member.id === this.user.id) {
-        return
-      }
-      this.createRoomLoading = true
-      createRoom([member.id, this.user.id]).then((res) => {
-        this.$message({
-          showClose: false,
-          message: res.status,
-          type: 'info'
-        })
-        this.$set(this.$refs['popover' + member.id][0], 'showPopper', false)
-
-        this.activeTab = 'chats'
-        this.activeRoom = res.room
-        this.createRoomLoading = false
-      })
-    },
-    fillOnlineMembers () {
-      if (this.onlineMembersEnded || this.onlineMemberLoading) {
-        return
-      }
-      this.onlineMemberLoading = true
-      return fetchOnlineMembers(this.memberLimit, this.memberPage, this.nickname_q)
-        .then(res => {
-          this.onlineMembers = this.memberPage === 0 ? res.results : this.onlineMembers.concat(res.results)
-          this.onlineMembersEnded = this.memberLimit * (this.memberPage + 1) > this.onlineMembers.length
-          this.memberPage += 1
-          this.onlineMemberLoading = false
-        })
-    },
     animate () {
       setTimeout(() => {
         if (this.announcementStyle.opacity <= 0) {
@@ -644,13 +450,6 @@ export default {
       }, 100)
     },
     getAnnouce () {
-      this.editUser = {
-        mobile: this.user.mobile,
-        email: this.user.email,
-        nickname: this.user.nickname,
-        QQ: this.user.QQ
-      }
-      this.oldUser = Object.assign({}, this.editUser)
       fetchAnnouce().then(result => {
         result.forEach((item) => {
           if (item.platform !== 0) {
@@ -669,6 +468,15 @@ export default {
       }).catch(err => {
         console.log(err)
       })
+    },
+    initUser () {
+      this.editUser = {
+        mobile: this.user.mobile,
+        email: this.user.email,
+        nickname: this.user.nickname,
+        QQ: this.user.QQ
+      }
+      this.oldUser = Object.assign({}, this.editUser)
     },
     logout () {
       this.$store.dispatch('logout')
@@ -858,10 +666,12 @@ export default {
       color: #ccc;
     }
   }
+
   img {
     vertical-align: middle;
     display: inline-block;
   }
+
   .mobile-promotion {
     text-align: center;
     display: inline-block;
@@ -869,10 +679,12 @@ export default {
       vertical-align: middle;
     }
   }
+
   .user-info {
     float: right;
     cursor: pointer;
   }
+
   .logout {
     &:hover {
       text-decoration: underline;
@@ -883,6 +695,7 @@ export default {
   }
 }
 .aside {
+  height: 100%;
   padding: 0 10px 10px;
   overflow-y: hidden;
   /deep/ .el-tabs {
@@ -1066,4 +879,9 @@ export default {
 .privatechat-dialog /deep/ .el-dialog--center .el-dialog__header {
   padding-top: 0;
 }
+
+.home-container {
+  height: calc(100% - 50px);
+}
+
 </style>
