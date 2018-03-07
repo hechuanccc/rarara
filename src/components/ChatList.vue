@@ -17,7 +17,7 @@
       <el-form>
         <el-form-item>
           <el-input v-model="searchData.input"
-            placeholder="请输入会员名称"
+            placeholder="请输入帐号名"
             class="ipt-search"
             @keyup.native.enter="search"></el-input>
             <span class="el-icon-search pointer" @click="search"></span>
