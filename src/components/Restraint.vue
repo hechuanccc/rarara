@@ -75,7 +75,8 @@ export default {
       type: Array
     },
     RECEIVER: {
-      type: Number
+      type: Number,
+      default: 1
     }
   },
   data () {

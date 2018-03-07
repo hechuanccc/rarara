@@ -1,14 +1,14 @@
 <template>
-  <div class="box" style="height: 100%">
-    <div class="bg-container"  :style="{height: clientH - 68 + 'px'}">
+  <div class="box full-height">
+    <div class="bg-container">
       <div class="register-container">
-        <el-container>
+        <el-container class="full-height">
           <el-header class="login-head">
             <div class="title">会员注册</div>
             <div class="tip m-t-sm"><router-link to="/login">已有账号? 立即登录</router-link></div>
             <a :href="$store.state.globalPreference.customer_service_url" target="_blank" class="service">客服中心</a>
           </el-header>
-          <el-main>
+          <el-main >
             <div class="register">
               <el-form :model="user" status-icon :rules="rules" ref="user">
                 <el-form-item prop="username" label="用户名"  label-width="85px">
@@ -250,20 +250,21 @@
 .box {
   background: #4a4a4a;
 }
+
 .bg-container {
+  height: calc(100% - 60px);
   background-image: url('../images/loginBG.jpg');
   background-size: cover;
-  position: relative;
 }
+
 .register-container {
   width: 500px;
+  height: 460px;
+  margin: 0 auto;
   border-radius: 4px;
   background-color: #ffffff;
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
+  transform: translateY(30%);
 }
 
 .login-head {

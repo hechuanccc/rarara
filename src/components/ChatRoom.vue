@@ -55,7 +55,7 @@
                 v-for="(item, index) in emojis.people.slice(0, 42)"
                 :key="index"
                 class="emoji"
-                @click="personal_setting.chat.status ? msgCnt = msgCnt + item.emoji + ' ' : ''">
+                @click="personal_setting.chat.status ? msgContent = msgContent + item.emoji + ' ' : ''">
                 {{item.emoji}}
               </a>
             </div>
@@ -79,12 +79,12 @@
             <icon name="cog" class="font-cog" scale="1.4"></icon>
           </span>
 
-          <div class="chat-buttons" v-if="!myRoles.includes('customer service') || !myRoles.includes('manager')">
+          <div class="chat-buttons" v-if="ws && !myRoles.includes('customer service') || !myRoles.includes('manager')">
             <el-button :type="chat.read ? '' : 'warning'"
               :plain="chat.read"
               :key="index"
               size="mini"
-              @click.native="openPrivateChatDialog(chat)"
+              @click.native="openChatDialog(chat)"
               v-for="(chat, index) in chatList">
               {{`客服 ${index + 1}`}}
             </el-button>
@@ -99,7 +99,7 @@
               autocomplete="off"
               validateevent="true"
               class="el-textarea-inner"
-              v-model="msgCnt"
+              v-model="msgContent"
               :disabled="!personal_setting.chat.status">
             </textarea>
           </div>
@@ -109,18 +109,16 @@
         </div>
       </el-footer>
     </el-container>
+
+    <!-- chatting image lightbox -->
     <el-dialog :visible.sync="showImageMsg"
       width="640px"
-      custom-class="show-image-msg text-center"
+      custom-class="text-center"
       append-to-body>
       <img :src="showImageMsgUrl" class="popup-uploadedimage">
     </el-dialog>
-    <el-dialog :visible.sync="errMsg"
-      width="400px"
-      custom-class="showImageMsg"
-      append-to-body>
-      <p>{{errMsgCnt}}</p>
-    </el-dialog>
+
+    <!-- restraint dialog for manager -->
     <el-dialog
       title="管理"
       :visible.sync="restraint.dialogVisible"
@@ -132,22 +130,25 @@
       <Restraint :restraint="restraint"
         :blockedUsers="blockedUsers"
         :bannedUsers="formattedBannerUsers"
-        :RECEIVER="RECEIVER"
+        :RECEIVER="1"
         @updateUsers="updateUsers"
         />
     </el-dialog>
+
+    <!-- private chat dialog -->
      <el-dialog
        class="privatechat-dialog"
-       :visible.sync="privateChat.dialogVisible"
+       :visible.sync="chat.dialogVisible"
        :width="'550px'"
-       @close="closePrivateChatDialog()"
+       @close="closeChatDialog()"
        top="10vh"
        center>
       <PrivateChat :personalSetting="personal_setting"
         :emojis="emojis"
         :joinChatRoom="joinChatRoom"
-        v-if="privateChat.current.roomId && privateChat.current.roomId !== 1"/>
+        v-if="chat.current.roomId && chat.current.roomId !== 1"/>
     </el-dialog>
+
   </div>
 
 </template>
@@ -160,9 +161,9 @@ import { fetchChatEmoji, sendImgToChat, getChatUser, buildRoom, getChatList } fr
 import urls from '../api/urls'
 import { msgFormatter } from '../utils'
 import config from '../../config'
-import Restraint from './Restraint'
 import { mapGetters, mapState } from 'vuex'
 import PrivateChat from '../components/PrivateChat'
+import Restraint from './Restraint'
 
 const WSHOST = config.chatHost
 
@@ -175,15 +176,14 @@ export default {
   data () {
     return {
       ws: null,
-      msgCnt: '',
-      errMsg: false,
-      errMsgCnt: '',
+      msgContent: '',
       showImageMsg: false,
       showImageMsgUrl: '',
       loading: false,
       emojis: {
         people: []
       },
+      chatHall: 1,
       RECEIVER: 1,
       personal_setting: {
         chat: {
@@ -214,25 +214,23 @@ export default {
     }
   },
   watch: {
-    'privateChat.current.roomId' (val) {
+    'chat.current.roomId' (val) {
       this.RECEIVER = val
-      if (!this.roomMessages[val]) {
-        this.roomMessages[val] = []
-      }
 
+      this.roomMessages[val] = this.roomMessages[val] ? this.roomMessages[val] : []
       this.$store.dispatch('getChatMessages', this.roomMessages[val])
 
       this.$nextTick(() => {
         this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
       })
     },
-    'roomMessages': function (val) {
-      this.$store.dispatch('setRoomMsgs', val)
+    'roomMessages': function () {
+      this.$store.dispatch('setRoomMsgs', this.roomMessages)
     }
   },
   beforeDestroy () {
     this.leaveRoom()
-    this.$store.dispatch('endPrivateChat')
+    this.$store.dispatch('endChat')
     clearInterval(this.liveInterval)
   },
   computed: {
@@ -241,7 +239,7 @@ export default {
     ]),
     ...mapState([
       'user',
-      'privateChat',
+      'chat',
       'chatList'
     ]),
     isLogin () {
@@ -261,7 +259,7 @@ export default {
       }
     },
     showingMessages () {
-      const showing = this.myRoles.includes('customer service') ? this.roomMessages[this.privateChat.current.roomId] : this.roomMessages[1]
+      const showing = this.myRoles.includes('customer service') ? this.roomMessages[this.chat.current.roomId] : this.roomMessages[1]
       return showing
     }
   },
@@ -281,7 +279,7 @@ export default {
         this.$store.dispatch('updateChatList', data.results)
       })
     },
-    openPrivateChatDialog (chat) {
+    openChatDialog (chat) {
       let obj = {
         type: 2,
         status: 1,
@@ -290,10 +288,11 @@ export default {
       }
 
       buildRoom(obj).then(res => {
-        this.$store.dispatch('startPrivateChat', {id: res.room.id, chatWith: chat.id})
+        let newRoom = res.room
+        this.$store.dispatch('startChat', {id: newRoom.id, chatWith: chat.id})
         this.$store.dispatch('updateChatRead', {username: chat.username, read: true})
 
-        let currentMsg = this.roomMessages[res.room.id] ? this.roomMessages[res.room.id] : []
+        let currentMsg = this.roomMessages[newRoom.id] ? this.roomMessages[newRoom.id] : []
         if (currentMsg.length) {
           let msgs = currentMsg.filter(msg => msg.type !== -1)
           let lastMessage = msgs[msgs.length - 1]
@@ -301,26 +300,24 @@ export default {
             msgId: lastMessage.id,
             other: chat.id
           }
-          this.read(this.ws, res.room.id, lastMsgData)
+          this.read(this.ws, newRoom.id, lastMsgData)
+
           this.currentChat = {
             chat: chat,
-            roomId: res.room.id
+            roomId: newRoom.id
           }
         }
       }, errRes => {
-        this.$message({
-          showClose: true,
-          message: msgFormatter(errRes),
-          type: 'error'
-        })
+        this.openMessageBox(msgFormatter(errRes), 'error')
       })
     },
-    closePrivateChatDialog () {
+    closeChatDialog () {
       if (!this.currentChat) {
         return
       }
       let room = this.currentChat.roomId
-      let currentMsg = this.privateChat.current.messages ? this.privateChat.current.messages : []
+      let currentMsg = this.chat.current.messages ? this.chat.current.messages : []
+
       if (currentMsg.length) {
         let msgs = currentMsg.filter(msg => msg.type !== -1)
         let lastMessage = msgs[msgs.length - 1]
@@ -331,7 +328,7 @@ export default {
         this.read(this.ws, room, lastMsgData)
         this.currentChat = null
       }
-      this.$store.dispatch('endPrivateChat')
+      this.$store.dispatch('endChat')
     },
     read (connection, roomId, lastMsg) {
       if (connection) {
@@ -359,9 +356,12 @@ export default {
       let token = this.$cookie.get('access_token')
       this.loading = true
       this.$store.dispatch('startLoading')
+
       this.ws = new WebSocket(`${WSHOST}/chat/stream?token=${token}`)
+
       this.ws.onopen = () => {
         this.$store.dispatch('setWebsocket', this.ws)
+
         this.checkLiving(this.ws)
 
         if (!this.emojis.people.length) {
@@ -389,48 +389,53 @@ export default {
 
       this.ws.send(JSON.stringify({
         'command': 'join',
-        'receivers': [this.RECEIVER]
+        'receivers': [this.chatHall]
       }))
 
       this.ws.onmessage = (resData) => {
-        let data
-        if (typeof resData.data === 'string') {
+        let correctResponse = typeof (resData.data) === 'string'
+        if (correctResponse) {
           try {
-            data = JSON.parse(resData.data)
+            let data = JSON.parse(resData.data)
+
             if (!data.error_type) {
               let latestMsg = data.latest_message
+
               if (latestMsg) {
                 if (data.count) {
                   let lastMsg = latestMsg[0]
+
                   latestMsg.forEach((msg) => {
                     if (!msg.sender.avatar) {
                       return
                     }
                     msg.sender.avatar = this.host + msg.sender.avatar
                   })
-                  this.$set(this.roomMessages, lastMsg.receivers, latestMsg.reverse().concat([{
-                    type: -1
-                  }]))
+
+                  this.$set(this.roomMessages, lastMsg.receivers, latestMsg.reverse().concat([{ type: -1 }]))
                 }
+
                 this.$nextTick(() => {
                   this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
                 })
+
                 return
               } else if (data.personal_setting) {
                 this.personal_setting = data.personal_setting
-                this.$store.commit('SET_USER', data.personal_setting.user)
+                this.$store.dispatch('setUser', data.personal_setting)
               } else {
                 switch (data.type) {
                   case 2:
+
                     if (data.command === 'banned') {
-                      this.errMsg = true
-                      this.errMsgCnt = data.content
+                      this.openMessageBox(data.content, 'error')
                     } else if (data.command === 'unblock') {
                       this.personal_setting.blocked = false
                       this.joinChatRoom()
                     } else if (data.command === 'unbanned') {
                       this.personal_setting.chat.status = 1
                     }
+
                     this.$notify({
                       message: data.content,
                       offset: 100,
@@ -439,6 +444,7 @@ export default {
                       customClass: 'top-right-msg',
                       showClose: false
                     })
+
                     return
                   default:
                   // websocket/upload/user-avatar/54fa2ca4059245f29be5e9da2c55e14a.jpg
@@ -450,13 +456,18 @@ export default {
                       }
                     }
 
+                    if (!this.roomMessages[data.receivers]) {
+                      this.roomMessages[data.receivers] = []
+                    }
+
                     this.roomMessages[data.receivers].push(data)
+
                     if (data.sender.username !== this.user.username) {
                       this.$store.dispatch('updateChatRead', {username: data.sender.username, read: false})
                     }
-                    this.$forceUpdate()
 
-                    this.$store.dispatch('getChatMessages', this.roomMessages[this.privateChat.current.roomId])
+                    this.$store.dispatch('getChatMessages', this.roomMessages[data.receivers])
+                    this.$forceUpdate()
                 }
 
                 let chatBox = document.getElementById('chatBox')
@@ -473,31 +484,27 @@ export default {
               }
             } else {
               if (data.error_type !== 2 && data.error_type !== 3) {
-                this.errMsg = true
                 switch (data.error_type) {
                   case 4:
-                    this.errMsgCnt = '您已被聊天室管理员禁言，在' + this.$moment(data.msg).format('YYYY-MM-DD HH:mm:ss') + '后才可以发言。'
                     this.personal_setting.banned = true
                     this.personal_setting.chat.status = 0
+                    this.openMessageBox('您已被聊天室管理员禁言，在' + this.$moment(data.msg).format('YYYY-MM-DD HH:mm:ss') + '后才可以发言。', 'error')
                     break
                   case 5:
-                    this.messages = []
                     this.personal_setting.block = true
                     this.personal_setting.chat.status = 0
-                    this.errMsgCnt = data.msg
+                    this.openMessageBox(data.msg, 'error')
                     break
                   case 6:
-                    this.errMsgCnt = data.msg
+                    this.openMessageBox(data.msg, 'error')
                     setTimeout(() => {
-                      this.errMsgCnt = ''
-                      this.errMsg = false
                       this.$store.dispatch('logout').then(res => {
                         this.$router.push({name: 'Login'})
                       })
                     }, 3000)
                     break
                   default:
-                    this.errMsgCnt = data.msg
+                    this.openMessageBox(data.msg, 'error')
                 }
               }
             }
@@ -514,16 +521,15 @@ export default {
       let fileInp = this.$refs.fileImgSend
       let file = fileInp.files[0]
       if (!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(fileInp.value) || !this.personal_setting.chat.status) {
-        this.errMsgCnt = '文件格式不正确或您目前尚不符合发言条件'
-        this.errMsg = true
+        this.openMessageBox('文件格式不正确或您目前尚不符合发言条件', 'error')
         return false
       }
       if (file.size > 1024 * 1024) {
-        this.errMsg = true
-        this.errMsgCnt = '图片尺寸太大，请选择较小尺寸的图片。'
+        this.openMessageBox('图片尺寸太大，请选择较小尺寸的图片。', 'error')
         return
       }
       let formData = new FormData()
+
       formData.append('receiver', this.RECEIVER)
       formData.append('image', file)
       sendImgToChat(formData).then((data) => {
@@ -531,24 +537,25 @@ export default {
       })
     },
     sendMsg () {
-      if (!this.msgCnt.trim()) { return false }
+      if (!this.msgContent.trim()) { return false }
       if (!this.ws) {
         return this.joinChatRoom()
       }
+
       this.ws.send(JSON.stringify({
         'command': 'send',
         'receivers': [this.RECEIVER],
         'type': 0,
-        'content': this.msgCnt
+        'content': this.msgContent
       }))
-      this.msgCnt = ''
+      this.msgContent = ''
     },
     leaveRoom () {
-      this.messages = []
       this.ws && this.ws.send(JSON.stringify({
         'command': 'leave',
-        'receivers': [this.RECEIVER]
+        'receivers': [this.chatHall]
       }))
+
       if (this.ws) {
         this.ws.close()
       }
@@ -584,6 +591,13 @@ export default {
       this.restraint.dialogVisible = true
 
       this.getUser()
+    },
+    openMessageBox (msg, type) {
+      this.$message({
+        showClose: true,
+        message: msg,
+        type: type
+      })
     }
   }
 }
@@ -886,7 +900,7 @@ export default {
       }
     }
     .btn-smile:hover {
-      background: #ccc;
+      background: #666;
     }
   }
   .typing {
@@ -914,11 +928,14 @@ export default {
     .el-textarea-inner {
       outline: none;
       display: block;
-      resize: vertical;
       padding: 5px 7px;
       line-height: 1.5;
       width: 100%;
       height: 80px;
+      min-width: 100%;
+      max-width: 100%;
+      min-height: 80px;
+      max-height: 80px;
       font-size: 14px;
       color: #fff;
       background-color: transparent;

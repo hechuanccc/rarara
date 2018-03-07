@@ -91,8 +91,9 @@
             <el-tab-pane
               :disabled="loading"
               label="会员列表"
+              class="full-height"
               name="chats">
-              <div class="chat-list">
+              <div class="chat-list full-height">
                 <ChatList v-if="activeTab === 'chats'" ref="chatList">
                 </ChatList>
               </div>
@@ -101,8 +102,9 @@
             <el-tab-pane
               :disabled="loading"
               label="聊天列表"
+              class="full-height"
               name="rooms">
-              <div class="chat-list">
+              <div class="chat-list full-height">
                 <ChatList v-if="activeTab === 'rooms'" :unread="true" ref="chatList">
                 </ChatList>
               </div>
@@ -120,7 +122,7 @@
             <!-- <el-tab-pane :label="'在线投注'">
               <iframe :src="globalPreference.mobile_lottery_url" width="100%" style="height: calc(100vh - 110px)" frameborder="0"></iframe>
             </el-tab-pane> -->
-            <el-tab-pane :label="'文字开奖'" class="text-result"> <!-- v-if="lasyLoadResult" -->
+            <el-tab-pane :label="'文字开奖'" class="full-height"> <!-- v-if="lasyLoadResult" -->
               <div class="results-container">
                 <result></result>
               </div>
@@ -286,7 +288,6 @@ import urls from '../api/urls'
 import Result from '../components/Result'
 import { mapState, mapGetters } from 'vuex'
 import ChatList from '../components/ChatList'
-import PrivateChat from '../components/PrivateChat'
 const RECEIVER = 1
 
 Vue.filter('truncate', function (text, stop) {
@@ -298,8 +299,7 @@ export default {
     Icon,
     ChatRoom,
     Result,
-    ChatList,
-    PrivateChat
+    ChatList
   },
   data () {
     const qqValidator = (rule, value, callback) => {
@@ -351,7 +351,7 @@ export default {
       activeRoom: {},
       popoverMember: {},
       searchEnabled: false,
-      activeTab: 'chats',
+      activeTab: 'rooms',
       swichAvatar: false,
       uploadUrl: urls.user,
       nickname_q: '',
@@ -793,12 +793,7 @@ export default {
   background: rgba(0,0,0,.3);
   margin-bottom: 10px;
   color: #fff;
-  .head-cnt {
-    height: 100%;
-    .head-col {
-      height: 100%;
-    }
-  }
+
   .logo {
     background-position: center center;
     background-size: contain;
@@ -881,9 +876,6 @@ export default {
   }
   /deep/ .el-form-item--small.el-form-item {
     margin-bottom: 0;
-  }
-  .text-result {
-    height: 100%;
   }
 }
 .chat-area {

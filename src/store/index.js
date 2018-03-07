@@ -18,7 +18,7 @@ export function createStore () {
         mobile_url: ''
       },
       chatList: [],
-      privateChat: {
+      chat: {
         dialogVisible: false,
         current: {
           roomId: 1,

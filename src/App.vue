@@ -1,8 +1,6 @@
 <template>
-  <div>
-    <div :style="{height: bodyHeight + 'px'}">
-      <router-view />
-    </div>
+  <div :style="{height: bodyHeight + 'px'}">
+    <router-view />
   </div>
 </template>
 
