@@ -13,6 +13,21 @@
         </div>
       </li>
     </ul>
+    <div class="search-form m-t m-b m-l m-r" v-if="!unread">
+      <el-form>
+        <el-form-item>
+          <el-input v-model="searchData.input"
+            placeholder="请输入会员名称"
+            class="ipt-search"
+            @keyup.native.enter="search"></el-input>
+            <span class="el-icon-search pointer" @click="search"></span>
+        </el-form-item>
+      </el-form>
+      <div v-if="searchData.input && searchData.result.length">
+        搜索 「{{searchData.input}}」中
+        <span class="exit-search pointer" @click="exitSearch">退出搜索</span>
+      </div>
+    </div>
     <div class="rooms-container">
       <ul class="rooms m-b" v-if="showing.length">
         <li v-for="(item, index) in showing"
@@ -33,7 +48,7 @@
             </span>
           </div>
         </li>
-        <li v-if="pagination.total > chats.length" @click="fillMemberChats">更多...</li>
+        <li v-if="pagination.total > chats.length && !searchData.input.length" @click="fillMemberChats">更多...</li>
       </ul>
       <ul class="text-center m-t" v-else>暂无进行中的聊天</ul>
     </div>
@@ -68,7 +83,11 @@ export default {
       unreadChats: [],
       interval: null,
       previousChat: null,
-      roomMap: {}
+      roomMap: {},
+      searchData: {
+        input: '',
+        result: []
+      }
     }
   },
   computed: {
@@ -83,7 +102,12 @@ export default {
       'ws'
     ]),
     showing () {
-      const showing = this.unread ? this.chats.filter(chat => chat.read === false) : this.chats
+      let showing
+      if (this.searchData.input.length && this.searchData.result.length) {
+        showing = this.searchData.result
+      } else {
+        showing = this.unread ? this.chats.filter(chat => chat.read === false) : this.chats
+      }
       return showing
     }
   },
@@ -98,9 +122,30 @@ export default {
         this.leaveChat(oldVal, previous[0])
       },
       deep: true
+    },
+    'searchData.input': function (ipt) {
+      if (!ipt.length) {
+        this.exitSearch()
+      }
     }
   },
   methods: {
+    exitSearch () {
+      this.searchData = {
+        input: '',
+        result: []
+      }
+    },
+    search () {
+      this.loading = true
+      getChatList({offset: 0, limit: 10000}).then(res => {
+        let all = res.results
+        let filtered = all.filter(obj => obj.username.toLowerCase().indexOf(this.searchData.input.toLowerCase()) !== -1)
+
+        this.searchData.result = filtered
+        this.loading = false
+      })
+    },
     getRoles (user) {
       return user.roles.map((role) => role.name)
     },
@@ -187,7 +232,7 @@ export default {
 </script>
 <style lang="scss" scoped>
 .rooms-container {
-   height: calc(100% - 44px);
+   height: calc(100% - 90px);
    overflow-y: auto;
 }
 .rooms {
@@ -241,11 +286,25 @@ export default {
   display: inline-block;
 }
 
-.last-message {
-  display: inline-block;
-  width: 210px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.ipt-search /deep/ .el-input__inner{
+  background: #999;
+  border: none;
+  color: #fff;
+  &::placeholder {
+    color: #ccc;
+  }
+}
+.el-icon-search {
+  position: absolute;
+  right: 10px;
+  top: 5px;
+  font-size: 18px;
+  font-weight: bolder;
+  &:hover {
+    color: #666;
+  }
+}
+.exit-search {
+  float: right;
 }
 </style>

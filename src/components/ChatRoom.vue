@@ -23,7 +23,7 @@
                 <div class="msg-header">
                   <h4>{{item.type === 4 ? '计划消息' : item.sender && item.sender.username === user.username && user.nickname ? user.nickname : item.sender && (item.sender.nickname || item.sender.username)}}</h4>
                   <span class="common-member" v-if="item.type !== 4">
-                    {{item.sender && item.sender.roles.length && getRoles(item).includes('manager') ? '管理员' : '普通会员'}}
+                    {{item.sender && item.sender.roles.length && getRoles(item).includes('manager') ? '管理员' : getRoles(item).includes('customer service') ? '客服人员' : '普通会员'}}
                   </span>
                   <span class="msg-time">{{item.created_at | moment('HH:mm:ss')}}</span>
                 </div>
