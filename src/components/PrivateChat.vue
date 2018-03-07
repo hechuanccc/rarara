@@ -3,10 +3,10 @@
     <h2 class="title text-center m-b">联系客服</h2>
     <div>
       <ul class="chat-records m-b"
-        v-if="chat.current.messages && chat.current.messages.length">
+        v-if="showing && showing.length">
         <li class="record m-t m-b"
           v-if="msg.type !== -1"
-          v-for="(msg, index) in chat.current.messages"
+          v-for="(msg, index) in showing"
           :key="index">
           <div :class="['speaker', {'self': msg.sender.username === user.username}]">
             <div class="avatar">
@@ -115,14 +115,23 @@ export default {
     ...mapState([
       'chat',
       'ws',
-      'user'
+      'user',
+      'roomMsgs',
+      'chatList'
     ]),
     notAllowed () {
       return !this.personalSetting.chat.status
+    },
+    currentChatIndex () {
+      let nowIndex = this.chatList.findIndex(chat => chat.id === this.chat.current.chatWith)
+      return nowIndex + 1
+    },
+    showing () {
+      return this.roomMsgs[this.chat.current.roomId]
     }
   },
   watch: {
-    'chat.current.messages.length': function () {
+    'showing': function () {
       this.$nextTick(() => {
         this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
       })

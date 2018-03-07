@@ -226,6 +226,7 @@ export default {
     },
     'roomMessages': function () {
       this.$store.dispatch('setRoomMsgs', this.roomMessages)
+      this.$forceUpdate()
     }
   },
   beforeDestroy () {
@@ -323,7 +324,7 @@ export default {
         let lastMessage = msgs[msgs.length - 1]
         let lastMsgData = {
           msgId: lastMessage.id,
-          other: this.currentChat.chat.username
+          other: this.currentChat.chat.id
         }
         this.read(this.ws, room, lastMsgData)
         this.currentChat = null
@@ -462,11 +463,13 @@ export default {
 
                     this.roomMessages[data.receivers].push(data)
 
-                    if (data.sender.username !== this.user.username) {
+                    let meSpeaking = (data.sender.username === this.user.username)
+                    let inCurrentRoom = (this.chat.current.roomId === data.receivers)
+
+                    if (!meSpeaking && !inCurrentRoom) {
                       this.$store.dispatch('updateChatRead', {username: data.sender.username, read: false})
                     }
 
-                    this.$store.dispatch('getChatMessages', this.roomMessages[data.receivers])
                     this.$forceUpdate()
                 }
 
@@ -645,7 +648,7 @@ export default {
 }
 
 .content {
-  background-color: rgba(255, 255, 255, .3);
+  background-color: rgba(255, 255, 255, .2);
   background-attachment: fixed;
   background-size: cover;
   padding: 10px;
