@@ -324,7 +324,7 @@ export default {
         let lastMessage = msgs[msgs.length - 1]
         let lastMsgData = {
           msgId: lastMessage.id,
-          other: this.currentChat.chat.username
+          other: this.currentChat.chat.id
         }
         this.read(this.ws, room, lastMsgData)
         this.currentChat = null
