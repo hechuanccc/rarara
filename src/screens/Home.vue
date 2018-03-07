@@ -23,21 +23,21 @@
           <div class="mobile-promotion" @mouseover="showQR = true" @mouseleave="showQR = false">
             <icon class="icon m-r" name="mobile-phone" scale="2"></icon>
             <span class="text">手机版聊天室</span>
-          </div>
-          <div class="qrcode" v-show="showQR">
-            <qr-code :text="globalPreference.mobile_url"></qr-code>
+            <div class="qrcode" v-show="showQR">
+              <qr-code :text="globalPreference.mobile_url"></qr-code>
+            </div>
           </div>
           <div class="user-info">
-            <img @click="showProfileDiag = true" :src="user.avatar ? user.avatar : require('../assets/avatar.png')" width="25">
+            <img @click="showProfileDiag = true" :src="user.avatar ? user.avatar : require('../assets/avatar.png')" height="25" width="25">
             <span @click="showProfileDiag = true" class="username">{{user.nickname || user.username}}</span>
-            <a @click="logout">退出</a>
+            <a class="logout" @click="logout">退出</a>
           </div>
         </el-col>
       </el-row>
     </el-header>
 
       <el-container>
-        <el-aside v-if="myRoles.includes('customer service')" width="250px" class="aside">
+        <el-aside v-if="asideShown" width="250px" class="aside">
           <el-tabs
             v-model="activeTab"
             type="border-card">
@@ -114,7 +114,7 @@
         </el-aside>
 
         <el-main class="chat-area">
-          <chat-room></chat-room>
+          <chat-room :class="{'p-l': !asideShown}"></chat-room>
         </el-main>
 
         <el-aside width="395px" class="aside">
@@ -443,6 +443,9 @@ export default {
     },
     agent () {
       return this.user.agent ? this.user.agent.username : ''
+    },
+    asideShown () {
+      return this.myRoles.includes('customer service')
     }
   },
   watch: {
@@ -847,13 +850,20 @@ export default {
   line-height: 50px;
   vertical-align: middle;
   .username {
-    padding: 0 10px;
+    padding: 0 10px 0 0;
+    &:hover {
+      text-decoration: underline;
+    }
+    &:active {
+      color: #ccc;
+    }
   }
   img {
     vertical-align: middle;
     display: inline-block;
   }
   .mobile-promotion {
+    text-align: center;
     display: inline-block;
     .icon, .text {
       vertical-align: middle;
@@ -862,6 +872,14 @@ export default {
   .user-info {
     float: right;
     cursor: pointer;
+  }
+  .logout {
+    &:hover {
+      text-decoration: underline;
+    }
+    &:active {
+      color: #ccc;
+    }
   }
 }
 .aside {
@@ -1026,6 +1044,8 @@ export default {
 .qrcode {
   position: absolute;
   z-index: 3;
+  padding: 10px;
+  background: #fff;
   img {
     width: 280px;
     height: 280px;
