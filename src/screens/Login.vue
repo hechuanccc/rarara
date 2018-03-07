@@ -1,13 +1,12 @@
 <template>
-  <div class="box" style="height: 100%">
-    <div class="bg-container" :style="{height: clientH - 68 + 'px'}">
-      <div class="login-container">
-         <el-container>
+  <div class="full-height">
+    <div class="box full-height">
+         <el-container class="full-height login-box login-container">
            <el-header class="login-head">
              <div class="title">会员登录</div>
-             <a :href="$store.state.globalPreference.customer_service_url" target="_blank" class="service">客服中心</a>
+             <!-- <a :href="$store.state.globalPreference.customer_service_url" target="_blank" class="service">客服中心</a> -->
            </el-header>
-           <el-main>
+           <el-main class="full-height">
              <div class="login">
                <el-form :model="user" status-icon ref="user" :rules="rules">
                  <el-form-item prop="username" label="用户名"  label-width="65px">
@@ -41,7 +40,6 @@
              </div>
            </el-main>
          </el-container>
-      </div>
     </div>
     <div class="footer">
       <p class="p1">投资有风险，入市须谨慎</p>
@@ -102,37 +100,37 @@ export default {
 </script>
 <style lang="scss" scoped>
 .box {
-  background: #4a4a4a;
+  background-image: url('../images/loginBG.jpg');
+  background-size: cover;
+  height: calc(100% - 60px);
 }
-.bg-container {
-    background-image: url('../images/loginBG.jpg');
-    background-size: cover;
-    position: relative;
-}
+
+
 .login-container {
-   width: 500px;
-   border-radius: 4px;
-   background-color: #ffffff;
-   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
-   position:absolute;
-   top:50%;
-   left:50%;
-   transform:translate(-50%,-50%);
+  position: relative;
+  top: 100px;
+  width: 500px;
+  height: 400px;
+  margin: 0 auto;
+  border-radius: 4px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
 }
 
 .login-head {
+  position: relative;
   margin-top: 20px;
   text-align: center;
   .title {
-    line-height: 40px;
     display: inline-block;
+    line-height: 40px;
     font-size: 20px;
     span {
       color: #9b9b9b;
     }
   }
   .service {
-    position: absolute;
+    display: inline-block;
     right: 15px;
     top: 20px;
     width: 100px;
@@ -149,6 +147,7 @@ export default {
 
 .login {
   padding-left: 60px;
+  height: 250px;
   .el-button {
     width: 220px;
   }
@@ -192,13 +191,15 @@ export default {
   padding-left: 65px;
   color: red;
 }
+
 .footer {
+  background: #4a4a4a;
   p {
     text-align: center;
     color: #fff;
   }
   .p1 {
-    padding-top: 14px;
+    padding: 10px 0;
   }
 }
 </style>

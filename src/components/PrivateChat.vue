@@ -3,10 +3,10 @@
     <h1 class="title text-center m-b">联系客服</h1>
     <div>
       <ul class="chat-records m-b"
-        v-if="privateChat.current.messages && privateChat.current.messages.length">
+        v-if="chat.current.messages && chat.current.messages.length">
         <li class="record m-t m-b"
           v-if="msg.type !== -1"
-          v-for="(msg, index) in privateChat.current.messages"
+          v-for="(msg, index) in chat.current.messages"
           :key="index">
           <div :class="['speaker', {'self': msg.sender.username === user.username}]">
             <div class="avatar">
@@ -90,6 +90,7 @@ import { sendImgToChat } from '../api'
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/smile-o'
 import {mapState} from 'vuex'
+
 export default {
   components: {
     Icon
@@ -112,7 +113,7 @@ export default {
   },
   computed: {
     ...mapState([
-      'privateChat',
+      'chat',
       'ws',
       'user'
     ]),
@@ -121,7 +122,7 @@ export default {
     }
   },
   watch: {
-    'privateChat.current.messages.length': function () {
+    'chat.current.messages.length': function () {
       this.$nextTick(() => {
         this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
       })
@@ -134,12 +135,14 @@ export default {
       if (!this.ws) {
         this.joinChatRoom()
       }
+
       this.ws.send(JSON.stringify({
         'command': 'send',
-        'receivers': [this.privateChat.current.roomId],
+        'receivers': [this.chat.current.roomId],
         'type': 0,
         'content': this.speakingContent
       }))
+
       this.speakingContent = ''
     },
     sendMsgImg (e) {
@@ -154,8 +157,9 @@ export default {
         return
       }
       let formData = new FormData()
-      formData.append('receiver', this.privateChat.current.roomId)
+      formData.append('receiver', this.chat.current.roomId)
       formData.append('image', file)
+
       sendImgToChat(formData).then((data) => {
         fileInp.value = ''
       })

@@ -76,6 +76,9 @@ export default {
       })
     })
   },
+  setUser: ({commit, state}, data) => {
+    commit(types.SET_USER, data)
+  },
   startLoading: ({ commit }) => {
     commit(types.START_LOADING)
   },
@@ -88,14 +91,14 @@ export default {
   updateChatList: ({ commit, state }, data) => {
     commit(types.UPDATE_CHATLIST, data)
   },
-  startPrivateChat: ({ commit, state }, data) => {
-    commit(types.START_PRIVATECHAT, data)
+  startChat: ({ commit, state }, data) => {
+    commit(types.START_CHAT, data)
   },
   getChatMessages: ({ commit, state }, data) => {
     commit(types.GET_CHATMESSAGES, data)
   },
-  endPrivateChat: ({ commit, state }) => {
-    commit(types.END_PRIVATECHAT)
+  endChat: ({ commit, state }) => {
+    commit(types.END_CHAT)
   },
   setWebsocket: ({ commit, state }, data) => {
     commit(types.SET_WEBSOCKET, data)

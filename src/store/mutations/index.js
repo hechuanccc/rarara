@@ -32,7 +32,7 @@ export default {
     state.chatList = data || []
   },
   [types.GET_CHATMESSAGES]: (state, data) => {
-    state.privateChat.current.messages = [...data]
+    state.chat.current.messages = [...data]
   },
   [types.UPDATE_CHATREAD]: (state, data) => {
     let chat = state.chatList.find(chat => chat.username === data.username)
@@ -40,22 +40,26 @@ export default {
       chat.read = data.read
     }
   },
-  [types.START_PRIVATECHAT]: (state, data) => {
+  [types.START_CHAT]: (state, data) => {
     let roles = state.user.roles.map(role => role.name)
-    state.privateChat.current.roomId = data.id
-    state.privateChat.current.chatWith = data.chatWith
+    state.chat.current.roomId = data.id
+    state.chat.current.chatWith = data.chatWith
     if (!roles.includes('customer service')) {
-      state.privateChat.dialogVisible = true
+      state.chat.dialogVisible = true
     }
   },
-  [types.END_PRIVATECHAT]: (state, data) => {
-    state.privateChat.dialogVisible = false
-    state.privateChat.current = {
+  [types.END_CHAT]: (state, data) => {
+    state.chat.dialogVisible = false
+    state.chat.current = {
       roomId: 1,
       messages: []
     }
   },
   [types.SET_ROOMMSGS]: (state, data) => {
-    state.roomMsgs = data
+    if (data.roomId) {
+      state.roomMsgs[data.roomId] = data[data.message]
+    } else {
+      state.roomMsgs = data
+    }
   }
 }

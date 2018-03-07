@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <div class="full-height" v-if="this.ws">
     <ul class="rooms" v-if="unread">
-      <li :class="['public', {active: privateChat.current.roomId === 1}]"
-        @click="switchChat(1, 1)">
+      <li :class="['public', {active: chat.current.roomId === 1}]"
+        @click="enterChat({isHall: true})">
         <div class="meta">
           <div class="illustration">
             <icon class="volume-up" name="comments" scale="1.5"></icon>
@@ -15,22 +15,21 @@
     </ul>
     <div class="rooms-container">
       <ul class="rooms m-b" v-if="showing.length">
-        <li v-for="(chat, index) in showing"
+        <li v-for="(item, index) in showing"
           :key="index"
-          v-if="chat.type !== 1"
           :class="{
-            active: activeChatIndex === (index + 2),
-            unread: !chat.read
+            active: item.id === chat.current.chatWith,
+            unread: !item.read
           }"
-          @click="switchChat(chat, index + 2)">
+          @click="enterChat(item)">
           <div class="meta">
             <div class="illustration">
               <img class="avatar"
-                :src="chat.avatar? chat.avatar : require('../assets/avatar.png')"
+                :src="item.avatar? item.avatar : require('../assets/avatar.png')"
                 alt="avatar">
             </div>
             <span class="title">
-              <span>{{ chat.username }}</span>
+              <span>{{ item.username }}</span>
             </span>
           </div>
         </li>
@@ -60,7 +59,6 @@ export default {
   data () {
     return {
       loading: false,
-      activeChatIndex: 1,
       chats: [],
       pagination: {
         total: 0,
@@ -68,20 +66,9 @@ export default {
         limit: this.unread ? 10000 : 40
       },
       unreadChats: [],
+      interval: null,
       previousChat: null,
-      interval: null
-    }
-  },
-  watch: {
-    'privateChat.current': {
-      handler: function (val, oldval) {
-        this.previousChat = {
-          id: oldval.roomId,
-          other: oldval.chatWith ? oldval.chatWith : val.chatWith,
-          messages: oldval.messages
-        }
-      },
-      deep: true
+      roomMap: {}
     }
   },
   computed: {
@@ -89,7 +76,7 @@ export default {
       'myRoles'
     ]),
     ...mapState([
-      'privateChat',
+      'chat',
       'roomMsgs',
       'chatList',
       'user',
@@ -98,6 +85,19 @@ export default {
     showing () {
       const showing = this.unread ? this.chats.filter(chat => chat.read === false) : this.chats
       return showing
+    }
+  },
+  watch: {
+    'chat.current.roomId': {
+      handler: function (val, oldVal) {
+        if (val === 1 || oldVal === 1) {
+          return
+        }
+        let key = this.roomMap[oldVal]
+        let previous = this.chatList.filter(chat => chat.id === key)
+        this.leaveChat(oldVal, previous[0])
+      },
+      deep: true
     }
   },
   methods: {
@@ -120,51 +120,49 @@ export default {
         return res
       })
     },
-    switchChat (chat, index) {
-      if (this.loading) {
+    leaveChat (roomId, previousChat) {
+      let oldMsgs = this.roomMsgs[roomId].filter(msg => msg.type !== -1)
+      let oldLastMsg = oldMsgs[oldMsgs.length - 1]
+
+      if (oldLastMsg) {
+        let oldLastMsgData = {
+          id: oldLastMsg.id,
+          other: previousChat.id
+        }
+
+        this.$store.dispatch('updateChatRead', {username: previousChat.username, read: true})
+        this.read(this.ws, roomId, oldLastMsgData)
+      }
+    },
+    enterChat (chat) {
+      if (chat.isHall) {
+        this.$store.dispatch('startChat', {id: 1})
         return
       }
+      this.loading = true
+      buildRoom({
+        type: 2,
+        status: 1,
+        last_message: '',
+        users: [this.user.id, chat.id]
+      }).then(res => {
+        this.roomMap[res.room.id] = chat.id
+        this.$store.dispatch('startChat', {id: res.room.id, chatWith: chat.id})
+        this.$forceUpdate()
 
-      if (this.previousChat && !this.unread) {
-        let oldMsgs = this.previousChat.messages.filter(msg => msg.type !== -1)
-        let oldLastMsg = oldMsgs[oldMsgs.length - 1]
-        if (oldLastMsg) {
-          let oldLastMsgData = {
-            id: oldLastMsg.id,
-            other: this.previousChat.id
+        this.loading = false
+        let currentMsg = this.roomMsgs[res.room.id] ? this.roomMsgs[res.room.id] : []
+        let msgs = currentMsg.filter(msg => msg.type !== -1)
+        let lastMessage = msgs[msgs.length - 1]
+        if (lastMessage) {
+          let lastMessageData = {
+            id: lastMessage.id,
+            other: chat.id
           }
-
-          this.read(this.ws, this.previousChat.id, oldLastMsgData)
           this.$store.dispatch('updateChatRead', {username: chat.username, read: true})
+          this.read(this.ws, res.room.id, lastMessageData)
         }
-      }
-      this.activeChatIndex = index
-
-      if (index !== 1) {
-        this.loading = true
-        buildRoom({
-          type: 2,
-          status: 1,
-          last_message: '',
-          users: [this.user.id, chat.id]
-        }).then(res => {
-          this.$store.dispatch('startPrivateChat', {id: res.room.id, chatWith: chat.id})
-
-          this.loading = false
-          let currentMsg = this.roomMsgs[res.room.id] ? this.roomMsgs[res.room.id] : []
-          let msgs = currentMsg.filter(msg => msg.type !== -1)
-          let lastMessage = msgs[msgs.length - 1]
-          if (lastMessage) {
-            let lastMessageData = {
-              id: lastMessage.id,
-              other: chat.id
-            }
-            this.read(this.ws, res.room.id, lastMessageData)
-          }
-        })
-      } else {
-        this.$store.dispatch('startPrivateChat', {id: 1})
-      }
+      })
     },
     read (connection, roomId, lastMsg) {
       connection.send(JSON.stringify({
@@ -189,7 +187,7 @@ export default {
 </script>
 <style lang="scss" scoped>
 .rooms-container {
-   height: calc(100vh - 160px);
+   height: calc(100% - 44px);
    overflow-y: auto;
 }
 .rooms {
