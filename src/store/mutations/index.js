@@ -3,9 +3,6 @@ import Vue from 'vue'
 
 export default {
   [types.SET_USER]: (state, { user }) => {
-    if (user.avatar && user.avatar.search('http://') === -1) {
-      user.avatar = state.user.avatar
-    }
     Vue.set(state, 'user', {
       ...state.user,
       ...user
