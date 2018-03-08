@@ -422,6 +422,9 @@ export default {
 
                 return
               } else if (data.personal_setting) {
+                if (data.personal_setting.user.avatar && data.personal_setting.user.avatar.indexOf('http') === -1) {
+                  data.personal_setting.user.avatar = this.host + data.personal_setting.user.avatar
+                }
                 this.personal_setting = data.personal_setting
                 this.$store.dispatch('setUser', data.personal_setting)
               } else {
@@ -498,12 +501,19 @@ export default {
                     this.personal_setting.chat.status = 0
                     this.openMessageBox(data.msg, 'error')
                     break
-                  case 6:
+                  case 6: // 同時登入
                     this.openMessageBox(data.msg, 'error')
                     setTimeout(() => {
                       this.$store.dispatch('logout').then(res => {
                         this.$router.push({name: 'Login'})
                       })
+                    }, 3000)
+                    break
+                  case 7:  // 凍結
+                    this.openMessageBox(data.msg, 'error')
+                    setTimeout(() => {
+                      this.$store.dispatch('resetUser')
+                      this.$router.push({name: 'Login'})
                     }, 3000)
                     break
                   default:
