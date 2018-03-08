@@ -134,6 +134,7 @@ export default {
   },
   watch: {
     'showing': function () {
+      this.$forceUpdate()
       this.$nextTick(() => {
         this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
       })

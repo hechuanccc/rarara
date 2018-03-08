@@ -79,8 +79,9 @@
             <icon name="cog" class="font-cog" scale="1.4"></icon>
           </span>
 
-          <div class="chat-buttons" v-if="ws && !myRoles.includes('customer service') || !myRoles.includes('manager')">
+          <div class="chat-buttons" v-if="ws && (!myRoles.includes('customer service') && !myRoles.includes('manager'))">
             <el-button :type="chat.read ? '' : 'warning'"
+              class="chat-button"
               :plain="chat.read"
               :key="index"
               size="mini"
@@ -561,6 +562,7 @@ export default {
         'type': 0,
         'content': this.msgContent
       }))
+
       this.msgContent = ''
     },
     leaveRoom () {
@@ -1047,9 +1049,12 @@ export default {
 .u-btn {
   display: inline-block;
   text-align: center;
-  width: 80px;
+  width: 70px;
+  height: 70px;
   font-size: 14px;
-  line-height: 80px;
+  line-height: 70px;
+  border-radius: 2px;
+  margin: 5px;
   background: $primary;
   color: #fff;
   cursor: pointer;
@@ -1104,8 +1109,12 @@ export default {
 
 .chat-buttons {
   float: right;
-  padding-top: 3px;
-  margin-right: 10px;
+  padding-top: 2px;
+  margin-right: 5px;
+  .chat-button {
+    border-radius: 2px;
+    width: 70px;
+  }
   .is-plain {
     border: none;
   }
