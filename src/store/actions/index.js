@@ -79,6 +79,9 @@ export default {
   setUser: ({commit, state}, data) => {
     commit(types.SET_USER, data)
   },
+  resetUser: ({commit, state}, data) => {
+    commit(types.RESET_USER)
+  },
   startLoading: ({ commit }) => {
     commit(types.START_LOADING)
   },
