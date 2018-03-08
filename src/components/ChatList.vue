@@ -23,7 +23,7 @@
             <span class="el-icon-search pointer" @click="search"></span>
         </el-form-item>
       </el-form>
-      <div v-if="searchData.input && searchData.result.length">
+      <div v-if="searchData.searching">
         搜索 「{{searchData.input}}」中
         <span class="exit-search pointer" @click="exitSearch">退出搜索</span>
       </div>
@@ -86,6 +86,7 @@ export default {
       roomMap: {},
       allChatList: [],
       searchData: {
+        searching: false,
         input: '',
         result: []
       }
@@ -104,7 +105,7 @@ export default {
     ]),
     showing () {
       let showing
-      if (this.searchData.input.length && this.searchData.result.length) {
+      if (this.searchData.searching) {
         showing = this.searchData.result
       } else {
         showing = this.unread ? this.chats.filter(chat => chat.read === false) : this.chats
@@ -133,12 +134,14 @@ export default {
   methods: {
     exitSearch () {
       this.searchData = {
+        searching: false,
         input: '',
         result: []
       }
     },
     search () {
       this.loading = true
+      this.searchData.searching = true
       if (!this.allChatList.length) {
         getChatList().then(res => {
           this.allChatList = res
