@@ -1,5 +1,5 @@
 <template>
-  <div :style="{height: bodyHeight + 'px'}">
+  <div class="full-height">
     <router-view />
   </div>
 </template>

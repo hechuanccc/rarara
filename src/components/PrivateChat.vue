@@ -38,6 +38,7 @@
       <div class="control-bar">
         <div class="left">
           <el-popover
+            v-model="emojiShowing"
             ref="emoji-popover"
             placement="top-start"
             width="260"
@@ -51,7 +52,7 @@
               </span>
             </div>
           </el-popover>
-          <span class="emoji pointer" v-popover:emoji-popover>
+          <span :class="['emoji', 'pointer', {active : emojiShowing}]" v-popover:emoji-popover>
             <icon scale="1.3" name="smile-o"></icon>
           </span>
           <label class="upload pointer" for="privateImgUpload">
@@ -97,7 +98,8 @@ export default {
   },
   data () {
     return {
-      speakingContent: ''
+      speakingContent: '',
+      emojiShowing: false
     }
   },
   props: {
@@ -293,13 +295,23 @@ export default {
     .img-upload-input {
       display: none;
     }
-    .emoji {
-      vertical-align: sub;
-      padding: 5px 12px;
-    }
-    .upload {
+    .emoji, .upload {
       font-size: 20px;
       padding: 5px 12px;
+      &:hover {
+        background: #ddd;
+        color: black;
+      }
+
+    }
+    .emoji.active {
+      background: #ddd;
+      color: black;
+      outline: none;
+    }
+    .emoji svg{
+      position: relative;
+      top: 2px;
     }
   }
 
