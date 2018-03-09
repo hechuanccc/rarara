@@ -406,7 +406,6 @@ export default {
       })
     },
     'user': function () {
-      console.log(this.user)
       this.initUser()
     }
   },
