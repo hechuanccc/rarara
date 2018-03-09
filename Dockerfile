@@ -22,6 +22,7 @@ ARG HOST
 ARG chatHost
 ARG MAX_AGE
 ARG decode_key
+ARG ghost
 
 # Cannot be made into one line as it has a possibility that it will return a 'text file busy' making the shell script unexecutable
 # Disable autobuild first.
