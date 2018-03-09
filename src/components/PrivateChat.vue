@@ -1,6 +1,6 @@
 <template>
   <div class="privatechat-container">
-    <h2 class="title text-center m-b">联系客服</h2>
+    <h2 class="title text-center m-b">联系客服{{currentChatIndex}}</h2>
     <div>
       <ul class="chat-records m-b"
         v-if="showing && showing.length">
@@ -99,7 +99,8 @@ export default {
   data () {
     return {
       speakingContent: '',
-      emojiShowing: false
+      emojiShowing: false,
+      showing: this.roomMsgs[this.chat.current.roomId]
     }
   },
   props: {
@@ -111,14 +112,18 @@ export default {
     },
     personalSetting: {
       type: Object
+    },
+    roomMsgs: {
+      type: Object
+    },
+    chat: {
+      type: Object
     }
   },
   computed: {
     ...mapState([
-      'chat',
       'ws',
       'user',
-      'roomMsgs',
       'chatList'
     ]),
     notAllowed () {
@@ -127,17 +132,17 @@ export default {
     currentChatIndex () {
       let nowIndex = this.chatList.findIndex(chat => chat.id === this.chat.current.chatWith)
       return nowIndex + 1
-    },
-    showing () {
-      return this.roomMsgs[this.chat.current.roomId]
     }
   },
   watch: {
-    'showing': function () {
-      this.$forceUpdate()
-      this.$nextTick(() => {
-        this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
-      })
+    'showing': {
+      handler: function () {
+        this.$forceUpdate()
+        this.$nextTick(() => {
+          this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
+        })
+      },
+      deep: true
     }
   },
   methods: {
