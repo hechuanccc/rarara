@@ -22,17 +22,20 @@ ARG HOST
 ARG chatHost
 ARG MAX_AGE
 ARG decode_key
+ARG ghost
 ARG PROD_ENV_CONTAINER
 ARG PROD_CDN_ENDPOINT
 ARG PROD_HOST
 ARG PROD_chatHost
 ARG PROD_decode_key
+ARG PROD_ghost
 
 ENV ENV_CONTAINER=${PROD_ENV_CONTAINER}
 ENV CDN_ENDPOINT=${PROD_CDN_ENDPOINT}
 ENV HOST=${PROD_HOST}
 ENV chatHost=${PROD_chatHost}
 ENV decode_key=${PROD_decode_key}
+ENV ghost=${PROD_ghost}
 
 # Cannot be made into one line as it has a possibility that it will return a 'text file busy' making the shell script unexecutable
 RUN chmod u+x cloud_deploy.sh
