@@ -147,6 +147,8 @@
       <PrivateChat :personalSetting="personal_setting"
         :emojis="emojis"
         :joinChatRoom="joinChatRoom"
+        :roomMsgs="roomMsgs"
+        :chat="chat"
         v-if="chat.current.roomId && chat.current.roomId !== 1"/>
     </el-dialog>
 
@@ -242,7 +244,8 @@ export default {
     ...mapState([
       'user',
       'chat',
-      'chatList'
+      'chatList',
+      'roomMsgs'
     ]),
     isLogin () {
       return this.$store.state.user.logined && this.$route.name !== 'Home'
