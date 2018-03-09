@@ -3,7 +3,7 @@ const config = require('../../config')
 const env = process.env.NODE_ENV === 'development' ? config.dev.env : config.build.env
 const host = env.HOST.replace(/"/g, '')
 const apiv1 = host + '/v1/member'
-const ghost = env.ghost
+const ghost = env.ghost.replace(/"/g, '')
 const decode = env.decode_key
 
 export default {
