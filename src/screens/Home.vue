@@ -136,7 +136,11 @@
                     @mouseover="currentChooseAvatar = require('../assets/avatar.png')"
                     @mouseout="currentChooseAvatar = tempAvatar ? tempAvatar : user.avatar">恢复预设头像</label>
                 </p>
-                <el-form :model="editUser" status-icon :rules="rules" ref="editUser" :style="{marginLeft: '-20px'}">
+
+                <el-form :model="editUser"
+                  status-icon
+                  :rules="rules"
+                  ref="editUser">
                   <el-form-item prop="nickname" label="昵称"  label-width="85px">
                     <el-input v-model="editUser.nickname"
                               class="inp">
@@ -149,7 +153,6 @@
                               class="inp">
                     </el-input>
                   </el-form-item>
-
                   <el-form-item prop="QQ" label="QQ"  label-width="85px">
                     <el-input v-model="editUser.QQ"
                               @keypress.native="filtAmount"
@@ -157,6 +160,8 @@
                               class="inp">
                     </el-input>
                   </el-form-item>
+
+
                   <el-form-item label="注册时间"  label-width="85px">
                     <p class="member-info">{{user.date_joined | moment('YYYY-MM-HH')}}</p>
                   </el-form-item>
@@ -166,6 +171,7 @@
                   <el-form-item v-if="agent" label="代理商"  label-width="85px">
                     <p class="member-info">{{agent}}</p>
                   </el-form-item>
+
                   <el-form-item label-width="85px">
                     <el-button class="profile-submit" type="primary" @click="submit" :disabled="disabledEditProfile">确认修改</el-button>
                   </el-form-item>
@@ -398,13 +404,14 @@ export default {
       this.$nextTick(() => {
         this.$refs['editUser'].clearValidate()
       })
+    },
+    'user': function () {
+      console.log(this.user)
+      this.initUser()
     }
   },
   created () {
     this.getAnnouce()
-  },
-  mounted () {
-    this.initUser()
   },
   methods: {
     restoreAvatar () {
@@ -476,6 +483,7 @@ export default {
         nickname: this.user.nickname,
         QQ: this.user.QQ
       }
+
       this.oldUser = Object.assign({}, this.editUser)
     },
     logout () {
