@@ -1,5 +1,5 @@
 <template>
-  <div class="edit-container">
+  <div class="edit-container" v-if="member.username">
     <el-form :model="member"
       status-icon
       class="info-area"
@@ -88,6 +88,7 @@ export default {
           message: msgFormatter(err),
           type: 'error'
         })
+        this.$emit('memberDialogClose')
       })
     },
     updateMember () {
