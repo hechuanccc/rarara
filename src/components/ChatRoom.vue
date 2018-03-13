@@ -237,11 +237,12 @@ export default {
         roomIds.forEach((roomId) => {
           let otherSent = this.roomMessages[roomId].filter((msg) => {
             if (roomId !== '1' && msg.type !== -1) {
-              return (msg.type !== -1)
+              return true
             }
           })
+
           if (!otherSent.length) { return }
-          let other = otherSent[0].chat_with
+          let other = otherSent[0].chat_with.username === this.user.username ? otherSent[0].sender : otherSent[0].chat_with
           let roomData = {
             roomId: roomId,
             id: other.id,
@@ -1156,5 +1157,9 @@ export default {
 
 .privatechat-dialog /deep/ .el-dialog--center .el-dialog__header {
   padding-top: 0;
+}
+
+.red-envelope-dialog /deep/ .el-dialog__header , .red-envelope-dialog /deep/ .el-dialog__body {
+  padding: 0;
 }
 </style>
