@@ -47,7 +47,10 @@
             class="full-height"
             name="chats">
             <div class="chat-list full-height">
-              <ChatList v-if="activeTab === 'chats'" ref="chatList">
+              <ChatList v-if="activeTab === 'chats'"
+                @getChosenChat="handleChatChoose"
+                @switchToRooms="handlePrivateChat"
+                ref="chatList">
               </ChatList>
             </div>
           </el-tab-pane>
@@ -57,7 +60,7 @@
             class="full-height"
             name="rooms">
             <div class="chat-list full-height">
-              <ChatList v-if="activeTab === 'rooms'" :unread="true" ref="chatList">
+              <ChatList v-if="activeTab === 'rooms'" :rooms="rooms" :roomAmount="Object.values(rooms).length" :unread="true" ref="chatList">
               </ChatList>
             </div>
           </el-tab-pane>
@@ -65,7 +68,7 @@
       </el-aside>
 
       <el-main class="chat-area full-height">
-        <chat-room :class="{'p-l': !asideShown}"></chat-room>
+        <chat-room :class="{'p-l': !asideShown}" @handleAvatarClick="handleAvatarClick"></chat-room>
       </el-main>
 
       <el-aside width="395px" class="aside">
@@ -77,6 +80,16 @@
           </el-tab-pane>
         </el-tabs>
       </el-aside>
+
+      <el-dialog
+        class="edit-dialog"
+        v-if="memberDialog.chat.id"
+        :visible.sync="memberDialog.visible"
+        :width="'400px'"
+        @close="memberDialog.chat = {}"
+        top="10vh">
+        <EditUser v-if="memberDialog.chat.id" :userId="memberDialog.chat.id"></EditUser>
+      </el-dialog>
 
         <el-dialog
           title="最新消息"
@@ -234,6 +247,7 @@ import urls from '../api/urls'
 import Result from '../components/Result'
 import { mapState, mapGetters } from 'vuex'
 import ChatList from '../components/ChatList'
+import EditUser from '../components/EditUser'
 
 Vue.filter('truncate', function (text, stop) {
   return text.slice(0, stop) + (stop < text.length ? '...' : '')
@@ -244,7 +258,8 @@ export default {
     Icon,
     ChatRoom,
     Result,
-    ChatList
+    ChatList,
+    EditUser
   },
   data () {
     const qqValidator = (rule, value, callback) => {
@@ -296,7 +311,7 @@ export default {
       activeRoom: {},
       popoverMember: {},
       searchEnabled: false,
-      activeTab: 'rooms',
+      activeTab: 'chats',
       swichAvatar: false,
       uploadUrl: urls.user,
       nickname_q: '',
@@ -359,14 +374,20 @@ export default {
       showQR: false,
       activePanel: 'account',
       hallLastMsg: '',
-      tempAvatar: ''
+      tempAvatar: '',
+      memberDialog: {
+        visible: true,
+        chat: {}
+      }
+
     }
   },
   computed: {
     ...mapState([
       'globalPreference',
       'loading',
-      'user'
+      'user',
+      'rooms'
     ]),
     ...mapGetters([
       'myRoles'
@@ -413,6 +434,17 @@ export default {
     this.getAnnouce()
   },
   methods: {
+    handlePrivateChat () {
+      this.activeTab = 'rooms'
+    },
+    handleAvatarClick (sender) {
+      this.memberDialog.chat = sender
+      this.memberDialog.visible = true
+    },
+    handleChatChoose (chat) {
+      this.memberDialog.chat = chat
+      this.memberDialog.visible = true
+    },
     restoreAvatar () {
       this.disabledEditProfile = true
       updateUser(this.user.id, {avatar: ''}).then(result => {
@@ -889,6 +921,10 @@ export default {
 
 .home-container {
   height: calc(100% - 50px);
+}
+
+.edit-dialog /deep/ .el-dialog__header,.edit-dialog /deep/ .el-dialog__body {
+  padding: 0;
 }
 
 </style>

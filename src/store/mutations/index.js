@@ -44,6 +44,7 @@ export default {
     let roles = state.user.roles.map(role => role.name)
     state.chat.current.roomId = data.id
     state.chat.current.chatWith = data.chatWith
+    state.chat.current.otherUser = data.otherUser
     if (!roles.includes('customer service')) {
       state.chat.dialogVisible = true
     }
@@ -60,6 +61,13 @@ export default {
       state.roomMsgs[data.roomId] = data[data.message]
     } else {
       state.roomMsgs = data
+    }
+  },
+  [types.SET_ROOMS]: (state, data) => {
+    if (data.roomId) {
+      state.rooms[data.roomId] = data
+    } else {
+      state.rooms = data
     }
   }
 }
