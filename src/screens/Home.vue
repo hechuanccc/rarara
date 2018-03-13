@@ -84,11 +84,13 @@
       <el-dialog
         class="edit-dialog"
         v-if="memberDialog.chat.id"
+        :show-close="false"
+        :modal="false"
         :visible.sync="memberDialog.visible"
         :width="'400px'"
         @close="memberDialog.chat = {}"
         top="10vh">
-        <EditUser v-if="memberDialog.chat.id" :userId="memberDialog.chat.id"></EditUser>
+        <EditUser v-if="memberDialog.chat.id" :userId="memberDialog.chat.id" @memberDialogClose="memberDialogClose"></EditUser>
       </el-dialog>
 
         <el-dialog
@@ -444,6 +446,10 @@ export default {
     handleChatChoose (chat) {
       this.memberDialog.chat = chat
       this.memberDialog.visible = true
+    },
+    memberDialogClose () {
+      this.memberDialog.visible = true
+      this.memberDialog.chat = {}
     },
     restoreAvatar () {
       this.disabledEditProfile = true
