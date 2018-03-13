@@ -1159,7 +1159,4 @@ export default {
   padding-top: 0;
 }
 
-.red-envelope-dialog /deep/ .el-dialog__header , .red-envelope-dialog /deep/ .el-dialog__body {
-  padding: 0;
-}
 </style>
