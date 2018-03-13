@@ -106,6 +106,7 @@ export function blockChatUser (id, data) {
       block_time: 60
     })
 }
+
 export function unblockChatUser (id, data) {
   return axios.put(`${urls.room}${id}/`,
     {
@@ -139,5 +140,15 @@ export function buildRoom (data) {
     status: data.status,
     last_message: '',
     users: data.users
+  })
+}
+
+export function fetchMember (userId) {
+  return axios.get(`${urls.member}${userId}/`)
+}
+
+export function updateMember (userId, remarks) {
+  return axios.put(`${urls.member}${userId}/`, {
+    remarks: remarks
   })
 }

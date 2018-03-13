@@ -33,11 +33,10 @@
         <li v-for="(item, index) in showing"
           :key="index"
           :class="{
-            active: item.id === chat.current.chatWith,
-            unread: !item.read
-          }"
-          @click="enterChat(item)">
-          <div class="meta">
+            active: (item.id === chat.current.chatWith) && unread,
+            unread: !item.read && unread
+          }">
+          <div class="meta" slot="reference" @click="enterChat(item)" v-if="unread">
             <div class="illustration">
               <img class="avatar"
                 :src="item.avatar? item.avatar : require('../assets/avatar.png')"
@@ -47,8 +46,30 @@
               <span>{{ item.username }}</span>
             </span>
           </div>
+
+        <el-popover
+          v-else
+          placement="right"
+          trigger="click">
+          <div>
+            <div class="action pointer" @click="enterChat(item)">與 {{item.username}} 私聊</div>
+            <div class="action pointer" @click="handleChatClick(item)">查看 {{item.username}}</div>
+          </div>
+          <div class="meta" slot="reference">
+            <div class="illustration">
+              <img class="avatar"
+                :src="item.avatar? item.avatar : require('../assets/avatar.png')"
+                alt="avatar">
+            </div>
+            <span class="title">
+              <span>{{ item.username }}</span>
+            </span>
+          </div>
+          </el-popover>
+
         </li>
-        <li v-if="pagination.total > chats.length && !searchData.input.length" @click="fillMemberChats">更多...</li>
+
+        <li  v-if="!unread && (pagination.total > chats.length && !searchData.input.length)" @click="fillMemberChats">更多...</li>
       </ul>
       <ul class="text-center m-t" v-else>暂无进行中的聊天</ul>
     </div>
@@ -69,6 +90,12 @@ export default {
     unread: {
       type: Boolean,
       default: false
+    },
+    rooms: {
+      type: Object
+    },
+    roomAmount: {
+      type: Number
     }
   },
   data () {
@@ -78,18 +105,18 @@ export default {
       pagination: {
         total: 0,
         offset: 0,
-        limit: this.unread ? 10000 : 40
+        limit: 40
       },
       unreadChats: [],
       interval: null,
       previousChat: null,
-      roomMap: {},
       allChatList: [],
       searchData: {
         searching: false,
         input: '',
         result: []
-      }
+      },
+      roomList: []
     }
   },
   computed: {
@@ -108,7 +135,9 @@ export default {
       if (this.searchData.searching) {
         showing = this.searchData.result
       } else {
-        showing = this.unread ? this.chats.filter(chat => chat.read === false) : this.chats
+        this.initRoomList()
+
+        showing = this.unread ? this.roomList : this.chats
       }
       return showing
     }
@@ -119,7 +148,8 @@ export default {
         if (val === 1 || oldVal === 1) {
           return
         }
-        let key = this.roomMap[oldVal]
+
+        let key = this.rooms[oldVal]
         let previous = this.chatList.filter(chat => chat.id === key)
         this.leaveChat(oldVal, previous[0])
       },
@@ -129,9 +159,32 @@ export default {
       if (!ipt.length) {
         this.exitSearch()
       }
+    },
+    'roomAmount': {
+      handler: function () {
+        this.initRoomList()
+      },
+      deep: true
     }
   },
   methods: {
+    initRoomList () {
+      if (!this.rooms) { return }
+      let temp = []
+      let values = Object.values(this.rooms)
+
+      values.forEach((val) => {
+        temp.push(this.chatList.find((chat) => chat.id === val.id))
+      })
+      this.roomList = temp
+    },
+    handleChatClick (chat) {
+      if (this.unread) {
+        this.enterChat()
+      } else {
+        this.$emit('getChosenChat', chat)
+      }
+    },
     exitSearch () {
       this.searchData = {
         searching: false,
@@ -140,6 +193,9 @@ export default {
       }
     },
     search () {
+      if (!this.searchData.input) {
+        return
+      }
       this.loading = true
       this.searchData.searching = true
       if (!this.allChatList.length) {
@@ -176,6 +232,10 @@ export default {
       })
     },
     leaveChat (roomId, previousChat) {
+      if (!previousChat) {
+        return
+      }
+
       let oldMsgs = this.roomMsgs[roomId].filter(msg => msg.type !== -1)
       let oldLastMsg = oldMsgs[oldMsgs.length - 1]
 
@@ -190,19 +250,31 @@ export default {
       }
     },
     enterChat (chat) {
-      if (chat.isHall) {
+      if (chat && chat.isHall) {
         this.$store.dispatch('startChat', {id: 1})
         return
       }
+      if (!this.unread) {
+        this.$emit('switchToRooms')
+      }
+      if (this.loading) {
+        return
+      }
       this.loading = true
+
       buildRoom({
         type: 2,
         status: 1,
         last_message: '',
         users: [this.user.id, chat.id]
       }).then(res => {
-        this.roomMap[res.room.id] = chat.id
-        this.$store.dispatch('startChat', {id: res.room.id, chatWith: chat.id})
+        this.$store.dispatch('setRooms', {
+          id: chat.id,
+          roomId: res.room.id,
+          username: chat.username
+        })
+
+        this.$store.dispatch('startChat', {id: res.room.id, chatWith: chat.id, otherUser: chat.username})
         this.$forceUpdate()
 
         this.loading = false
@@ -214,10 +286,19 @@ export default {
             id: lastMessage.id,
             other: chat.id
           }
+
           this.$store.dispatch('updateChatRead', {username: chat.username, read: true})
           this.read(this.ws, res.room.id, lastMessageData)
         }
+
+        this.initRoomList()
       })
+    },
+    initChats () {
+      this.fillMemberChats(this.pagination)
+      this.interval = setInterval(() => {
+        this.fillMemberChats()
+      }, 120000)
     },
     read (connection, roomId, lastMsg) {
       connection.send(JSON.stringify({
@@ -230,10 +311,9 @@ export default {
     }
   },
   created () {
-    this.fillMemberChats(this.pagination)
-    this.interval = setInterval(() => {
-      this.fillMemberChats()
-    }, 120000)
+    if (!this.unread) {
+      this.initChats()
+    }
   },
   beforeDestroy () {
     clearInterval(this.interval)
@@ -316,5 +396,29 @@ export default {
 }
 .exit-search {
   float: right;
+}
+
+.action {
+  position: relative;
+  border-bottom: 1px solid #ddd;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  line-height: 24px;
+  &:after {
+    position: absolute;
+    content: '';
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 1px;
+    background: #000;
+    transition: width .3s;
+  }
+  &:hover {
+    color: black;
+    &:after {
+      width: 100%;
+    }
+  }
 }
 </style>

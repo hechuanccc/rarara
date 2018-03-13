@@ -227,9 +227,33 @@ export default {
         this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
       })
     },
-    'roomMessages': function () {
-      this.$store.dispatch('setRoomMsgs', this.roomMessages)
-      this.$forceUpdate()
+    'roomMessages': {
+      handler: function () {
+        this.$store.dispatch('setRoomMsgs', this.roomMessages)
+
+        let rooms = {}
+        let roomIds = Object.keys(this.roomMessages)
+
+        roomIds.forEach((roomId) => {
+          let otherSent = this.roomMessages[roomId].filter((msg) => {
+            if (roomId !== '1' && msg.type !== -1) {
+              return (msg.type !== -1)
+            }
+          })
+          if (!otherSent.length) { return }
+          let other = otherSent[0].chat_with
+          let roomData = {
+            roomId: roomId,
+            id: other.id,
+            username: other.username
+          }
+          rooms[roomData.roomId] = roomData
+        })
+
+        this.$store.dispatch('setRooms', rooms)
+        this.$forceUpdate()
+      },
+      deep: true
     }
   },
   beforeDestroy () {
@@ -294,7 +318,7 @@ export default {
 
       buildRoom(obj).then(res => {
         let newRoom = res.room
-        this.$store.dispatch('startChat', {id: newRoom.id, chatWith: chat.id})
+        this.$store.dispatch('startChat', {id: newRoom.id, chatWith: chat.id, otherUser: chat.username})
         this.$store.dispatch('updateChatRead', {username: chat.username, read: true})
 
         let currentMsg = this.roomMessages[newRoom.id] ? this.roomMessages[newRoom.id] : []
@@ -589,8 +613,8 @@ export default {
       this.blockedUsers = data.block_users
     },
     handleAvatarClick (message) {
+      let role = message.sender.roles.map((role) => role.name)
       if (this.myRoles.includes('manager')) {
-        let role = message.sender.roles.map((role) => role.name)
         if ((this.personal_setting.user.username === message.sender.username) || role.includes('manager')) {
           return
         }
@@ -598,6 +622,13 @@ export default {
         this.restraint.showManageDialog = false
         this.restraint.showRestraintDialog = true
         this.restraint.dialogVisible = true
+      }
+
+      if (this.chat.current.roomId === 1 &&
+        this.myRoles.includes('customer service') &&
+        role.length === 1 &&
+        role[0] === 'member') {
+        this.$emit('handleAvatarClick', message.sender)
       }
     },
     switchBlockTab (index) {

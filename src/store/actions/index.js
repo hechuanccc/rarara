@@ -111,5 +111,8 @@ export default {
   },
   setRoomMsgs: ({ commit, state }, data) => {
     commit(types.SET_ROOMMSGS, data)
+  },
+  setRooms: ({ commit, state }, data) => {
+    commit(types.SET_ROOMS, data)
   }
 }
