@@ -36,7 +36,7 @@
             active: (item.id === chat.current.chatWith) && unread,
             unread: !item.read && unread
           }">
-          <div class="meta" slot="reference" @click="enterChat(item)" v-if="unread">
+          <div class="meta" @click="enterChat(item)" v-if="unread">
             <div class="illustration">
               <img class="avatar"
                 :src="item.avatar? item.avatar : require('../assets/avatar.png')"

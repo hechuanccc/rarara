@@ -341,22 +341,22 @@ export default {
       })
     },
     closeChatDialog () {
-      if (!this.currentChat) {
-        return
-      }
-      let room = this.currentChat.roomId
-      let currentMsg = this.chat.current.messages ? this.chat.current.messages : []
+      if (this.currentChat) {
+        let room = this.currentChat.roomId
+        let currentMsg = this.chat.current.messages ? this.chat.current.messages : []
 
-      if (currentMsg.length) {
-        let msgs = currentMsg.filter(msg => msg.type !== -1)
-        let lastMessage = msgs[msgs.length - 1]
-        let lastMsgData = {
-          msgId: lastMessage.id,
-          other: this.currentChat.chat.id
+        if (currentMsg.length) {
+          let msgs = currentMsg.filter(msg => msg.type !== -1)
+          let lastMessage = msgs[msgs.length - 1]
+          let lastMsgData = {
+            msgId: lastMessage.id,
+            other: this.currentChat.chat.id
+          }
+          this.read(this.ws, room, lastMsgData)
+          this.currentChat = null
         }
-        this.read(this.ws, room, lastMsgData)
-        this.currentChat = null
       }
+
       this.$store.dispatch('endChat')
     },
     read (connection, roomId, lastMsg) {
