@@ -48,6 +48,7 @@
 
 <script>
 import { fetchMember, updateMember } from '../api'
+import { msgFormatter } from '../utils'
 
 export default {
   props: {
@@ -82,6 +83,11 @@ export default {
         this.member = res
 
         this.loading = false
+      }, err => {
+        this.$message({
+          message: msgFormatter(err),
+          type: 'error'
+        })
       })
     },
     updateMember () {

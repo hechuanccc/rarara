@@ -172,11 +172,13 @@ export default {
       if (!this.rooms) { return }
       let temp = []
       let values = Object.values(this.rooms)
-
-      values.forEach((val) => {
-        temp.push(this.chatList.find((chat) => chat.id === val.id))
+      getChatList().then(res => {
+        this.allChatList = res
+        values.forEach((val) => {
+          temp.push(this.allChatList.find((chat) => chat.id === val.id))
+        })
+        this.roomList = temp
       })
-      this.roomList = temp
     },
     handleChatClick (chat) {
       if (this.unread) {
