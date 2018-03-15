@@ -73,7 +73,7 @@
             </div>
 
             <div class="text-center" v-else-if="item.type === 6 && item.sender.id === user.id">
-              <p class="get-envelope">{{`${item.get_envelope_user.nickname}抢到了你的的红包`}}</p>
+              <p class="get-envelope">{{`${item.get_envelope_user.id === user.id ? '你' : item.get_envelope_user.nickname}抢到了你的的红包`}}</p>
             </div>
 
           </li>
