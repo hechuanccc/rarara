@@ -36,14 +36,10 @@
                   </span>
                   <span class="msg-time">{{item.created_at | moment('HH:mm:ss')}}</span>
                 </div>
-
-
-
-
                 <div :class="['envelope-message','pointer', {'null': item.envelope_status.remaining === 0 && !item.envelope_status.users.map(item => item.receiver_id).includes(user.id)}]" v-if="item.type === 5 && item.envelope_status && !item.envelope_status.expired" @click="takeEnvelope(item)">
                   <img class="img m-r" src="../assets/envelope_message.png" alt="envelope"/>
                   <div class="send-texts" v-if="item.type === 5">
-                    <p class="slogan">{{item.content ? item.content : '大吉大利 恭喜发财'}}</p>
+                    <p class="slogan">{{item.content ? item.content : '恭喜发财 大吉大利'}}</p>
                     <p class="action">
                       {{
                         item.envelope_status.users.map(item => item.receiver_id).includes(user.id) ?
@@ -53,7 +49,6 @@
                     </p>
                   </div>
                 </div>
-
                 <div class="envelope-message expired" v-else-if="item.type === 5 && item.envelope_status.expired">
                   <img class="img m-r" src="../assets/envelope_message.png" alt="envelope"/>
                   <div class="send-texts">已过期</div>
@@ -67,15 +62,12 @@
                 </div>
               </div>
             </div>
-
             <div class="inner" v-else-if="item.type === -1">
               <p>以上是历史消息</p>
             </div>
-
             <div class="text-center" v-else-if="item.type === 6 && item.sender.id === user.id">
               <p class="get-envelope">{{`${item.get_envelope_user.id === user.id ? '你' : item.get_envelope_user.nickname}抢到了你的的红包`}}</p>
             </div>
-
           </li>
           <li v-if="personal_setting.block" class="block-user-info">您已被管理员拉黑，请联系客服。<li>
           <li ref="msgEnd" id="msgEnd" class="msgEnd"></li>
@@ -113,7 +105,6 @@
               </span>
             </label>
           </a>
-
           <div v-if="chat.current.roomId === 1" class="envelope-icon pointer" @click="handleEnvelopeIconClick">
             <img class="img" src="../assets/envelope_icon.png" alt="envelope-icon">
           </div>
@@ -133,7 +124,6 @@
               {{`客服 ${index + 1}`}}
             </el-button>
           </div>
-
         </div>
         <div class="typing">
           <div :class="['txtinput', 'el-textarea', !personal_setting.chat.status ? 'is-disabled' : '']">
@@ -153,7 +143,6 @@
         </div>
       </el-footer>
     </el-container>
-
     <!-- chatting image lightbox -->
     <el-dialog :visible.sync="showImageMsg"
       width="640px"

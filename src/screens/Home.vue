@@ -198,7 +198,7 @@
                   </el-form-item>
                 </el-form>
               </el-tab-pane>
-              <el-tab-pane class="" label="红包纪录" name="record">
+              <el-tab-pane label="红包纪录" name="record">
                 <div>
                   <el-table
                     :data="envelopeRecord"

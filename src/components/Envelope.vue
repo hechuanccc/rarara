@@ -8,10 +8,10 @@
       </div>
       <div class="header text-center">
         <div class="title" v-if="taking || success || repeat || fail">
-          {{ showingName }}發紅包
+          {{ showingName }}发红包
         </div>
         <div class="postscript" v-if="success || repeat || fail">
-          {{currentEnvelope.content ? `"${currentEnvelope.content}"` : '"大吉大利 恭喜发财"'}}
+          {{currentEnvelope.content ? `"${currentEnvelope.content}"` : '"恭喜发财，大吉大利"'}}
 
         </div>
         <div class="slogan " v-if="sending">拼手气红包</div>
@@ -50,7 +50,7 @@
           <span class="hint">最多个数 {{globalPreference.envelope_settings.per_max_count}} 个</span>
         </el-form-item>
         <el-form-item label="附言">
-          <el-input type="textarea" placeholder="大吉大利 恭喜发财" v-model="send.content"></el-input>
+          <el-input type="textarea" placeholder="恭喜发财，大吉大利" v-model="send.content"></el-input>
         </el-form-item>
         <el-form-item>
           <div v-if="error" class="error">{{error}}</div>
@@ -180,7 +180,7 @@ export default {
           sender_id: this.user.id,
           pack_amount: parseInt(this.send.pack_amount),
           pack_nums: parseInt(this.send.pack_nums),
-          content: this.send.content ? this.send.content : '大吉大利 恭喜发财'
+          content: this.send.content ? this.send.content : '恭喜发财，大吉大利'
         }
 
         this.loading = true
