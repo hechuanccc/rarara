@@ -7,7 +7,7 @@
         </div>
       </div>
       <div class="header text-center">
-        <div class="title" v-if="taking || success || repeat || fail">
+        <div class="title" v-if="(taking || success || repeat || fail) && currentEnvelope">
           {{ showingName }}发红包
         </div>
         <div class="postscript" v-if="success || repeat || fail">
@@ -26,7 +26,7 @@
         <div class="result lose" v-if="fail">手慢了...红包派完了...</div>
         <div class="result win" v-if="success || repeat">
           <img class="money" src="../assets/money.png" alt="money">
-          <span class="text" v-if="showingAmount">￥{{showingAmount}}</span>
+          <span class="text" v-if="currentEnvelope">￥{{showingAmount}}</span>
         </div>
         <div class="congra" v-if="success || repeat">恭喜你抢到红包啦!</div>
       </div>
@@ -96,9 +96,6 @@ export default {
     },
     joinChatRoom: {
       type: Function
-    },
-    sending: {
-      type: Boolean
     }
   },
   data () {
@@ -110,7 +107,6 @@ export default {
         content: ''
       },
       loading: false,
-      valid: false,
       error: '',
       validators: {
         'pack_amount': {
@@ -161,6 +157,9 @@ export default {
     taking () {
       return this.status === 'taking'
     },
+    sending () {
+      return this.status === 'sending'
+    },
     currentEnvelope () {
       return this.envelopes[this.envelope.envelope_id]
     },
@@ -168,7 +167,9 @@ export default {
       return this.currentEnvelope.sender && this.currentEnvelope.sender.nickname ? this.currentEnvelope.sender.nickname : this.currentEnvelope.sender.username
     },
     showingAmount () {
-      return this.currentEnvelope.envelope_status.users.map((user) => user).find((user) => user.receiver_id === this.user.id).amount
+      let mine = this.currentEnvelope.envelope_status.users.find((user) => user.receiver_id === this.user.id)
+
+      return mine ? mine.amount : '0.00'
     }
   },
   methods: {
@@ -205,6 +206,8 @@ export default {
       }
     },
     initEnvelope () {
+      this.loading = false
+      this.error = ''
       this.send = {
         sender_id: '',
         pack_amount: '',
@@ -404,18 +407,18 @@ $gold-text: #debd85;
   animation: load3 1.4s infinite linear;
   transform: translateZ(0);
   &.small {
-    width: 20px;
-    height: 20px;
+    width: 12px;
+    height: 12px;
     margin: 0 auto;
     background: #fff;
     background: linear-gradient(to right, #fff 10%, rgba(255, 255, 255, 0) 42%);
     &:after {
-      width: 70%;
-      height: 70%;
+      width: 50%;
+      height: 50%;
       background: #e6a23c;
     }
     &:before {
-      background: #e6a23c;
+      background: #fff;
     }
   }
 }

@@ -193,26 +193,12 @@
        top="10vh"
        center>
       <Envelope :status="envelope.status"
+        v-if="envelope.visible"
         :envelope="envelope.envelope"
         :joinChatRoom="joinChatRoom"
         @handleSend="handleEnvelopeSend"/>
     </el-dialog>
-
-     <el-dialog
-       class="red-envelope-dialog"
-       :visible.sync="envelope.sending"
-       :width="'400px'"
-       top="10vh"
-       center>
-      <Envelope :status="envelope.status"
-        :sending="true"
-        :envelope="envelope.envelope"
-        :joinChatRoom="joinChatRoom"
-        @handleSend="handleEnvelopeSend"/>
-    </el-dialog>
-
   </div>
-
 </template>
 
 <script>
@@ -276,7 +262,6 @@ export default {
       emojiSuccess: true,
       currentChat: null,
       envelope: {
-        sending: false,
         status: '',
         visible: false,
         envelope: {
@@ -390,12 +375,13 @@ export default {
 
         if (res.amount) {
           this.envelope.status = 'success'
+          this.$store.dispatch('fetchUser')
         } else {
           switch (res.status) {
             case 'expired' :
               this.envelope.status = 'expired'
               let index = this.roomMessages['1'].findIndex((msg) => msg.type === 5 && msg.envelope_status && msg.envelope_status.id === payload.envelope_id)
-              this.roomMessages['1'][index].envelope_status = 'expired'
+              this.roomMessages['1'][index].envelope_status.expired = true
 
               this.openMessageBox(res.message, 'warning')
               this.envelope.visible = false
@@ -410,17 +396,16 @@ export default {
       })
     },
     handleEnvelopeSend (envelope) {
-      this.envelope.sending = false
       this.envelope.visible = false
       this.envelope.status = ''
-
+      this.$store.dispatch('fetchUser')
       this.$nextTick(() => {
         this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
       })
     },
     handleEnvelopeIconClick () {
-      this.envelope.sending = true
       this.envelope.status = 'sending'
+      this.envelope.visible = true
       this.envelope.envelope = {}
     },
     showingName (user) {
