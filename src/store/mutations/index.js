@@ -52,8 +52,7 @@ export default {
   [types.END_CHAT]: (state, data) => {
     state.chat.dialogVisible = false
     state.chat.current = {
-      roomId: 1,
-      messages: []
+      roomId: 1
     }
   },
   [types.SET_ROOMMSGS]: (state, data) => {
@@ -69,5 +68,8 @@ export default {
     } else {
       state.rooms = data
     }
+  },
+  [types.COLLECT_ENVELOPE]: (state, data) => {
+    state.envelopes[data.envelope_status.id] = data
   }
 }

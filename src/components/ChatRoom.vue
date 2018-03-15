@@ -14,30 +14,68 @@
                 'item',
                 item.sender && (user.username === item.sender.username) ? 'item-right' : 'item-left', item.type < 0 ? 'sys-msg' : ''
               ]">
-            <div class="lay-block clearfix" v-if="item.type >= 0">
+
+            <div class="lay-block clearfix" v-if="item.type >= 0 && item.type !== 6">
               <div class="avatar" @click="handleAvatarClick(item)">
                 <icon name="cog" class="font-cog" v-if="item.type == 4" scale="3"></icon>
                 <img :src="item.sender && item.sender.avatar ? item.sender.avatar : require('../assets/avatar.png')" v-else>
               </div>
               <div class="lay-content">
+
                 <div class="msg-header">
-                  <h4>{{item.type === 4 ? '计划消息' : item.sender && item.sender.username === user.username && user.nickname ? user.nickname : item.sender && (item.sender.nickname || item.sender.username)}}</h4>
+                  <h4>{{
+                    item.type === 4 ?
+                    '计划消息' : item.sender && item.sender.username === user.username && user.nickname ?
+                    user.nickname : item.sender && (item.sender.nickname || item.sender.username)
+                  }}
+                  </h4>
                   <span class="common-member" v-if="item.type !== 4">
-                    {{item.sender && item.sender.roles.length && getRoles(item).includes('manager') ? '管理员' : getRoles(item).includes('customer service') ? '客服人员' : '普通会员'}}
+                    {{item.sender && item.sender.roles.length && getRoles(item).includes('manager') ?
+                      '管理员' : getRoles(item).includes('customer service') ?
+                      '客服人员' : '普通会员'}}
                   </span>
                   <span class="msg-time">{{item.created_at | moment('HH:mm:ss')}}</span>
                 </div>
-                <div :class="['bubble', 'bubble' + item.type]">
+
+
+
+
+                <div :class="['envelope-message','pointer', {'null': item.envelope_status.remaining === 0 && !item.envelope_status.users.map(item => item.receiver_id).includes(user.id)}]" v-if="item.type === 5 && item.envelope_status && !item.envelope_status.expired" @click="takeEnvelope(item)">
+                  <img class="img m-r" src="../assets/envelope_message.png" alt="envelope"/>
+                  <div class="send-texts" v-if="item.type === 5">
+                    <p class="slogan">{{item.content ? item.content : '大吉大利 恭喜发财'}}</p>
+                    <p class="action">
+                      {{
+                        item.envelope_status.users.map(item => item.receiver_id).includes(user.id) ?
+                        '已领取' : item.envelope_status.remaining === 0  ?
+                        '已领完' : '待领取'
+                      }}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="envelope-message expired" v-else-if="item.type === 5 && item.envelope_status.expired">
+                  <img class="img m-r" src="../assets/envelope_message.png" alt="envelope"/>
+                  <div class="send-texts">已过期</div>
+                </div>
+
+                <div :class="['bubble', 'bubble' + item.type]" v-else>
                   <p>
                     <span v-if="item.type === 0 || item.type === 4">{{item.content}}</span>
-                    <img @click="showImageMsg = true; showImageMsgUrl = item.content" v-else-if="item.type === 1" :src="item.content">
+                    <img @click="showImageMsg = true; showImageMsgUrl = item.content" v-else-if="item.type === 1" :src="item.content"/>
                   </p>
                 </div>
               </div>
             </div>
+
             <div class="inner" v-else-if="item.type === -1">
               <p>以上是历史消息</p>
             </div>
+
+            <div class="text-center" v-else-if="item.type === 6 && item.sender.id === user.id">
+              <p class="get-envelope">{{`${item.get_envelope_user}抢到了你的的红包`}}</p>
+            </div>
+
           </li>
           <li v-if="personal_setting.block" class="block-user-info">您已被管理员拉黑，请联系客服。<li>
           <li ref="msgEnd" id="msgEnd" class="msgEnd"></li>
@@ -75,6 +113,11 @@
               </span>
             </label>
           </a>
+
+          <div v-if="chat.current.roomId === 1" class="envelope-icon pointer" @click="handleEnvelopeIconClick">
+            <img class="img" src="../assets/envelope_icon.png" alt="envelope-icon">
+          </div>
+
           <span v-if="personal_setting.user && myRoles.includes('manager')" class="btn-control right" @click="openManageDialog()" >
             <icon name="cog" class="font-cog" scale="1.4"></icon>
           </span>
@@ -125,6 +168,7 @@
       :visible.sync="restraint.dialogVisible"
       :width="restraint.showManageDialog ? '700px' : '30%'"
       class="restraint-dialog"
+      top="5vh"
       :append-to-body="true"
       :modal-append-to-body="true"
       center>
@@ -152,6 +196,19 @@
         v-if="chat.current.roomId && chat.current.roomId !== 1"/>
     </el-dialog>
 
+    <!-- red envelope dialog -->
+     <el-dialog
+       class="red-envelope-dialog"
+       :visible.sync="envelope.visible"
+       :width="'400px'"
+       top="10vh"
+       center>
+      <Envelope :status="envelope.status"
+        :envelope="envelope.envelope"
+        :joinChatRoom="joinChatRoom"
+        @handleSend="handleEnvelopeSend"/>
+    </el-dialog>
+
   </div>
 
 </template>
@@ -160,12 +217,13 @@
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/cog'
 import 'vue-awesome/icons/smile-o'
-import { fetchChatEmoji, sendImgToChat, getChatUser, buildRoom, getChatList } from '../api'
+import { fetchChatEmoji, sendImgToChat, getChatUser, buildRoom, getChatList, takeEnvelope } from '../api'
 import urls from '../api/urls'
 import { msgFormatter } from '../utils'
 import config from '../../config'
 import { mapGetters, mapState } from 'vuex'
 import PrivateChat from '../components/PrivateChat'
+import Envelope from '../components/Envelope'
 import Restraint from './Restraint'
 
 const WSHOST = config.chatHost
@@ -174,7 +232,8 @@ export default {
   components: {
     Icon,
     Restraint,
-    PrivateChat
+    PrivateChat,
+    Envelope
   },
   data () {
     return {
@@ -213,7 +272,14 @@ export default {
       roomMessages: {},
       host: urls.domain,
       emojiSuccess: true,
-      currentChat: null
+      currentChat: null,
+      envelope: {
+        status: '',
+        visible: false,
+        envelope: {
+          inner: {}
+        }
+      }
     }
   },
   watch: {
@@ -270,7 +336,8 @@ export default {
       'user',
       'chat',
       'chatList',
-      'roomMsgs'
+      'roomMsgs',
+      'envelopes'
     ]),
     isLogin () {
       return this.$store.state.user.logined && this.$route.name !== 'Home'
@@ -304,6 +371,56 @@ export default {
     }
   },
   methods: {
+    takeEnvelope (envelope) {
+      this.envelope.status = 'taking'
+
+      let payload = {
+        envelope_id: envelope.envelope_status.id,
+        receiver_id: this.user.id
+      }
+
+      this.envelope.visible = true
+
+      takeEnvelope(payload).then(res => {
+        res.envelope_id = payload.envelope_id
+        this.envelope.envelope = res
+
+        if (res.amount) {
+          this.envelope.status = 'success'
+        } else {
+          switch (res.status) {
+            case 'expired' :
+              this.envelope.status = 'expired'
+              let index = this.roomMessages['1'].findIndex((msg) => msg.type === 5 && msg.envelope_status && msg.envelope_status.id === payload.envelope_id)
+              this.roomMessages['1'][index].envelope_status = 'expired'
+
+              this.openMessageBox(res.message, 'warning')
+              this.envelope.visible = false
+              return
+            case 'repeat' :
+              this.envelope.status = 'repeat'
+              return
+            case 'fail' :
+              this.envelope.status = 'fail'
+          }
+        }
+      })
+    },
+    handleEnvelopeSend (envelope) {
+      this.envelope.visible = false
+      this.envelope.status = ''
+      this.$nextTick(() => {
+        this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
+      })
+    },
+    handleEnvelopeIconClick () {
+      this.envelope.status = 'sending'
+      this.envelope.envelope = {}
+      this.envelope.visible = true
+    },
+    showingName (user) {
+      return user.usernickname ? user.usernickname : user.username
+    },
     getChatList (pagination) {
       getChatList(pagination).then(data => {
         this.$store.dispatch('updateChatList', data.results)
@@ -429,20 +546,25 @@ export default {
             let data = JSON.parse(resData.data)
 
             if (!data.error_type) {
-              let latestMsg = data.latest_message
+              let latestMsgs = data.latest_message
 
-              if (latestMsg) {
+              if (latestMsgs) {
                 if (data.count) {
-                  let lastMsg = latestMsg[0]
+                  let lastMsg = latestMsgs[0]
 
-                  latestMsg.forEach((msg) => {
+                  latestMsgs.forEach((msg) => {
                     if (!msg.sender.avatar) {
                       return
                     }
                     msg.sender.avatar = this.host + msg.sender.avatar
                   })
 
-                  this.$set(this.roomMessages, lastMsg.receivers, latestMsg.reverse().concat([{ type: -1 }]))
+                  this.$set(this.roomMessages, lastMsg.receivers, latestMsgs.reverse().concat([{ type: -1 }]))
+
+                  let envelopes = latestMsgs.filter((msg) => msg.type === 5 && msg.envelope_status && !msg.envelope_status.expired)
+                  envelopes.forEach((envelope) => {
+                    this.$store.dispatch('collectEnvelope', envelope)
+                  })
                 }
 
                 this.$nextTick(() => {
@@ -479,9 +601,40 @@ export default {
                     })
 
                     return
+                  case 5:
+                    if (data.sender && data.sender.avatar !== null) {
+                      data.sender.avatar = this.host + '/' + data.sender.avatar.replace('websocket/', '')
+                      if (data.sender.avatar.indexOf('//upload') !== -1) {
+                        data.sender.avatar = data.sender.avatar.replace('//upload', '/upload')
+                      }
+                    }
+                    this.roomMessages[data.receivers].push(data)
+                    this.$store.dispatch('collectEnvelope', data)
+                    this.$nextTick(() => {
+                      this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
+                    })
+                    return
+                  case 6:
+                    if (data.sender && data.sender.avatar !== null) {
+                      data.sender.avatar = this.host + '/' + data.sender.avatar.replace('websocket/', '')
+                      if (data.sender.avatar.indexOf('//upload') !== -1) {
+                        data.sender.avatar = data.sender.avatar.replace('//upload', '/upload')
+                      }
+                    }
+                    this.roomMessages[data.receivers].push(data)
+                    this.$store.dispatch('collectEnvelope', data)
+
+                    let currentEnvelopeIndex = this.roomMessages[data.receivers].findIndex((msg) => msg.envelope_status && msg.envelope_status.id === data.envelope_status.id)
+
+                    this.roomMessages[data.receivers][currentEnvelopeIndex].envelope_status = data.envelope_status
+                    this.$nextTick(() => {
+                      this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
+                    })
+                    return
                   default:
                   // websocket/upload/user-avatar/54fa2ca4059245f29be5e9da2c55e14a.jpg
                   // /upload/user-avatar/c82833fa36b54aa7ab40ce8ab3eac68b.jpg
+
                     if (data.sender && data.sender.avatar !== null) {
                       data.sender.avatar = this.host + '/' + data.sender.avatar.replace('websocket/', '')
                       if (data.sender.avatar.indexOf('//upload') !== -1) {
@@ -952,6 +1105,17 @@ export default {
     .btn-smile:hover {
       background: #666;
     }
+    .envelope-icon {
+      display: inline-block;
+      padding: 5px 10px;
+      &:hover {
+        background: #666;
+      }
+      .img {
+        width: 20px;
+        height: 20px;
+      }
+    }
   }
   .typing {
     border: 1px solid #999;
@@ -1159,4 +1323,37 @@ export default {
   padding-top: 0;
 }
 
+.red-envelope-dialog /deep/ .el-dialog__header , .red-envelope-dialog /deep/ .el-dialog__body {
+  padding: 0;
+}
+
+.envelope-message {
+  display: flex;
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  justify-content: stretch;
+  background-color: #fa9d3b;
+  &.expired {
+    background: #9B9B9B;
+  }
+  &.null {
+    background: #BEBEBE;
+  }
+  .img {
+    width: 35px;
+    height: 35px;
+  }
+  .send-texts {
+    color: #fff;
+  }
+}
+
+.get-envelope {
+  display: inline-block;
+  color: #dedede;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 5px 20px;
+  border-radius: 4px;
+}
 </style>
