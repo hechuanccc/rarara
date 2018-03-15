@@ -1,17 +1,18 @@
 <template>
   <div class="red-envelope">
     <div>
-
       <div class="flick text-center">
         <div class="icon">
           <img v-if="(success || repeat || fail) && currentEnvelope.sender.avatar" class="img" :src="currentEnvelope.sender.avatar" alt="avatar">
         </div>
       </div>
-
       <div class="header text-center">
-
-        <div class="title" v-if="taking || success || repeat || fail">{{ showingName }}發紅包</div>
-        <div class="postscript" v-if="success || repeat || fail">{{currentEnvelope.content ? `"${currentEnvelope.content}"` : '"大吉大利 恭喜发财"'}}</div>
+        <div class="title" v-if="taking || success || repeat || fail">
+          {{ showingName }}發紅包
+        </div>
+        <div class="postscript" v-if="success || repeat || fail">
+          {{currentEnvelope.content ? `"${currentEnvelope.content}"` : '"大吉大利 恭喜发财"'}}
+        </div>
         <div class="slogan " v-if="sending">拼手气红包</div>
         <div class="balance" v-if="sending">
           我的余额<span>¥ {{user.balance}}</span>
@@ -21,17 +22,13 @@
           </div>
           <img class="money" src="../assets/money.png" alt="">
         </div>
-
         <div class="result lose" v-if="fail">手慢了...紅包派完了...</div>
-
         <div class="result win" v-if="success || repeat">
           <img class="money" src="../assets/money.png" alt="money">
           <span class="text">￥{{envelope.amount ? envelope.amount : currentEnvelope.envelope_status.amount}}</span>
         </div>
-
       </div>
     </div>
-
     <div class="form" v-if="sending">
       <el-form :model="send" label-width="70px">
         <el-form-item label="金额" prop="amount">
@@ -64,7 +61,6 @@
         </el-form-item>
       </el-form>
     </div>
-
     <div class="data-container p-b full-height" v-if="(success || repeat || fail)">
       <div class="data">
         <p class="title text-center" v-if="currentEnvelope.envelope_status.users.length !== currentEnvelope.envelope_status.users.length + currentEnvelope.envelope_status.remaining">{{currentEnvelope.envelope_status.users.length}}/{{currentEnvelope.envelope_status.users.length + currentEnvelope.envelope_status.remaining}}人已搶到</p>
@@ -77,7 +73,6 @@
         </table>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -96,6 +91,9 @@ export default {
     },
     joinChatRoom: {
       type: Function
+    },
+    sending: {
+      type: Boolean
     }
   },
   data () {
@@ -126,9 +124,6 @@ export default {
     },
     repeat () {
       return this.status === 'repeat'
-    },
-    sending () {
-      return this.status === 'sending'
     },
     taking () {
       return this.status === 'taking'

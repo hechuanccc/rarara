@@ -209,6 +209,19 @@
         @handleSend="handleEnvelopeSend"/>
     </el-dialog>
 
+     <el-dialog
+       class="red-envelope-dialog"
+       :visible.sync="envelope.sending"
+       :width="'400px'"
+       top="10vh"
+       center>
+      <Envelope :status="envelope.sending"
+        :sending="true"
+        :envelope="envelope.envelope"
+        :joinChatRoom="joinChatRoom"
+        @handleSend="handleEnvelopeSend"/>
+    </el-dialog>
+
   </div>
 
 </template>
@@ -274,6 +287,7 @@ export default {
       emojiSuccess: true,
       currentChat: null,
       envelope: {
+        sending: false,
         status: '',
         visible: false,
         envelope: {
@@ -409,14 +423,16 @@ export default {
     handleEnvelopeSend (envelope) {
       this.envelope.visible = false
       this.envelope.status = ''
+
       this.$nextTick(() => {
         this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
       })
     },
     handleEnvelopeIconClick () {
+      this.envelope.sending = true
       this.envelope.status = 'sending'
       this.envelope.envelope = {}
-      this.envelope.visible = true
+      // this.envelope.visible = true
     },
     showingName (user) {
       return user.usernickname ? user.usernickname : user.username
