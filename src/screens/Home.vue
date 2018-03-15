@@ -156,6 +156,7 @@
                   status-icon
                   :rules="rules"
                   ref="editUser">
+
                   <el-form-item prop="nickname" label="昵称"  label-width="85px">
                     <el-input v-model="editUser.nickname"
                               class="inp">
@@ -176,7 +177,9 @@
                     </el-input>
                   </el-form-item>
 
-
+                  <el-form-item label="用户余额"  label-width="85px">
+                    <p class="member-info">{{user.balance}}</p>
+                  </el-form-item>
                   <el-form-item label="注册时间"  label-width="85px">
                     <p class="member-info">{{user.date_joined | moment('YYYY-MM-HH')}}</p>
                   </el-form-item>
@@ -194,6 +197,35 @@
                     <p :class="[changeProfileSuccess ? 'text-success' : 'text-danger']">{{changeProfileRes}}</p>
                   </el-form-item>
                 </el-form>
+              </el-tab-pane>
+              <el-tab-pane label="红包纪录" name="record">
+                <div>
+                  <el-table
+                    :data="envelopeRecord"
+                    class="envelope-table"
+                    style="width: 100%">
+                    <el-table-column
+                      prop="status"
+                      label="收发"
+                      width="100px">
+                    </el-table-column>
+                    <el-table-column
+                      prop="amount"
+                      label="红包总额"
+                      width="100px">
+                    </el-table-column>
+                    <el-table-column
+                      prop="packs"
+                      width="100px"
+                      label="个数">
+                    </el-table-column>
+                    <el-table-column
+                      prop="created_at"
+                      width="190px"
+                      label="时间">
+                    </el-table-column>
+                  </el-table>
+                </div>
               </el-tab-pane>
               <el-tab-pane class="edit-password-panel" label="修改密码" name="password">
                 <el-form class="edit-password-form" :model="editPassword" status-icon :rules="passwordRules" ref="editPassword" label-width="100px">
@@ -242,7 +274,7 @@ import 'vue-awesome/icons/mobile-phone'
 import 'vue-awesome/icons/comments'
 import 'vue-awesome/icons/search'
 import ChatRoom from '../components/ChatRoom'
-import { fetchAnnouce, updateUser } from '../api'
+import { fetchAnnouce, updateUser, getEnvelopeRecord } from '../api'
 import { msgFormatter, filtAmount } from '../utils'
 import { validatePhone, validateQQ, validatePassword } from '../validate'
 import urls from '../api/urls'
@@ -281,7 +313,7 @@ export default {
     const passwordValidator = (form) => {
       return (rule, value, callback) => {
         if (value === '') {
-          callback(new Error('請輸入新密碼'))
+          callback(new Error('请输入新密码'))
         } else {
           if (this[form].repeat_password !== '') {
             this.$refs[form].validateField('repeat_password')
@@ -380,8 +412,8 @@ export default {
       memberDialog: {
         visible: true,
         chat: {}
-      }
-
+      },
+      envelopeRecord: []
     }
   },
   computed: {
@@ -434,8 +466,17 @@ export default {
   },
   created () {
     this.getAnnouce()
+    this.getEnvelopeRecord()
   },
   methods: {
+    getEnvelopeRecord () {
+      getEnvelopeRecord().then(res => {
+        res.forEach((item) => {
+          item.created_at = this.$moment(item.created_at).format('YYYY-MM-DD HH:mm:ss')
+        })
+        this.envelopeRecord = res
+      })
+    },
     handlePrivateChat () {
       this.activeTab = 'rooms'
     },
@@ -933,4 +974,8 @@ export default {
   padding: 0;
 }
 
+.envelope-table {
+  height: 490px;
+  overflow: auto;
+}
 </style>

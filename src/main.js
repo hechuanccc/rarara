@@ -120,7 +120,8 @@ fetchGlobalData().then(res => {
     private_chat_blocked_users: globalData.private_chat_blocked_users,
     title: globalData.title,
     web_background: globalData.web_background,
-    mobile_url: globalData.mobile_url
+    mobile_url: globalData.mobile_url,
+    envelope_settings: globalData.envelope_settings
   })
   document.title = store.state.globalPreference.title
 })

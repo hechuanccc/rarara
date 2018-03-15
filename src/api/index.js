@@ -134,6 +134,25 @@ export function setCookie (cookie) {
   return axios.post(urls.setCookie, {cookie}, { 'Content-Type': 'application/json', withCredentials: true })
 }
 
+export function getEnvelopeRecord () {
+  return axios.get(urls.envelope)
+}
+
+export function sendEnvelope (data) {
+  return axios.post(urls.envelope, {
+    sender_id: data.sender_id,
+    pack_amount: data.pack_amount,
+    pack_nums: data.pack_nums,
+    content: data.content
+  })
+}
+
+export function takeEnvelope (data) {
+  return axios.put(`${urls.envelope}${data.envelope_id}/`, {
+    receiver_id: data.receiver_id
+  })
+}
+
 export function buildRoom (data) {
   return axios.post(`${urls.room}`, {
     type: data.type,

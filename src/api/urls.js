@@ -22,5 +22,6 @@ export default {
   global_preference: host + '/v1/global-data/',
   check_username: host + '/v1/user/check/',
   setCookie: host + '/set_cookie/',
+  envelope: host + '/v1/envelope/',
   decode
 }
