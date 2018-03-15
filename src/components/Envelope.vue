@@ -12,6 +12,7 @@
         </div>
         <div class="postscript" v-if="success || repeat || fail">
           {{currentEnvelope.content ? `"${currentEnvelope.content}"` : '"大吉大利 恭喜发财"'}}
+
         </div>
         <div class="slogan " v-if="sending">拼手气红包</div>
         <div class="balance" v-if="sending">
@@ -27,6 +28,7 @@
           <img class="money" src="../assets/money.png" alt="money">
           <span class="text" v-if="showingAmount">￥{{showingAmount}}</span>
         </div>
+        <div class="congra" v-if="success || repeat">恭喜你抢到红包啦!</div>
       </div>
     </div>
 
@@ -68,9 +70,9 @@
         <p class="title text-center" v-if="currentEnvelope.envelope_status.users.length !== currentEnvelope.envelope_status.users.length + currentEnvelope.envelope_status.remaining">{{currentEnvelope.envelope_status.users.length}}/{{currentEnvelope.envelope_status.users.length + currentEnvelope.envelope_status.remaining}}人已搶到</p>
         <p class="title text-center" v-else>{{currentEnvelope.envelope_status.users.length}}/{{currentEnvelope.envelope_status.users.length + currentEnvelope.envelope_status.remaining}}已搶完</p>
         <table class="table">
-          <tr class="tr" v-for="(user, index) in currentEnvelope.envelope_status.users" :key="index">
-            <td class="td">{{user.nickname}}</td>
-            <td class="td profit">¥ {{user.amount}}</td>
+          <tr :class="['tr', {self: member.receiver_id === user.id}]" v-for="(member, index) in currentEnvelope.envelope_status.users" :key="index">
+            <td class="td">{{member.nickname}}</td>
+            <td class="td profit">¥ {{member.amount}}</td>
           </tr>
         </table>
       </div>
@@ -351,6 +353,9 @@ $gold-text: #debd85;
     }
     .table {
       width: 100%;
+      .tr.self {
+        color: #de5547;
+      }
       .profit {
         text-align: right;
       }
@@ -450,5 +455,10 @@ $gold-text: #debd85;
   }
 }
 
+.congra {
+  color: #fff;
+  padding-bottom: 10px;
+  font-size: 14px;
+}
 
 </style>
