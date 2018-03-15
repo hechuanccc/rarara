@@ -471,7 +471,6 @@ export default {
   methods: {
     getEnvelopeRecord () {
       getEnvelopeRecord().then(res => {
-        // console.log(res, 'res in envelopeRecord')this.$moment(data.msg).format('YYYY-MM-DD HH:mm:ss')
         res.forEach((item) => {
           item.created_at = this.$moment(item.created_at).format('YYYY-MM-DD HH:mm:ss')
         })

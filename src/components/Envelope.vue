@@ -174,7 +174,6 @@ export default {
   methods: {
     filtAmount,
     sendEnvelope () {
-      // TODO 檢核
       const errors = this.validateAll()
       if (errors.length === 0) {
         this.send = {

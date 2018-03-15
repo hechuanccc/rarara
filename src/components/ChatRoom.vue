@@ -433,7 +433,6 @@ export default {
       this.envelope.sending = true
       this.envelope.status = 'sending'
       this.envelope.envelope = {}
-      // this.envelope.visible = true
     },
     showingName (user) {
       return user.usernickname ? user.usernickname : user.username
