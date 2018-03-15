@@ -22,39 +22,41 @@
           </div>
           <img class="money" src="../assets/money.png" alt="">
         </div>
-        <div class="result lose" v-if="fail">手慢了...紅包派完了...</div>
+        <div class="result lose" v-if="fail">手慢了...红包派完了...</div>
         <div class="result win" v-if="success || repeat">
           <img class="money" src="../assets/money.png" alt="money">
-          <span class="text">￥{{envelope.amount ? envelope.amount : currentEnvelope.envelope_status.amount}}</span>
+          <span class="text" v-if="showingAmount">￥{{showingAmount}}</span>
         </div>
       </div>
     </div>
+
     <div class="form" v-if="sending">
       <el-form :model="send" label-width="70px">
         <el-form-item label="金额" prop="amount">
           <el-input type="number"
-            @change="check(send.pack_amount, globalPreference.envelope_settings.min_amount, globalPreference.envelope_settings.max_amount)"
+            @blur.native="validate($event, 'pack_amount')"
             @keypress.native="filtAmount"
-            v-model="send.pack_amount"></el-input>
+            v-model.number="send.pack_amount"></el-input>
           <span class="hint">最高金额 ￥{{globalPreference.envelope_settings.max_amount}},</span>
           <span class="hint">最低金额 ￥{{globalPreference.envelope_settings.min_amount}}</span>
         </el-form-item>
         <el-form-item label="个数" prop="count">
           <el-input type="number"
-            @change="check(send.pack_nums, 0, globalPreference.envelope_settings.per_max_count)"
+            @blur.native="validate($event, 'pack_nums')"
             @keypress.native="filtAmount"
-            v-model="send.pack_nums"></el-input>
+            v-model.number="send.pack_nums"></el-input>
           <span class="hint">最多个数 {{globalPreference.envelope_settings.per_max_count}} 个</span>
         </el-form-item>
         <el-form-item label="附言">
           <el-input type="textarea" placeholder="大吉大利 恭喜发财" v-model="send.content"></el-input>
         </el-form-item>
         <el-form-item>
+          <div v-if="error" class="error">{{error}}</div>
           <el-button class="submit"
             native-type="button"
             type="warning"
             @click.native="sendEnvelope"
-            :disabled="loading && !valid">
+            :disabled="loading">
             <div v-if="loading" class="loader small"></div>
             <span v-else>确认发出</span>
           </el-button>
@@ -68,7 +70,7 @@
         <table class="table">
           <tr class="tr" v-for="(user, index) in currentEnvelope.envelope_status.users" :key="index">
             <td class="td">{{user.nickname}}</td>
-            <td class="td profit">¥{{currentEnvelope.envelope_status.amount}}</td>
+            <td class="td profit">¥ {{user.amount}}</td>
           </tr>
         </table>
       </div>
@@ -80,6 +82,7 @@
 import { sendEnvelope } from '../api'
 import { mapState } from 'vuex'
 import { filtAmount } from '../utils'
+const validateItems = ['pack_amount', 'pack_nums']
 
 export default {
   props: {
@@ -106,7 +109,35 @@ export default {
       },
       loading: false,
       valid: false,
-      errMsg: ''
+      error: '',
+      validators: {
+        'pack_amount': {
+          error: '',
+          validate: (value) => {
+            if (!value) {
+              return '请输入金额'
+            } else if (value < this.globalPreference.envelope_settings.min_amount) {
+              return '须高于最低金额限制'
+            } else if (value > this.globalPreference.envelope_settings.max_amount) {
+              return '不能超过最高金额限制'
+            } else {
+              return ''
+            }
+          }
+        },
+        'pack_nums': {
+          error: '',
+          validate: (value) => {
+            if (!value) {
+              return '请输入个数'
+            } else if (value > this.globalPreference.envelope_settings.per_max_count) {
+              return '红包数量超出限制'
+            } else {
+              return ''
+            }
+          }
+        }
+      }
     }
   },
   computed: {
@@ -133,35 +164,44 @@ export default {
     },
     showingName () {
       return this.currentEnvelope.sender && this.currentEnvelope.sender.nickname ? this.currentEnvelope.sender.nickname : this.currentEnvelope.sender.username
+    },
+    showingAmount () {
+      return this.currentEnvelope.envelope_status.users.map((user) => user).find((user) => user.receiver_id === this.user.id).amount
     }
   },
   methods: {
     filtAmount,
     sendEnvelope () {
       // TODO 檢核
-      this.send = {
-        sender_id: this.user.id,
-        pack_amount: parseInt(this.send.pack_amount),
-        pack_nums: parseInt(this.send.pack_nums),
-        content: this.send.content ? this.send.content : '大吉大利 恭喜发财'
-      }
+      const errors = this.validateAll()
+      if (errors.length === 0) {
+        this.send = {
+          sender_id: this.user.id,
+          pack_amount: parseInt(this.send.pack_amount),
+          pack_nums: parseInt(this.send.pack_nums),
+          content: this.send.content ? this.send.content : '大吉大利 恭喜发财'
+        }
 
-      this.loading = true
-      sendEnvelope(this.send).then(res => {
-        this.initEnvelope()
+        this.loading = true
+        sendEnvelope(this.send).then(res => {
+          this.initEnvelope()
 
-        this.loading = false
-        this.$emit('handleSend', res)
-      }, err => {
-        let error = err.response.data
-        this.errorMsg = error.message
+          this.loading = false
+          this.error = ''
+          this.$emit('handleSend', res)
+        }, err => {
+          let error = err.response.data
+          this.errorMsg = error.message
 
-        this.loading = false
-        this.$message({
-          message: error.message,
-          type: 'warning'
+          this.loading = false
+          this.$message({
+            message: error.message,
+            type: 'warning'
+          })
         })
-      })
+      } else {
+        this.error = errors[0]
+      }
     },
     initEnvelope () {
       this.send = {
@@ -170,6 +210,14 @@ export default {
         pack_nums: '',
         content: ''
       }
+    },
+    validate (value, input) {
+      this.error = this.validators[input].validate(value)
+    },
+    validateAll () {
+      return validateItems
+      .map(item => this.validators[item].validate(this.send[item]))
+      .filter(msg => msg)
     }
   },
   beforeDestroy () {
@@ -278,7 +326,7 @@ $gold-text: #debd85;
       font-size: 20px;
     }
     &.win {
-      font-size: 48px;
+      font-size: 36px;
       .money, .text {
         vertical-align: middle;
       }
@@ -333,6 +381,10 @@ $gold-text: #debd85;
       border-color: #fff;
     }
   }
+}
+
+.error{
+  color: #ddd;
 }
 
 .loader {

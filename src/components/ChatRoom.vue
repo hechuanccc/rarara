@@ -73,7 +73,7 @@
             </div>
 
             <div class="text-center" v-else-if="item.type === 6 && item.sender.id === user.id">
-              <p class="get-envelope">{{`${item.get_envelope_user}抢到了你的的红包`}}</p>
+              <p class="get-envelope">{{`${item.get_envelope_user.nickname}抢到了你的的红包`}}</p>
             </div>
 
           </li>
@@ -215,7 +215,7 @@
        :width="'400px'"
        top="10vh"
        center>
-      <Envelope :status="envelope.sending"
+      <Envelope :status="envelope.status"
         :sending="true"
         :envelope="envelope.envelope"
         :joinChatRoom="joinChatRoom"
@@ -421,6 +421,7 @@ export default {
       })
     },
     handleEnvelopeSend (envelope) {
+      this.envelope.sending = false
       this.envelope.visible = false
       this.envelope.status = ''
 
@@ -1123,13 +1124,12 @@ export default {
     }
     .envelope-icon {
       display: inline-block;
-      padding: 5px 10px;
+      padding: 3px 10px;
       &:hover {
         background: #666;
       }
       .img {
         width: 20px;
-        height: 20px;
       }
     }
   }
@@ -1345,19 +1345,19 @@ export default {
 
 .envelope-message {
   display: flex;
-  width: 100%;
+  width: 190px;
   padding: 10px;
   border-radius: 5px;
   justify-content: stretch;
   background-color: #fa9d3b;
   &.expired {
-    background: #9B9B9B;
+    background: #f5c38e;
   }
   &.null {
-    background: #BEBEBE;
+    background: #f5c38e;
   }
   .img {
-    width: 35px;
+    width: 30px;
     height: 35px;
   }
   .send-texts {
