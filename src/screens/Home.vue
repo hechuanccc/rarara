@@ -206,23 +206,23 @@
                     style="width: 100%">
                     <el-table-column
                       prop="status"
-                      label="收發"
+                      label="收发"
                       width="100px">
                     </el-table-column>
                     <el-table-column
                       prop="amount"
-                      label="紅包總額"
+                      label="红包总额"
                       width="100px">
                     </el-table-column>
                     <el-table-column
                       prop="packs"
                       width="100px"
-                      label="個數">
+                      label="个数">
                     </el-table-column>
                     <el-table-column
                       prop="created_at"
                       width="190px"
-                      label="時間">
+                      label="时间">
                     </el-table-column>
                   </el-table>
                 </div>
@@ -313,7 +313,7 @@ export default {
     const passwordValidator = (form) => {
       return (rule, value, callback) => {
         if (value === '') {
-          callback(new Error('請輸入新密碼'))
+          callback(new Error('请输入新密码'))
         } else {
           if (this[form].repeat_password !== '') {
             this.$refs[form].validateField('repeat_password')
