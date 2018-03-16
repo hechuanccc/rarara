@@ -227,6 +227,14 @@
                       label="时间">
                     </el-table-column>
                   </el-table>
+                  <el-pagination
+                    :page-size="envelopePagination.limit"
+                    :current-page="1"
+                    v-if="envelopePagination.total"
+                    @current-change="handleEnvelopePagination"
+                    layout="prev, pager, next"
+                    :total="envelopePagination.total">
+                  </el-pagination>
                 </div>
               </el-tab-pane>
 
@@ -425,6 +433,11 @@ export default {
         chat: {}
       },
       envelopeRecord: [],
+      envelopePagination: {
+        total: 0,
+        currentPage: 1,
+        limit: 40
+      },
       tableLoading: false
     }
   },
@@ -477,7 +490,7 @@ export default {
     },
     'activePanel': function (panel) {
       if (panel === 'record') {
-        this.getEnvelopeRecord()
+        this.getEnvelopeRecord(0, this.envelopePagination.limit)
       }
     }
   },
@@ -485,19 +498,28 @@ export default {
     this.getAnnouce()
   },
   methods: {
+    handleEnvelopePagination (currentPage) {
+      this.envelopePagination.currentPage = currentPage
+      this.getEnvelopeRecord((currentPage - 1) * this.envelopePagination.limit, this.envelopePagination.limit)
+    },
     handleProfileDialogClose () {
       this.currentChooseAvatar = null
       this.activePanel = 'account'
     },
-    getEnvelopeRecord () {
+    getEnvelopeRecord (offset, limit) {
       this.tableLoading = true
-      getEnvelopeRecord().then(res => {
-        res.forEach((item) => {
+
+      getEnvelopeRecord(offset, limit).then(res => {
+        this.envelopePagination.total = res.count
+
+        res.results.forEach((item) => {
           let amount = '' + item.amount
           item.amount = amount.indexOf('-') !== -1 ? `- ¥${amount.replace('-', '')}` : `+ ¥${amount}`
           item.created_at = this.$moment(item.created_at).format('YYYY-MM-DD HH:mm:ss')
         })
-        this.envelopeRecord = res
+
+        this.envelopeRecord = res.results
+
         this.tableLoading = false
       })
     },

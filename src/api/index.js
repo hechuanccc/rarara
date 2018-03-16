@@ -134,8 +134,8 @@ export function setCookie (cookie) {
   return axios.post(urls.setCookie, {cookie}, { 'Content-Type': 'application/json', withCredentials: true })
 }
 
-export function getEnvelopeRecord () {
-  return axios.get(urls.envelope)
+export function getEnvelopeRecord (offset, limit) {
+  return axios.get(`${urls.envelope}?offset=${offset}&limit=${limit}`)
 }
 
 export function sendEnvelope (data) {
