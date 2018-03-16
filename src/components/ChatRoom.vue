@@ -374,15 +374,13 @@ export default {
         this.envelope.envelope = res
 
         if (res.amount) {
-          this.envelope.status = 'success'
-          this.$store.dispatch('fetchUser')
+          this.$store.dispatch('fetchUser').then(() => { this.envelope.status = 'success' })
         } else {
           switch (res.status) {
             case 'expired' :
               this.envelope.status = 'expired'
               let index = this.roomMessages['1'].findIndex((msg) => msg.type === 5 && msg.envelope_status && msg.envelope_status.id === payload.envelope_id)
               this.roomMessages['1'][index].envelope_status.expired = true
-
               return
             case 'repeat' :
               this.envelope.status = 'repeat'
@@ -611,7 +609,6 @@ export default {
                     }
                     this.roomMessages[data.receivers].push(data)
                     this.$store.dispatch('collectEnvelope', data)
-
                     let currentEnvelopeIndex = this.roomMessages[data.receivers].findIndex((msg) => msg.envelope_status && msg.envelope_status.id === data.envelope_status.id)
 
                     this.roomMessages[data.receivers][currentEnvelopeIndex].envelope_status = data.envelope_status

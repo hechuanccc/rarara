@@ -165,6 +165,7 @@ export default {
       return this.status === 'expired'
     },
     currentEnvelope () {
+      console.log('do currentEnvelope')
       return this.envelopes[this.envelope.envelope_id]
     },
     showingName () {
@@ -172,8 +173,12 @@ export default {
     },
     showingAmount () {
       let mine = this.currentEnvelope.envelope_status.users.find((user) => user.receiver_id === this.user.id)
-
-      return mine ? mine.amount : '0.00'
+      if (mine) {
+        return mine.amount
+      } else {
+        debugger
+        return '0.00'
+      }
     }
   },
   methods: {
