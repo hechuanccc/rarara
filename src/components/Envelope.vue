@@ -173,8 +173,7 @@ export default {
     },
     showingAmount () {
       let mine = this.currentEnvelope.envelope_status.users.find((user) => user.receiver_id === this.user.id)
-
-      return mine ? mine.amount : '0.00'
+      return this.envelope.amount ? this.envelope.amount : mine.amount
     }
   },
   methods: {
