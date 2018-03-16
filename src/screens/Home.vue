@@ -493,7 +493,7 @@ export default {
       getEnvelopeRecord().then(res => {
         res.forEach((item) => {
           let amount = '' + item.amount
-          item.amount = amount.indexOf('-') !== -1 ? `- ¥${amount.replace('-', '')}` : `¥${amount}`
+          item.amount = amount.indexOf('-') !== -1 ? `- ¥${amount.replace('-', '')}` : `+ ¥${amount}`
           item.created_at = this.$moment(item.created_at).format('YYYY-MM-DD HH:mm:ss')
         })
         this.envelopeRecord = res
