@@ -122,6 +122,7 @@
             <el-tabs v-model="activePanel" type="card" @tab-click="changeProfileRes = ''">
               <el-tab-pane class="edit-user-panel" label="帐号信息" name="account">
                 <div
+                  v-if="activePanel === 'account'"
                   class="avatar"
                   v-on:mouseover="swichAvatar = true"
                   v-on:mouseout="swichAvatar = false"
@@ -156,7 +157,6 @@
                   status-icon
                   :rules="rules"
                   ref="editUser">
-
                   <el-form-item prop="nickname" label="昵称"  label-width="85px">
                     <el-input v-model="editUser.nickname"
                               class="inp">
@@ -198,8 +198,9 @@
                   </el-form-item>
                 </el-form>
               </el-tab-pane>
+
               <el-tab-pane label="红包纪录" name="record">
-                <div>
+                <div  v-if="activePanel === 'record'" v-loading="tableLoading">
                   <el-table
                     :data="envelopeRecord"
                     class="envelope-table"
@@ -227,8 +228,17 @@
                   </el-table>
                 </div>
               </el-tab-pane>
-              <el-tab-pane class="edit-password-panel" label="修改密码" name="password">
-                <el-form class="edit-password-form" :model="editPassword" status-icon :rules="passwordRules" ref="editPassword" label-width="100px">
+
+              <el-tab-pane class="edit-password-panel"
+                label="修改密码"
+                name="password"
+                >
+                <el-form class="edit-password-form"
+                  v-if="activePanel === 'password'"
+                  :model="editPassword" status-icon
+                  :rules="passwordRules"
+                  ref="editPassword"
+                  label-width="100px">
                   <el-form-item prop="prev_password" label="旧密码">
                     <el-input v-model="editPassword.prev_password"
                               type="password"
@@ -413,7 +423,8 @@ export default {
         visible: true,
         chat: {}
       },
-      envelopeRecord: []
+      envelopeRecord: [],
+      tableLoading: false
     }
   },
   computed: {
@@ -462,19 +473,27 @@ export default {
     },
     'user': function () {
       this.initUser()
+    },
+    'activePanel': function (panel) {
+      if (panel === 'record') {
+        this.getEnvelopeRecord()
+      }
     }
   },
   created () {
     this.getAnnouce()
-    this.getEnvelopeRecord()
   },
   methods: {
     getEnvelopeRecord () {
+      this.tableLoading = true
       getEnvelopeRecord().then(res => {
         res.forEach((item) => {
+          let amount = '' + item.amount
+          item.amount = amount.indexOf('-') !== -1 ? `- ¥${amount.replace('-', '')}` : `¥${amount}`
           item.created_at = this.$moment(item.created_at).format('YYYY-MM-DD HH:mm:ss')
         })
         this.envelopeRecord = res
+        this.tableLoading = false
       })
     },
     handlePrivateChat () {

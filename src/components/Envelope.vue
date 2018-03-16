@@ -50,7 +50,7 @@
           <span class="hint">最多个数 {{globalPreference.envelope_settings.per_max_count}} 个</span>
         </el-form-item>
         <el-form-item label="附言">
-          <el-input type="textarea" placeholder="恭喜发财，大吉大利" v-model="send.content"></el-input>
+          <el-input type="textarea" :maxlength="20" placeholder="恭喜发财，大吉大利" v-model="send.content"></el-input>
         </el-form-item>
         <el-form-item>
           <div v-if="error" class="error">{{error}}</div>
