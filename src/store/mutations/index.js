@@ -70,6 +70,6 @@ export default {
     }
   },
   [types.COLLECT_ENVELOPE]: (state, data) => {
-    state.envelopes[data.envelope_status.id] = data
+    Vue.set(state.envelopes, data.envelope_status.id, data)
   }
 }
