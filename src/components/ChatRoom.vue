@@ -51,7 +51,10 @@
                 </div>
                 <div class="envelope-message expired" v-else-if="item.type === 5 && item.envelope_status.expired">
                   <img class="img m-r" src="../assets/envelope_message.png" alt="envelope"/>
-                  <div class="send-texts">已过期</div>
+                  <div class="send-texts">
+                    <p class="slogan">{{item.content ? item.content : '恭喜发财 大吉大利'}}</p>
+                    <p>已过期</p>
+                  </div>
                 </div>
 
                 <div :class="['bubble', 'bubble' + item.type]" v-else>
@@ -196,6 +199,7 @@
         v-if="envelope.visible"
         :envelope="envelope.envelope"
         :joinChatRoom="joinChatRoom"
+        @closeDialog="closeEnvelope"
         @handleSend="handleEnvelopeSend"/>
     </el-dialog>
   </div>
@@ -359,6 +363,9 @@ export default {
     }
   },
   methods: {
+    closeEnvelope () {
+      this.envelope.visible = false
+    },
     takeEnvelope (envelope) {
       this.envelope.status = 'taking'
 
@@ -1318,6 +1325,7 @@ export default {
   border-radius: 5px;
   justify-content: stretch;
   background-color: #fa9d3b;
+  position: relative;
   &.expired {
     background: #f5c38e;
   }
@@ -1331,14 +1339,47 @@ export default {
   .send-texts {
     color: #fff;
     .slogan {
+      font-size: 14px;
       width: 150px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
   }
+  &:after {
+    content: '';
+    position: absolute;
+    top: 14px;
+    width: 0;
+    height: 0;
+    border: 9px solid transparent;
+    border-top: 0;
+    margin-top: -7px;
+    border-right-color: #fa9d3b;
+  }
 }
-
+.item-left .envelope-message{
+  &:after {
+    left: 0;
+    border-left: 0;
+    margin-left: -8px;
+  }
+  &.null:after, &.expired:after {
+    border-right-color: #f5c38e;
+  }
+}
+.item-right .envelope-message{
+  float: right;
+  &:after {
+    right: 0;
+    border-right: 0;
+    margin-right: -9px;
+    border-left-color: #fa9d3b;
+  }
+  &.null:after, &.expired:after {
+    border-left-color: #f5c38e;
+  }
+}
 .get-envelope {
   display: inline-block;
   color: #dedede;
