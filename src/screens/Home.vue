@@ -84,8 +84,8 @@
       <el-dialog
         class="edit-dialog"
         v-if="memberDialog.chat.id"
-        :show-close="false"
-        :modal="false"
+        :show-close="true"
+        :modal="true"
         :visible.sync="memberDialog.visible"
         :width="'400px'"
         @close="memberDialog.chat = {}"
