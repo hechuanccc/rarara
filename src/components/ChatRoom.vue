@@ -383,8 +383,6 @@ export default {
               let index = this.roomMessages['1'].findIndex((msg) => msg.type === 5 && msg.envelope_status && msg.envelope_status.id === payload.envelope_id)
               this.roomMessages['1'][index].envelope_status.expired = true
 
-              this.openMessageBox(res.message, 'warning')
-              this.envelope.visible = false
               return
             case 'repeat' :
               this.envelope.status = 'repeat'

@@ -7,10 +7,10 @@
         </div>
       </div>
       <div class="header text-center">
-        <div class="title" v-if="(taking || success || repeat || fail) && currentEnvelope">
+        <div class="title" v-if="(taking || success || repeat || fail || expired) && currentEnvelope">
           {{ showingName }}发红包
         </div>
-        <div class="postscript" v-if="success || repeat || fail">
+        <div class="postscript" v-if="success || repeat || fail || expired">
           {{currentEnvelope.content ? `"${currentEnvelope.content}"` : '"恭喜发财，大吉大利"'}}
 
         </div>
@@ -24,6 +24,7 @@
           <img class="money" src="../assets/money.png" alt="">
         </div>
         <div class="result lose" v-if="fail">手慢了...红包派完了...</div>
+        <div class="result lose" v-if="expired">红包已过期</div>
         <div class="result win" v-if="success || repeat">
           <img class="money" src="../assets/money.png" alt="money">
           <span class="text" v-if="currentEnvelope">￥{{showingAmount}}</span>
@@ -159,6 +160,9 @@ export default {
     },
     sending () {
       return this.status === 'sending'
+    },
+    expired () {
+      return this.status === 'expired'
     },
     currentEnvelope () {
       return this.envelopes[this.envelope.envelope_id]
