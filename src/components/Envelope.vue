@@ -5,10 +5,11 @@
         <div class="icon">
           <img v-if="(success || repeat || fail) && currentEnvelope.sender.avatar" class="img" :src="currentEnvelope.sender.avatar" alt="avatar">
         </div>
+        <span class="close" @click="$emit('closeDialog')">&times;</span>
       </div>
       <div class="header text-center">
         <div class="title" v-if="(taking || success || repeat || fail || expired) && currentEnvelope">
-          {{ showingName }}发红包
+          {{ showingName }} 的红包
         </div>
         <div class="postscript" v-if="success || repeat || fail || expired">
           {{currentEnvelope.content ? `"${currentEnvelope.content}"` : '"恭喜发财，大吉大利"'}}
@@ -16,7 +17,7 @@
         </div>
         <div class="slogan " v-if="sending">拼手气红包</div>
         <div class="balance" v-if="sending">
-          我的余额<span>¥ {{user.balance}}</span>
+          我的余额 <span>¥{{user.balance}}</span>
         </div>
         <div class="loading" v-if="taking">
           <div class="money-circle loader text-center">
@@ -68,8 +69,8 @@
     </div>
     <div class="data-container p-b full-height" v-if="(success || repeat || fail)">
       <div class="data">
-        <p class="title text-center" v-if="currentEnvelope.envelope_status.users.length !== currentEnvelope.envelope_status.users.length + currentEnvelope.envelope_status.remaining">{{currentEnvelope.envelope_status.users.length}}/{{currentEnvelope.envelope_status.users.length + currentEnvelope.envelope_status.remaining}}人已搶到</p>
-        <p class="title text-center" v-else>{{currentEnvelope.envelope_status.users.length}}/{{currentEnvelope.envelope_status.users.length + currentEnvelope.envelope_status.remaining}}已搶完</p>
+        <p class="title text-center" v-if="currentEnvelope.envelope_status.users.length !== currentEnvelope.envelope_status.users.length + currentEnvelope.envelope_status.remaining">{{currentEnvelope.envelope_status.users.length}}/{{currentEnvelope.envelope_status.users.length + currentEnvelope.envelope_status.remaining}} 人已領取</p>
+        <p class="title text-center" v-else>{{currentEnvelope.envelope_status.users.length}}/{{currentEnvelope.envelope_status.users.length + currentEnvelope.envelope_status.remaining}} 已領完</p>
         <table class="table">
           <tr :class="['tr', {self: member.receiver_id === user.id}]" v-for="(member, index) in currentEnvelope.envelope_status.users" :key="index">
             <td class="td">{{member.nickname}}</td>
@@ -249,7 +250,6 @@ $header_red: #c0493c;
 $main_red: #de5547;
 $gold-text: #debd85;
 
-
 .red-envelope {
   position: relative;
   background-color: $main_red;
@@ -277,11 +277,20 @@ $gold-text: #debd85;
       border-radius: 50%;
     }
   }
+  .close {
+    cursor: pointer;
+    color: #dedede;
+    position: absolute;
+    font-weight: 200;
+    right: 10px;
+    top: 5px;
+    font-size: 30px;
+  }
 }
 
 .header {
   font-size: 14px;
-  margin-top: 25px + 20px;
+  margin-top: 35px;
   .title {
     font-weight: 600;
     color: $gold-text;
@@ -299,7 +308,6 @@ $gold-text: #debd85;
 
   .balance {
     color: #fff;
-    font-weight: lighter;
     margin-bottom: 30px;
   }
 
@@ -322,13 +330,13 @@ $gold-text: #debd85;
       top: 50%;
       transform: translateX(-50%) translateY(-50%);
       padding: 10px;
-      width: 45px;
-      height: 45px;
+      width: 36px;
+      height: 36px;
     }
   }
   .result {
     padding-top: 15px;
-    padding-bottom: 25px;
+    padding-bottom: 10px;
     font-weight: 600;
     color: #fff;
     &.lose {
@@ -340,8 +348,8 @@ $gold-text: #debd85;
         vertical-align: middle;
       }
       .money {
-        width: 45px;
-        height: 45px;
+        width: 36px;
+        height: 36px;
       }
     }
   }
@@ -351,11 +359,13 @@ $gold-text: #debd85;
   background-color: #fff;
   overflow-y: auto;
   .data {
-  width: 200px;
-  height: 260px;
+  width: 260px;
+  max-height: 260px;
+  min-height: 150px;
   margin: 0 auto;
     .title {
       font-size: 12px;
+      margin-top: 5px;
       color: $main_red;
     }
     .table {
@@ -379,8 +389,6 @@ $gold-text: #debd85;
     margin-bottom: 20px;
   }
   .hint {
-    font-size: 10px;
-    font-weight: lighter;
     color: #fff;
   }
   /deep/ .el-form-item__label {

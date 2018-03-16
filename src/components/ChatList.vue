@@ -32,6 +32,7 @@
       <ul class="rooms m-b" v-if="showing.length">
         <li v-for="(item, index) in showing"
           :key="index"
+          v-if="item"
           :class="{
             active: (item.id === chat.current.chatWith) && unread,
             unread: !item.read && unread
@@ -43,7 +44,7 @@
                 alt="avatar">
             </div>
             <span class="title">
-              <span>{{ item.username }}</span>
+              <span>{{ item.remarks || item.username }}</span>
             </span>
           </div>
 
@@ -52,7 +53,7 @@
           placement="right"
           trigger="click">
           <div>
-            <div class="action pointer" @click="enterChat(item)">與 {{item.username}} 私聊</div>
+            <div class="action pointer" @click="enterChat(item)">与 {{item.username}} 私聊</div>
             <div class="action pointer" @click="handleChatClick(item)">查看 {{item.username}}</div>
           </div>
           <div class="meta" slot="reference">
@@ -62,7 +63,7 @@
                 alt="avatar">
             </div>
             <span class="title">
-              <span>{{ item.username }}</span>
+              <span>{{ item.remarks || item.username }}</span>
             </span>
           </div>
           </el-popover>
