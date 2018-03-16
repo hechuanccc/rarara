@@ -11,7 +11,7 @@ import {
 } from '../../api'
 
 export default {
-  login: ({ commit, state }, { user }) => {
+  login: ({ commit, state, dispatch }, { user }) => {
     return login(user).then(res => {
       let expires = new Date(res.expires_in)
       if (res.access_token && res.refresh_token) {
@@ -24,11 +24,8 @@ export default {
         axios.defaults.withCredentials = true
         axios.defaults.headers.common['Authorization'] = 'Bearer ' + res.access_token
       }
-      commit(types.SET_USER, {
-        user: {
-          logined: true
-        }
-      })
+
+      dispatch('fetchUser')
       return Promise.resolve(res)
     }, error => {
       if (error.code === 9011) {
