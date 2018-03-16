@@ -115,7 +115,7 @@
           :visible.sync="showProfileDiag"
           :width="'600px'"
           @open="changeProfileRes = ''"
-          @close="currentChooseAvatar = null"
+          @close="handleProfileDialogClose"
           top="10vh"
           center>
           <div class="edit-profile">
@@ -484,6 +484,10 @@ export default {
     this.getAnnouce()
   },
   methods: {
+    handleProfileDialogClose () {
+      this.currentChooseAvatar = null
+      this.activePanel = 'account'
+    },
     getEnvelopeRecord () {
       this.tableLoading = true
       getEnvelopeRecord().then(res => {
