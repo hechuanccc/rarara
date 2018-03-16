@@ -110,6 +110,7 @@
             </el-carousel-item>
           </el-carousel>
         </el-dialog>
+
         <el-dialog
           class="profile-dialog"
           :visible.sync="showProfileDiag"
@@ -617,9 +618,8 @@ export default {
           updateUser(this.user.id, formData).then(result => {
             if (!result.error) {
               this.changeProfileRes = '修改资料成功'
-              this.$store.commit('SET_USER', {
-                user: result
-              })
+              this.$store.dispatch('fetchUser')
+
               this.showProfileDiag = false
             } else {
               this.changeProfileRes = '修改资料失败'
