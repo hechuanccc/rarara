@@ -14,15 +14,13 @@
       </li>
     </ul>
     <div class="search-form m-t m-b m-l m-r" v-if="!unread">
-      <el-form>
-        <el-form-item>
-          <el-input v-model="searchData.input"
-            placeholder="请输入帐号名"
-            class="ipt-search"
-            @keyup.native.enter="search"></el-input>
-            <span class="el-icon-search pointer" @click="search"></span>
-        </el-form-item>
-      </el-form>
+      <el-input v-model="searchData.input"
+        type="text"
+        placeholder="请输入帐号名"
+        class="ipt-search"
+        @keyup.native.enter="search">
+      </el-input>
+      <span class="el-icon-search pointer" @click="search"></span>
       <div v-if="searchData.searching">
         搜索 「{{searchData.input}}」中
         <span class="exit-search pointer" @click="exitSearch">退出搜索</span>
@@ -389,8 +387,8 @@ export default {
 }
 .el-icon-search {
   position: absolute;
-  right: 10px;
-  top: 5px;
+  right: 20px;
+  top: 15px;
   font-size: 18px;
   font-weight: bolder;
   &:hover {
