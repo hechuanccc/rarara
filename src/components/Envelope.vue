@@ -286,6 +286,7 @@ $gold-text: #debd85;
   .slogan, .postscript {
     color: #fff;
     margin-top: 5px;
+    word-break: break-all;
   }
 
   .slogan {
