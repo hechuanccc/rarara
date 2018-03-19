@@ -1,6 +1,7 @@
 <template>
   <div class="edit-container">
     <el-form :model="member"
+      v-if="member.username"
       status-icon
       class="info-area"
       ref="editUser">
