@@ -59,7 +59,12 @@ export default {
   data () {
     return {
       member: {
-        remarks: ''
+        remarks: '',
+        is_banned: {
+          is_banned: false
+        },
+        is_blocked: false,
+        logined: false
       },
       changed: {
         message: '',
@@ -78,6 +83,7 @@ export default {
   methods: {
     fetchMember () {
       this.loading = true
+
       fetchMember(this.userId).then(res => {
         this.changed.oldContent = res.remarks
         this.member = res
@@ -153,10 +159,6 @@ export default {
 
 .member-info {
   color: #999;
-  &:empty {
-    width: 100%;
-    height: 32px;
-    background-color: #fff;
-  }
 }
+
 </style>
