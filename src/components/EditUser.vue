@@ -18,7 +18,7 @@
         <p class="member-info">{{member.logined | whether}}</p>
       </el-form-item>
       <el-form-item label="是否禁言" label-width="85px">
-        <p class="member-info">{{member.is_banned.is_banned | whether}}</p>
+        <p class="member-info">{{member.banned | whether}}</p>
       </el-form-item>
       <el-form-item label="是否拉黑" label-width="85px">
         <p class="member-info">{{member.is_blocked | whether}}</p>
