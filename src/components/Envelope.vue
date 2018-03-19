@@ -38,6 +38,7 @@
         <el-form-item label="金额" prop="amount">
           <el-input type="number"
             @blur.native="validate($event, 'pack_amount')"
+            @input="validate($event, 'pack_amount')"
             @keypress.native="filtAmount"
             v-model.number="send.pack_amount"></el-input>
           <span class="hint">最高金额 ￥{{globalPreference.envelope_settings.max_amount}},</span>
@@ -46,6 +47,7 @@
         <el-form-item label="个数" prop="count">
           <el-input type="number"
             @blur.native="validate($event, 'pack_nums')"
+            @input="validate($event, 'pack_nums')"
             @keypress.native="filtAmount"
             v-model.number="send.pack_nums"></el-input>
           <span class="hint">最多个数 {{globalPreference.envelope_settings.per_max_count}} 个</span>
@@ -116,11 +118,12 @@ export default {
         'pack_amount': {
           error: '',
           validate: (value) => {
-            if (!value) {
+            let number = parseInt(value)
+            if (!number) {
               return '请输入金额'
-            } else if (value < this.globalPreference.envelope_settings.min_amount) {
+            } else if (number < this.globalPreference.envelope_settings.min_amount) {
               return '须高于最低金额限制'
-            } else if (value > this.globalPreference.envelope_settings.max_amount) {
+            } else if (number > this.globalPreference.envelope_settings.max_amount) {
               return '不能超过最高金额限制'
             } else {
               return ''
@@ -130,9 +133,10 @@ export default {
         'pack_nums': {
           error: '',
           validate: (value) => {
-            if (!value) {
+            let number = parseInt(value)
+            if (!number) {
               return '请输入个数'
-            } else if (value > this.globalPreference.envelope_settings.per_max_count) {
+            } else if (number > this.globalPreference.envelope_settings.per_max_count) {
               return '红包数量超出限制'
             } else {
               return ''

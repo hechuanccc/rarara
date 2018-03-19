@@ -1,6 +1,7 @@
 <template>
   <div class="edit-container">
     <el-form :model="member"
+      v-if="member.username"
       status-icon
       class="info-area"
       ref="editUser">
@@ -17,7 +18,7 @@
         <p class="member-info">{{member.logined | whether}}</p>
       </el-form-item>
       <el-form-item label="是否禁言" label-width="85px">
-        <p class="member-info">{{member.is_banned.is_banned | whether}}</p>
+        <p class="member-info">{{member.banned | whether}}</p>
       </el-form-item>
       <el-form-item label="是否拉黑" label-width="85px">
         <p class="member-info">{{member.is_blocked | whether}}</p>
@@ -59,7 +60,10 @@ export default {
   data () {
     return {
       member: {
-        remarks: ''
+        remarks: '',
+        banned: false,
+        is_blocked: false,
+        logined: false
       },
       changed: {
         message: '',
@@ -78,6 +82,7 @@ export default {
   methods: {
     fetchMember () {
       this.loading = true
+
       fetchMember(this.userId).then(res => {
         this.changed.oldContent = res.remarks
         this.member = res
@@ -153,10 +158,6 @@ export default {
 
 .member-info {
   color: #999;
-  &:empty {
-    width: 100%;
-    height: 32px;
-    background-color: #fff;
-  }
 }
+
 </style>
