@@ -1022,5 +1022,8 @@ export default {
 .envelope-table {
   height: 490px;
   overflow: auto;
+  & /deep/ .cell {
+    text-align: center;
+  }
 }
 </style>
