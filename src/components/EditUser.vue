@@ -61,9 +61,7 @@ export default {
     return {
       member: {
         remarks: '',
-        is_banned: {
-          is_banned: false
-        },
+        banned: false,
         is_blocked: false,
         logined: false
       },
