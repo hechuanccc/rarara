@@ -12,8 +12,7 @@
           {{ showingName }} 的红包
         </div>
         <div class="postscript" v-if="success || repeat || fail || expired">
-          {{currentEnvelope.content ? `"${currentEnvelope.content}"` : '"恭喜发财，大吉大利"'}}
-
+          {{content ? `"${content}"` : '"恭喜发财，大吉大利"'}}
         </div>
         <div class="slogan " v-if="sending">拼手气红包</div>
         <div class="balance" v-if="sending">
@@ -98,6 +97,9 @@ export default {
     },
     joinChatRoom: {
       type: Function
+    },
+    content: {
+      type: String
     }
   },
   data () {

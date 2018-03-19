@@ -110,7 +110,13 @@
             <label for="imgUploadInput">
               <span title="上传图片">
                 <i class="el-icon-picture"></i>
-                <input :disabled="!personal_setting.chat.status" @change="sendMsgImg" type="file" ref="fileImgSend" class="img-upload-input" id="imgUploadInput" accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif">
+                <input :disabled="!personal_setting.chat.status"
+                  @change="sendMsgImg"
+                  type="file"
+                  ref="fileImgSend"
+                  class="img-upload-input"
+                  id="imgUploadInput"
+                  accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif">
               </span>
             </label>
           </a>
@@ -203,6 +209,7 @@
        center>
       <Envelope :status="envelope.status"
         v-if="envelope.visible"
+        :content="envelope.content"
         :envelope="envelope.envelope"
         :joinChatRoom="joinChatRoom"
         @closeDialog="closeEnvelope"
@@ -272,11 +279,10 @@ export default {
       emojiSuccess: true,
       currentChat: null,
       envelope: {
+        content: '',
         status: '',
         visible: false,
-        envelope: {
-          inner: {}
-        }
+        envelope: {}
       }
     }
   },
@@ -373,6 +379,7 @@ export default {
       this.envelope.visible = false
     },
     takeEnvelope (envelope) {
+      this.envelope.content = envelope.content
       this.envelope.status = 'taking'
 
       let payload = {
@@ -1132,7 +1139,6 @@ export default {
     }
     .is-disabled {
       .el-textarea-inner {
-        background-color: #eef1f6;
         border-color: #d1dbe5;
         color: #bbb;
         cursor: not-allowed;
