@@ -150,6 +150,7 @@ export default {
 
         let key = this.rooms[oldVal]
         let previous = this.chatList.filter(chat => chat.id === key)
+
         this.leaveChat(oldVal, previous[0])
       },
       deep: true
