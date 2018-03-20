@@ -134,9 +134,7 @@ export default {
       if (this.searchData.searching) {
         showing = this.searchData.result
       } else {
-        // this.initRoomList()
-
-        console.log('showing')
+        this.initRoomList()
 
         showing = this.unread ? this.roomList : this.chats
       }
@@ -164,13 +162,24 @@ export default {
     },
     'roomAmount': {
       handler: function () {
-        console.log('roomAmount')
         this.initRoomList()
       },
       deep: true
     }
   },
   methods: {
+    initRoomList () {
+      if (!this.rooms) { return }
+      let temp = []
+      let values = Object.values(this.rooms)
+      getChatList().then(res => {
+        this.allChatList = res
+        values.forEach((val) => {
+          temp.push(this.allChatList.find((chat) => chat.id === val.id))
+        })
+        this.roomList = temp
+      })
+    },
     handleChatClick (chat) {
       if (this.unread) {
         this.enterChat()
@@ -287,10 +296,8 @@ export default {
         this.initRoomList()
       })
     },
-
     initChats () {
       this.fillMemberChats(this.pagination)
-
       this.interval = setInterval(() => {
         this.fillMemberChats()
       }, 120000)
@@ -306,7 +313,6 @@ export default {
     }
   },
   created () {
-    console.log('created')
     if (!this.unread) {
       this.initChats()
     }
