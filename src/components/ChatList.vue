@@ -46,24 +46,24 @@
             </span>
           </div>
 
-        <el-popover
-          v-else
-          placement="right"
-          trigger="click">
-          <div>
-            <div class="action pointer" @click="enterChat(item)">与 {{item.username}} 私聊</div>
-            <div class="action pointer" @click="handleChatClick(item)">查看 {{item.username}}</div>
-          </div>
-          <div class="meta" slot="reference">
-            <div class="illustration">
-              <img class="avatar"
-                :src="item.avatar? item.avatar : require('../assets/avatar.png')"
-                alt="avatar">
+          <el-popover
+            v-else
+            placement="right"
+            trigger="click">
+            <div>
+              <div class="action pointer" @click="enterChat(item)">与 {{item.username}} 私聊</div>
+              <div class="action pointer" @click="handleChatClick(item)">查看 {{item.username}}</div>
             </div>
-            <span class="title">
-              <span>{{ item.remarks || item.username }}</span>
-            </span>
-          </div>
+            <div class="meta" slot="reference">
+              <div class="illustration">
+                <img class="avatar"
+                  :src="item.avatar? item.avatar : require('../assets/avatar.png')"
+                  alt="avatar">
+              </div>
+              <p class="title">
+                {{ item.remarks || item.username }}
+              </p>
+            </div>
           </el-popover>
 
         </li>
@@ -222,6 +222,7 @@ export default {
         return
       }
       this.loading = true
+
       getChatList(this.pagination).then(res => {
         this.loading = false
 
@@ -298,6 +299,7 @@ export default {
     },
     initChats () {
       this.fillMemberChats(this.pagination)
+
       this.interval = setInterval(() => {
         this.fillMemberChats()
       }, 120000)
@@ -337,6 +339,11 @@ export default {
     color: #fff;
     font-size: 13px;
     vertical-align: middle;
+    display: inline-block;
+    width: 150px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
   }
   .avatar {
     width: 28px;
