@@ -499,7 +499,7 @@ export default {
       this.liveInterval = setInterval(() => {
         ws.send(JSON.stringify({
           command: 'live',
-          user_id: this.user.username
+          user_id: this.user.id
         }))
       }, 300000)
     },
