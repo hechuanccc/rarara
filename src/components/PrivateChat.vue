@@ -57,7 +57,7 @@
           </span>
           <label class="upload pointer" for="privateImgUpload">
             <i class="el-icon-picture"></i>
-            <input :disabled="notAllowed"
+            <input
               @change="sendMsgImg"
               type="file"
               ref="privateImgSend"
@@ -69,16 +69,15 @@
       </div>
       <div class="typing">
         <div class="input">
-          <textarea :placeholder="notAllowed ? '您没有发言的权限' :'请文明发言'"
+          <textarea :placeholder="'请文明发言'"
             @keyup.enter="sendMsg"
             v-model="speakingContent"
             type="textarea"
             autocomplete="off"
-            :disabled="notAllowed"
             class="textarea">
             </textarea>
         </div>
-        <div :class="['send-button', 'pointer' ,'text-center', {'not-allowed': notAllowed}]" @click="sendMsg">
+        <div class="send-button pointer text-center" @click="sendMsg">
           <span class="text">发送</span>
         </div>
       </div>
@@ -126,9 +125,6 @@ export default {
       'user',
       'chatList'
     ]),
-    notAllowed () {
-      return !this.personalSetting.chat.status
-    },
     currentChatIndex () {
       let nowIndex = this.chatList.findIndex(chat => chat.id === this.chat.current.chatWith)
       return nowIndex + 1
@@ -147,7 +143,6 @@ export default {
   },
   methods: {
     sendMsg () {
-      if (this.notAllowed) { return }
       if (!this.speakingContent.trim()) { return false }
       if (!this.ws) {
         this.joinChatRoom()
@@ -165,7 +160,7 @@ export default {
     sendMsgImg (e) {
       let fileInp = this.$refs.privateImgSend
       let file = fileInp.files[0]
-      if (!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(fileInp.value) || this.notAllowed) {
+      if (!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(fileInp.value)) {
         this.openMessageBox('文件格式不正确或您目前尚不符合发言条件', 'error')
         return false
       }
