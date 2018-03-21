@@ -506,7 +506,7 @@ export default {
           command: 'live',
           user_id: this.user.id
         }))
-      }, 60000)
+      }, 30000)
     },
     getRoles (message) {
       return message.sender.roles.map((role) => role.name)
@@ -520,8 +520,9 @@ export default {
 
       this.ws.onopen = () => {
         this.$store.dispatch('setWebsocket', this.ws)
-
         this.checkLiving(this.ws)
+
+        window.addEventListener('beforeunload', e => this.beforeunloadHandler(e))
 
         if (!this.emojis.people.length) {
           fetchChatEmoji().then((resData) => {
@@ -810,7 +811,17 @@ export default {
         message: msg,
         type: type
       })
+    },
+    beforeunloadHandler (e) {
+      this.ws.send(JSON.stringify({
+        command: 'live',
+        user_id: this.user.id,
+        status: 'disconnect'
+      }))
     }
+  },
+  destroyed () {
+    window.removeEventListener('beforeunload', e => this.beforeunloadHandler(e))
   }
 }
 </script>
