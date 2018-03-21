@@ -193,6 +193,7 @@ export default {
 }
 
 .footer {
+  height: 60px;
   background: #4a4a4a;
   p {
     text-align: center;
