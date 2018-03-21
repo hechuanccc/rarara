@@ -170,6 +170,7 @@
     <el-dialog
       title="管理"
       :visible.sync="restraint.dialogVisible"
+      v-if="restraint.dialogVisible"
       :width="restraint.showManageDialog ? '700px' : '30%'"
       class="restraint-dialog"
       top="5vh"
@@ -178,6 +179,7 @@
       center>
       <Restraint :restraint="restraint"
         :blockedUsers="blockedUsers"
+        v-if="restraint.dialogVisible"
         :bannedUsers="formattedBannerUsers"
         :RECEIVER="1"
         @updateUsers="updateUsers"
@@ -350,10 +352,13 @@ export default {
       let result = []
       if (this.bannedUsers.length) {
         this.bannedUsers.forEach((item) => {
-          result.push({
-            username: item.username,
-            banned_time: this.$moment(item.banned_time).fromNow(true)
-          })
+          let validBanned = this.$moment(item.banned_time).diff(this.$moment()) > 0
+          if (validBanned) {
+            result.push({
+              username: item.username,
+              banned_time: this.$moment(item.banned_time).fromNow(true)
+            })
+          }
         })
 
         return result
@@ -501,7 +506,7 @@ export default {
           command: 'live',
           user_id: this.user.id
         }))
-      }, 300000)
+      }, 60000)
     },
     getRoles (message) {
       return message.sender.roles.map((role) => role.name)
@@ -791,10 +796,8 @@ export default {
         this.$emit('handleAvatarClick', message.sender)
       }
     },
-    switchBlockTab (index) {
-      this.restraint.nowTab = index + ''
-    },
     openManageDialog () {
+      this.restraint.nowTab = '0'
       this.restraint.showRestraintDialog = false
       this.restraint.showManageDialog = true
       this.restraint.dialogVisible = true
