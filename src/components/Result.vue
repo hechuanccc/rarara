@@ -24,8 +24,11 @@
       <div :class="['result-numbers', {'tie-up': key === 'bjkl8' || key === 'auluck8'}]">
         <span v-for="(num, index) in value.resultStr.split(',')"
           :key="index"
-          :class="[key, `${key}-${num}`]">
-          {{num}}
+          :class="[
+            key,
+            `${key}-${loading(key) ? getPositiveNumber(number, num) : num}`,
+          ]">
+            <b :class="['num', {transition: loading(key)}]">{{loading(key) ? getPositiveNumber(number, num , true) : num}}</b>
         </span>
       </div>
     </div>
@@ -37,6 +40,7 @@ import urls from '../api/urls'
 import _ from 'lodash'
 const jsonp = require('jsonp')
 const CryptoJS = require('crypto-js')
+
 const encoded = (data) => {
   const ciphertext = CryptoJS.enc.Base64.parse(data)
   const key = CryptoJS.enc.Utf8.parse(urls.decode.replace(/"/g, ''))
@@ -53,10 +57,18 @@ export default {
       resultsMap: {},
       countdownMap: {},
       codes: [],
-      encoded
+      encoded,
+      number: 0,
+      timer: null
     }
   },
   methods: {
+    loading (game) {
+      const count = this.countdownMap[game]
+      if (count) {
+        return count.days + count.days + count.minutes + count.seconds === 0
+      }
+    },
     startCountdown (game) {
       if (!game.next_draw_time) {
         return
@@ -149,6 +161,35 @@ export default {
           })
         }
       })
+    },
+    getPositiveNumber (number, num, flag) {
+      if (flag) {
+        return Math.abs(number - num)
+      }
+      return Math.abs(number - num) ? Math.abs(number - num) : number
+    },
+    runAnimate (game, num) {
+      this.runList = () => {
+        let t = Math.floor(Math.random() * 250)
+
+        if (this.number < 5) {
+          this.number ++
+        } else {
+          this.number = 1
+        }
+
+        this.$nextTick(() => {  // to avoid the view can't keep up the data changing
+          this.timer = setTimeout(() => {
+            this.runList()
+          }, t)
+        })
+      }
+
+      this.runList()
+    },
+    stopAnimate () {
+      this.number = 0
+      clearTimeout(this.timer)
     }
   },
   watch: {
@@ -162,8 +203,10 @@ export default {
   },
   created () {
     this.initResults()
+    this.runAnimate()
   },
   beforeDestroy () {
+    this.stopAnimate()
     _.each(this.codes, (code) => {
       clearInterval(this[`timer-${code}`])
       clearInterval(this[`issueInterval-${code}`])
