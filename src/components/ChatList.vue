@@ -134,8 +134,6 @@ export default {
       if (this.searchData.searching) {
         showing = this.searchData.result
       } else {
-        this.initRoomList()
-
         showing = this.unread ? this.roomList : this.chats
       }
       return showing
@@ -317,6 +315,8 @@ export default {
   created () {
     if (!this.unread) {
       this.initChats()
+    } else {
+      this.initRoomList()
     }
   },
   beforeDestroy () {

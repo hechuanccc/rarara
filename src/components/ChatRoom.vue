@@ -638,10 +638,6 @@ export default {
                       }
                     }
 
-                    if (data.sender.id === this.user.id) {
-                      this.roomMessages[data.receivers].push(data)
-                    }
-
                     this.roomMessages[data.receivers].push(data)
                     this.$store.dispatch('collectEnvelope', data)
                     let currentEnvelopeIndex = this.roomMessages[data.receivers].findIndex((msg) => msg.envelope_status && msg.envelope_status.id === data.envelope_status.id)
@@ -653,7 +649,6 @@ export default {
                         this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
                       })
                     }
-
                     return
                   default:
                   // websocket/upload/user-avatar/54fa2ca4059245f29be5e9da2c55e14a.jpg
