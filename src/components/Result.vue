@@ -29,8 +29,8 @@
             `${key}-${loading(key) ? getPositiveNumber(number, num) : num}`,
           ]">
             <b :class="['num',
-              {transition: loading(key) && (num % 2)},
-              {transition2: loading(key) && !(num % 2)}]">
+              {transition: loading(key) && (index % 2)},
+              {transition2: loading(key) && !(index % 2)}]">
               {{loading(key) ? getPositiveNumber(number, num , true) : num}}
             </b>
         </span>
