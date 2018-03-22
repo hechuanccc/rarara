@@ -35,9 +35,13 @@ $results_racing: jspk10, bcr, mlaft, er75ft;
   font-weight: 400;
   font-size: 14px;
   margin-right: 5px;
-  .num.transition {
+  .num.transition { // quick
     display: inline-block;
-    animation: lick .3s infinite linear;
+    animation: lick .4s infinite linear;
+  }
+  .num.transition2 {  // slow
+    display: inline-block;
+    animation: lick .6s infinite linear;
   }
 }
 

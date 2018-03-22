@@ -28,7 +28,11 @@
             key,
             `${key}-${loading(key) ? getPositiveNumber(number, num) : num}`,
           ]">
-            <b :class="['num', {transition: loading(key)}]">{{loading(key) ? getPositiveNumber(number, num , true) : num}}</b>
+            <b :class="['num',
+              {transition: loading(key) && (num % 2)},
+              {transition2: loading(key) && !(num % 2)}]">
+              {{loading(key) ? getPositiveNumber(number, num , true) : num}}
+            </b>
         </span>
       </div>
     </div>
@@ -163,10 +167,8 @@ export default {
       })
     },
     getPositiveNumber (number, num, flag) {
-      if (flag) {
-        return Math.abs(number - num)
-      }
-      return Math.abs(number - num) ? Math.abs(number - num) : number
+      let diff = Math.abs(number - num)
+      return flag || diff ? diff : number
     },
     runAnimate (game, num) {
       this.runList = () => {
