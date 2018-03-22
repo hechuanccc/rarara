@@ -38,7 +38,7 @@
                   </span>
                   <span class="msg-time">{{item.created_at | moment('HH:mm:ss')}}</span>
                 </div>
-                <div :class="['envelope-message','pointer', {'null': item.envelope_status.remaining === 0 && !item.envelope_status.users.map(item => item.receiver_id).includes(user.id)}]" v-if="!personal_setting.block && item.type === 5 && item.envelope_status && !item.envelope_status.expired" @click="takeEnvelope(item)">
+                <div :class="['envelope-message','pointer', {'null': item.envelope_status.remaining === 0 && !item.envelope_status.users.map(item => item.receiver_id).includes(user.id)}]" v-if="item.type === 5 && item.envelope_status && !item.envelope_status.expired" @click="takeEnvelope(item)">
                   <img class="img m-r" src="../assets/envelope_message.png" alt="envelope"/>
                   <div class="send-texts" v-if="item.type === 5">
                     <p class="slogan">{{item.content ? item.content : '恭喜发财 大吉大利'}}</p>
@@ -384,6 +384,9 @@ export default {
       this.envelope.visible = false
     },
     takeEnvelope (envelope) {
+      if (this.personal_setting.block) {
+        return
+      }
       this.envelope.content = envelope.content
       this.envelope.status = 'taking'
 
