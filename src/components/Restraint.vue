@@ -1,6 +1,6 @@
 <template>
   <div class="restraint-dialog">
-    <div v-if="restraint.dialogVisible && restraint.showManageDialog">
+    <div v-if="restraint.dialogVisible && restraint.content === 'all'">
         <el-menu :default-active="'0'" class="m-b-xlg" mode="horizontal">
           <el-menu-item v-for="(tab, index) in restraint.tabs"
             :key="index"
@@ -31,7 +31,8 @@
           </el-table-column>
         </el-table>
     </div>
-    <div  v-if="restraint.dialogVisible && restraint.showRestraintDialog">
+
+    <div class="member-area" v-if="restraint.dialogVisible && restraint.content === 'single'">
       <div class="information text-center" v-if="restraint.user">
         <div class="avatar">
           <img class="img" v-if="restraint.user.avatar" :src="restraint.user.avatar" alt="avatar">
@@ -46,7 +47,9 @@
           </div>
         </div>
       </div>
-      <div slot="footer" class="m-t-lg actions text-center">
+      <div slot="footer"
+        class="m-t-lg actions text-center"
+        v-if="typeof(isBanned) === 'boolean' || typeof(isBlocked) === 'boolean'">
         <el-button type="danger" v-if="!isBanned" @click.native="ban(15)">禁言15分钟</el-button>
         <el-button type="danger" v-if="!isBanned" @click.native="ban(30)">禁言30分钟</el-button>
         <el-button type="danger" v-if="!isBlocked" @click.native="block()">加入黑名单</el-button>
@@ -54,6 +57,7 @@
         <el-button type="danger" v-if="isBanned" @click.native="unban(restraint.user.username)">解除禁言</el-button>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -78,8 +82,8 @@ export default {
   },
   data () {
     return {
-      isBanned: false,
-      isBlocked: false
+      isBanned: undefined,
+      isBlocked: undefined
     }
   },
   methods: {
@@ -190,6 +194,9 @@ export default {
     'restraint.user.username': function () {
       this.getUser()
     }
+  },
+  created () {
+    this.getUser()
   }
 }
 </script>
@@ -206,6 +213,10 @@ export default {
       height: 100%;
       border-radius: 5px;
     }
+  }
+
+  .member-area {
+    min-height: 230px;
   }
 }
 </style>
