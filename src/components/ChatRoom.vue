@@ -158,6 +158,7 @@
         </div>
       </el-footer>
     </el-container>
+
     <!-- chatting image lightbox -->
     <el-dialog :visible.sync="showImageMsg"
       width="640px"
@@ -166,12 +167,12 @@
       <img :src="showImageMsgUrl" class="popup-uploadedimage">
     </el-dialog>
 
-    <!-- restraint dialog for manager -->
+    <!-- for Restraint member in chatHall -->
     <el-dialog
       title="管理"
       :visible.sync="restraint.dialogVisible"
       v-if="restraint.dialogVisible"
-      :width="restraint.showManageDialog ? '700px' : '30%'"
+      :width="restraint.content === 'all' ? '700px' : '30%'"
       class="restraint-dialog"
       top="5vh"
       :append-to-body="true"
@@ -183,7 +184,7 @@
         :bannedUsers="formattedBannerUsers"
         :RECEIVER="1"
         @updateUsers="updateUsers"
-        />
+      />
     </el-dialog>
 
     <!-- private chat dialog -->
@@ -264,8 +265,7 @@ export default {
       restraint: {
         dialogVisible: false,
         user: '',
-        showManageDialog: false,
-        showRestraintDialog: false,
+        content: '',
         nowTab: '0',
         tabs: [
           {
@@ -792,8 +792,7 @@ export default {
           return
         }
         this.restraint.user = message.sender
-        this.restraint.showManageDialog = false
-        this.restraint.showRestraintDialog = true
+        this.restraint.content = 'single'
         this.restraint.dialogVisible = true
       }
 
@@ -806,8 +805,7 @@ export default {
     },
     openManageDialog () {
       this.restraint.nowTab = '0'
-      this.restraint.showRestraintDialog = false
-      this.restraint.showManageDialog = true
+      this.restraint.content = 'all'
       this.restraint.dialogVisible = true
 
       this.getUser()
