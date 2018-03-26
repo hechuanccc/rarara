@@ -171,7 +171,6 @@
     <el-dialog
       title="管理"
       :visible.sync="restraint.dialogVisible"
-      v-if="restraint.dialogVisible"
       :width="restraint.content === 'all' ? '700px' : '30%'"
       class="restraint-dialog"
       top="5vh"
