@@ -14,8 +14,8 @@
             </div>
             <div class="information">
               <span class="user">{{msg.sender.nickname || msg.sender.username}}</span>
-              <span :class="['character', {service: getRoles(msg).includes('customer service')}]">
-                {{getCharacter(msg)}}
+              <span v-if="getRoles(msg).includes('customer service')" :class="character">
+                客服人员
               </span>
               <span class="time">{{msg.created_at | moment('HH:mm:ss')}}</span>
               <div class="content-box">
@@ -179,14 +179,6 @@ export default {
     getRoles (message) {
       return message.sender.roles.map((role) => role.name)
     },
-    getCharacter (msg) {
-      let char = ''
-      if (msg.sender && msg.sender.roles.length) {
-        char = this.getRoles(msg).includes('customer service') ? '客服人员' : '普通会员'
-      }
-
-      return char
-    },
     openMessageBox (content, type) {
       this.$message({
         showClose: true,
@@ -248,13 +240,10 @@ export default {
       padding: 0 6px;
       margin-right: 5px;
       margin-left: 5px;
-      background: #cb9b64;
+      background: #1976d2;
       color: #fff;
       font-weight: 400;
       border-radius: 10px;
-      &.service {
-        background: #4a90e2;
-      }
     }
     .content-box {
       text-align: left;

@@ -31,10 +31,8 @@
                     user.nickname : item.sender && (item.sender.nickname || item.sender.username)
                   }}
                   </h4>
-                  <span class="common-member" v-if="item.type !== 4">
-                    {{item.sender && item.sender.roles.length && getRoles(item).includes('manager') ?
-                      '管理员' : getRoles(item).includes('customer service') ?
-                      '客服人员' : '普通会员'}}
+                  <span :class="['common-member', {'manager': getRoles(item).includes('manager')}]" v-if="item.type !== 4 && item.sender && item.sender.roles.length !== 1">
+                    {{ getRoles(item).includes('manager') ? '管理员' : '客服人员' }}
                   </span>
                   <span class="msg-time">{{item.created_at | moment('HH:mm:ss')}}</span>
                 </div>
@@ -98,6 +96,7 @@
                 {{item.emoji}}
               </a>
             </div>
+
           </el-popover>
           <a v-popover:popover4
             v-if="emojiSuccess"
@@ -139,6 +138,7 @@
               {{`客服 ${index + 1}`}}
             </el-button>
           </div>
+
         </div>
         <div class="typing">
           <div :class="['txtinput', 'el-textarea', !personal_setting.chat.status ? 'is-disabled' : '']">
@@ -171,7 +171,6 @@
     <el-dialog
       title="管理"
       :visible.sync="restraint.dialogVisible"
-      v-if="restraint.dialogVisible"
       :width="restraint.content === 'all' ? '700px' : '30%'"
       class="restraint-dialog"
       top="5vh"
@@ -985,12 +984,12 @@ export default {
         .msg-header {
           h4 {
             max-width: 150px;
+            vertical-align: middle;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             text-align: right;
             float: right;
-            padding-top: 2px;
             color: #fff;
           }
 
@@ -1032,12 +1031,15 @@ export default {
 .common-member {
   display: inline-block;
   margin: 0 5px;
-  background: #cb9b64;
+  background: #1976d2;
   color: #fff;
   padding: 0 6px;
   border-radius: 10px;
   font-weight: 400;
   font-size: 10px;
+  &.manager {
+    background: #d6a254;
+  }
 }
 
 
@@ -1057,6 +1059,7 @@ export default {
     font-weight: 400;
     max-width: 150px;
     overflow: hidden;
+    vertical-align: middle;
     text-overflow: ellipsis;
     line-height: 12px;
     cursor: pointer;
@@ -1065,6 +1068,7 @@ export default {
   .msg-time {
     display: inline-block;
     color: #ccc;
+    vertical-align: middle;
   }
 }
 .bubble {
@@ -1312,6 +1316,8 @@ export default {
 }
 
 .emoji-container {
+  height: 220px;
+  max-height: 220px;
   overflow-y: auto;
   .emoji {
     padding: 2px 6px 0 4px;
