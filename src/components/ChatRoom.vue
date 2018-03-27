@@ -97,25 +97,6 @@
                 </a>
               </div>
 
-              <el-tabs type="border-card" v-if="false">
-                <el-tab-pane label="表情符号">
-                  <div class="emoji-container">
-                    <a href="javascript:void(0)"
-                      v-for="(item, index) in emojis.people.slice(0, 42)"
-                      :key="index"
-                      class="emoji"
-                      @click="personal_setting.chat.status ? msgContent = msgContent + item.emoji + ' ' : ''">
-                      {{item.emoji}}
-                    </a>
-                  </div>
-                </el-tab-pane>
-                <el-tab-pane label="表情包">
-                  <div class="stickers-pack">
-                    金馆长系列
-                  </div>
-                </el-tab-pane>
-              </el-tabs>
-
           </el-popover>
           <a v-popover:popover4
             v-if="emojiSuccess"
@@ -1350,12 +1331,6 @@ export default {
   .emoji:hover {
     border-color: #ff5a00;
   }
-}
-
-.stickers-pack {
-  height: 220px;
-  max-height: 220px;
-  overflow-y: auto;
 }
 
 .popup-uploadedimage {
