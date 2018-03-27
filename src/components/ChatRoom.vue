@@ -989,13 +989,9 @@ export default {
             overflow: hidden;
             text-overflow: ellipsis;
             text-align: right;
-            float: right;
             color: #fff;
           }
 
-          span {
-            float: right;
-          }
         }
         .bubble {
           float: right;
@@ -1030,13 +1026,12 @@ export default {
 
 .common-member {
   display: inline-block;
-  margin: 0 5px;
+  height: 22px;
+  line-height: 22px;
   background: #1976d2;
   color: #fff;
-  padding: 0 6px;
+  padding: 0 10px;
   border-radius: 10px;
-  font-weight: 400;
-  font-size: 10px;
   &.manager {
     background: #d6a254;
   }
