@@ -87,15 +87,15 @@
             placement="top-start"
             width="260"
             trigger="click">
-              <div class="emoji-container">
-                <a href="javascript:void(0)"
-                  v-for="(item, index) in emojis.people.slice(0, 42)"
-                  :key="index"
-                  class="emoji"
-                  @click="personal_setting.chat.status ? msgContent = msgContent + item.emoji + ' ' : ''">
-                  {{item.emoji}}
-                </a>
-              </div>
+            <div class="emoji-container">
+              <a href="javascript:void(0)"
+                v-for="(item, index) in emojis.people.slice(0, 42)"
+                :key="index"
+                class="emoji"
+                @click="personal_setting.chat.status ? msgContent = msgContent + item.emoji + ' ' : ''">
+                {{item.emoji}}
+              </a>
+            </div>
 
           </el-popover>
           <a v-popover:popover4
