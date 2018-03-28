@@ -112,6 +112,9 @@ export default {
   setRooms: ({ commit, state }, data) => {
     commit(types.SET_ROOMS, data)
   },
+  setStickerGroups: ({ commit, state }, data) => {
+    commit(types.SET_STICKERGROUPS, data)
+  },
   collectEnvelope: ({ commit, state }, data) => {
     commit(types.COLLECT_ENVELOPE, data)
   }

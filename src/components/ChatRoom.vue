@@ -57,14 +57,22 @@
                     <p>已过期</p>
                   </div>
                 </div>
-
+                <div class="text-center sticker-msg" v-else-if="item.type === 7">
+                  <img-async class="img"
+                    :src="item.content"
+                    @imgStart="imgLoadCount++"
+                    @imgLoad="imgLoadCount--"/>
+                </div>
                 <div :class="['bubble', 'bubble' + item.type]" v-else>
                   <p>
                     <span v-if="item.type === 0 || item.type === 4">{{item.content}}</span>
-                    <img @click="showImageMsg = true; showImageMsgUrl = item.content" v-else-if="item.type === 1" :src="item.content"/>
+                    <img-async @click.native="showImageMsg = true; showImageMsgUrl = item.content"
+                      v-else-if="item.type === 1"
+                      :src="item.content"
+                      @imgStart="imgLoadCount++"
+                      @imgLoad="imgLoadCount--"/>
                   </p>
                 </div>
-
               </div>
             </div>
 
@@ -75,6 +83,7 @@
             <div class="text-center" v-else-if="item.type === 6 && item.sender.id === user.id">
               <p class="get-envelope">{{`${item.get_envelope_user.id === user.id ? '你' : item.get_envelope_user.nickname}抢到了你的红包`}}</p>
             </div>
+
           </li>
           <li v-if="personal_setting.block" class="block-user-info">您已被管理员拉黑，请联系客服。<li>
           <li ref="msgEnd" id="msgEnd" class="msgEnd"></li>
@@ -83,11 +92,12 @@
       <el-footer class="footer" height="100">
         <div class="control-bar">
           <el-popover
+            :popper-class="'emoji-popover'"
             ref="popover4"
             placement="top-start"
-            width="260"
+            :width="stickerTab === 'stickers' ? 800 : 260"
             trigger="click">
-            <div class="emoji-container">
+            <!-- <div class="emoji-container">
               <a href="javascript:void(0)"
                 v-for="(item, index) in emojis.people.slice(0, 42)"
                 :key="index"
@@ -95,8 +105,56 @@
                 @click="personal_setting.chat.status ? msgContent = msgContent + item.emoji + ' ' : ''">
                 {{item.emoji}}
               </a>
-            </div>
+            </div> -->
 
+            <el-tabs type="border-card" class="stickers-tab" v-model="stickerTab">
+                <el-tab-pane label="表情符号" name="emojis">
+                  <div class="emoji-container">
+                    <a href="javascript:void(0)"
+                      v-for="(item, index) in emojis.people.slice(0, 42)"
+                      :key="index"
+                      class="emoji"
+                      @click="personal_setting.chat.status ? msgContent = msgContent + item.emoji + ' ' : ''">
+                      {{item.emoji}}
+                    </a>
+                  </div>
+                </el-tab-pane>
+
+                <el-tab-pane label="表情包" name="stickers">
+                  <div class="stickers-container">
+                    <el-carousel ref="stickerCarousel"
+                      v-loading="stickerLoading"
+                      indicator-position="none"
+                      arrow="never"
+                      height="170px"
+                      :autoplay="false"
+                      class="stickers-packs">
+                      <el-carousel-item :name="sticker.name"
+                        v-for="(sticker, index) in stickerGroups"
+                        :key="index"
+                        >
+                        <ul class="sticker-container">
+                          <li class="sticker-pack m-l-lg m-r-lg m-t" v-for="(item, index) in stickers[sticker.name]" :key="index">
+                            <img class="sticker-img pointer" @click="sendSticker(item.id, chat.current.roomId)" :src="item.url" :alt="index"/>
+                          </li>
+                        </ul>
+                      </el-carousel-item>
+                    </el-carousel>
+
+                    <div class="indicators">
+                      <div :class="['indicator','pointer', {active: nowSticker === sticker.name}]"
+                        @click="switchStickers(sticker.name)"
+                        v-for="(sticker, index) in stickerGroups"
+                        :key="index">
+                        <img class="img" v-if="sticker.logo" :src="sticker.logo" alt="sticker.logo">
+                        <span class="text" v-else>{{sticker.display_name}}</span>
+                      </div>
+                    </div>
+
+                  </div>
+                </el-tab-pane>
+
+              </el-tabs>
           </el-popover>
           <a v-popover:popover4
             v-if="emojiSuccess"
@@ -224,7 +282,7 @@
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/cog'
 import 'vue-awesome/icons/smile-o'
-import { fetchChatEmoji, sendImgToChat, getChatUser, buildRoom, getChatList, takeEnvelope } from '../api'
+import { fetchChatEmoji, sendImgToChat, getChatUser, buildRoom, getChatList, takeEnvelope, fetchStickers } from '../api'
 import urls from '../api/urls'
 import { msgFormatter } from '../utils'
 import config from '../../config'
@@ -232,6 +290,7 @@ import { mapGetters, mapState } from 'vuex'
 import PrivateChat from '../components/PrivateChat'
 import Envelope from '../components/Envelope'
 import Restraint from './Restraint'
+import ImgAsync from './ImgAsync'
 
 const WSHOST = config.chatHost
 
@@ -240,7 +299,8 @@ export default {
     Icon,
     Restraint,
     PrivateChat,
-    Envelope
+    Envelope,
+    ImgAsync
   },
   data () {
     return {
@@ -284,10 +344,35 @@ export default {
         status: '',
         visible: false,
         envelope: {}
-      }
+      },
+      stickers: {},
+      stickerTab: 'emojis',
+      stickerLoading: false,
+      nowSticker: '',
+      imgLoadCount: 0
     }
   },
   watch: {
+    'imgLoadCount': function (count) {
+      if (count === 0) {
+        this.$nextTick(() => {
+          this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
+        })
+      }
+    },
+    'stickerTab': function (val, oldVal) {
+      if (val === 'stickers') {
+        let firstStickerName = this.stickerGroups[0].name
+        let gotSticker = localStorage.getItem('stickers')
+        let formattedGotSticker = JSON.parse(gotSticker)
+        this.nowSticker = firstStickerName
+        if (gotSticker && formattedGotSticker[firstStickerName]) {
+          this.stickers[firstStickerName] = formattedGotSticker[firstStickerName]
+        } else {
+          this.getStickers(firstStickerName)
+        }
+      }
+    },
     'chat.current.roomId' (val) {
       this.RECEIVER = val
 
@@ -342,7 +427,8 @@ export default {
       'chat',
       'chatList',
       'roomMsgs',
-      'envelopes'
+      'envelopes',
+      'stickerGroups'
     ]),
     isLogin () {
       return this.$store.state.user.logined && this.$route.name !== 'Home'
@@ -379,6 +465,30 @@ export default {
     }
   },
   methods: {
+    getStickers (stickerName) {
+      this.stickerLoading = true
+      fetchStickers(stickerName).then((res) => {
+        this.$set(this.stickers, stickerName, res[stickerName])
+
+        localStorage.setItem('stickers', JSON.stringify(this.stickers))
+        this.stickerLoading = false
+      })
+    },
+    switchStickers (name) {
+      if (this.stickerLoading) {
+        return
+      }
+      this.$refs.stickerCarousel.setActiveItem(name)
+      this.nowSticker = name
+      let gotSticker = localStorage.getItem('stickers')
+      let formattedGotSticker = JSON.parse(gotSticker)
+
+      if (gotSticker && formattedGotSticker[name]) {
+        this.$set(this.stickers, name, formattedGotSticker[name])
+      } else {
+        this.getStickers(name)
+      }
+    },
     closeEnvelope () {
       this.envelope.visible = false
     },
@@ -568,6 +678,9 @@ export default {
                   let lastMsg = latestMsgs[0]
 
                   latestMsgs.forEach((msg) => {
+                    if (msg.type === 7) {
+                      msg.content = this.host + msg.content
+                    }
                     if (!msg.sender.avatar) {
                       return
                     }
@@ -649,10 +762,8 @@ export default {
                       })
                     }
                     return
-                  default:
-                  // websocket/upload/user-avatar/54fa2ca4059245f29be5e9da2c55e14a.jpg
-                  // /upload/user-avatar/c82833fa36b54aa7ab40ce8ab3eac68b.jpg
 
+                  default:
                     if (data.sender && data.sender.avatar !== null) {
                       data.sender.avatar = this.host + '/' + data.sender.avatar.replace('websocket/', '')
                       if (data.sender.avatar.indexOf('//upload') !== -1) {
@@ -660,6 +771,12 @@ export default {
                       }
                     }
 
+                    if (data.type === 7 && data.content && data.content !== null) {
+                      data.content = this.host + '/' + data.content.replace('websocket/', '')
+                      if (data.content.indexOf('//upload') !== -1) {
+                        data.content = data.content.replace('//upload', '/upload')
+                      }
+                    }
                     if (!this.roomMessages[data.receivers]) {
                       this.roomMessages[data.receivers] = []
                     }
@@ -729,6 +846,14 @@ export default {
       setTimeout(() => {
         this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
       }, 1000)
+    },
+    sendSticker (stickerId, receiver) {
+      this.ws.send(JSON.stringify({
+        command: 'send',
+        receivers: [receiver],
+        type: 7,
+        sticker: stickerId
+      }))
     },
     sendMsgImg (e) {
       let fileInp = this.$refs.fileImgSend
@@ -982,6 +1107,7 @@ export default {
         float: right;
         margin-right: 15px;
         .msg-header {
+          text-align: right;
           h4 {
             max-width: 150px;
             vertical-align: middle;
@@ -1111,6 +1237,7 @@ export default {
   border-top: 0;
   margin-top: -7px;
 }
+
 .footer {
   background: rgba(0, 0, 0, .3);
   padding: 0;
@@ -1206,6 +1333,8 @@ export default {
     bottom: 0;
   }
 }
+
+
 .edit-profile {
   max-width: 310px;
   border-radius: 5px;
@@ -1328,6 +1457,52 @@ export default {
   }
 }
 
+.stickers-container {
+  height: 220px;
+  max-height: 220px;
+  overflow-y: auto;
+
+  .indicators {
+    height: 50px;
+    background: #ddd;
+    .indicator {
+      box-sizing: border-box;
+      display: inline-block;
+      width: 50px;
+      height: 50px;
+      line-height: 50px;
+      text-align: center;
+      &.active {
+        background: rgba(0, 0, 0, .3);
+      }
+      &:hover {
+        background: rgba(0, 0, 0, .5);
+      }
+    }
+    .img {
+      width: 40px;
+      height: 40px;
+      padding-top: 5px;
+    }
+  }
+  .sticker-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    height: 170px;
+    overflow: auto;
+  }
+  .sticker-pack {
+    width: 70px;
+    height: 70px;
+    .sticker-img {
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
+
 .popup-uploadedimage {
   width: 100%;
   height: 100%;
@@ -1352,6 +1527,16 @@ export default {
 
 .red-envelope-dialog /deep/ .el-dialog__header , .red-envelope-dialog /deep/ .el-dialog__body {
   padding: 0;
+}
+
+
+.sticker-msg {
+  width: 150px;
+  height: auto;
+  .img {
+    width: 100%;
+    height: 100%;
+  }
 }
 
 .envelope-message {
@@ -1422,5 +1607,18 @@ export default {
   background: rgba(255, 255, 255, 0.1);
   padding: 5px 20px;
   border-radius: 4px;
+}
+
+</style>
+
+<style lang="scss">
+.emoji-popover {
+  &.el-popover {
+    padding: 0;
+  }
+}
+
+.stickers-tab .el-tabs__content {
+  padding: 0;
 }
 </style>

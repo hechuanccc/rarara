@@ -23,5 +23,6 @@ export default {
   check_username: host + '/v1/user/check/',
   setCookie: host + '/set_cookie/',
   envelope: host + '/v1/envelope/',
+  stickers: host + '/v1/stickers/',
   decode
 }
