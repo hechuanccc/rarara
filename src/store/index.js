@@ -17,6 +17,7 @@ export function createStore () {
       globalPreference: {
         mobile_url: ''
       },
+      stickerGroups: [],
       chatList: [],
       chat: {
         dialogVisible: false,

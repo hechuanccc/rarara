@@ -69,6 +69,9 @@ export default {
       state.rooms = data
     }
   },
+  [types.SET_STICKERGROUPS]: (state, data) => {
+    state.stickerGroups = data
+  },
   [types.COLLECT_ENVELOPE]: (state, data) => {
     Vue.set(state.envelopes, data.envelope_status.id, data)
   }

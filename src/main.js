@@ -51,9 +51,8 @@ axios.interceptors.response.use(res => {
     Vue.prototype.$message({
       showClose: true,
       message: responseData.error,
-      type: 'error'
+      type: 'warning'
     })
-    toHomeAndLogin(router)
     return Promise.reject(responseData)
   }
 }, (error) => {
@@ -112,6 +111,7 @@ sync(store, router)
 
 fetchGlobalData().then(res => {
   const globalData = res.global_preferences
+  const stickerGroups = res.sticker_groups
   store.dispatch('setGlobalConfig', {
     mobile_lottery_url: globalData.mobile_lottery_url,
     customer_service_url: globalData.customer_service_url,
@@ -123,6 +123,9 @@ fetchGlobalData().then(res => {
     mobile_url: globalData.mobile_url,
     envelope_settings: globalData.envelope_settings
   })
+  if (stickerGroups.length) {
+    store.dispatch('setStickerGroups', stickerGroups)
+  }
   document.title = store.state.globalPreference.title
 })
 

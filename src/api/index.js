@@ -165,6 +165,12 @@ export function buildRoom (data) {
 export function fetchMember (userId) {
   return axios.get(`${urls.member}${userId}/`)
 }
+export function fetchStickers (group) {
+  if (group) {
+    return axios.get(`${urls.stickers}?group=${group}`)
+  }
+  return axios.get(`${urls.stickers}`)
+}
 
 export function updateMember (userId, remarks) {
   return axios.put(`${urls.member}${userId}/`, {
