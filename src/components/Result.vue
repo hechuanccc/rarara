@@ -42,6 +42,8 @@
 <script>
 import urls from '../api/urls'
 import _ from 'lodash'
+import { setIndicator } from '../utils'
+
 const jsonp = require('jsonp')
 const CryptoJS = require('crypto-js')
 
@@ -192,6 +194,10 @@ export default {
     stopAnimate () {
       this.number = 0
       clearTimeout(this.timer)
+    },
+    init () {
+      this.resultsMap = {}
+      this.countdownMap = {}
     }
   },
   watch: {
@@ -204,8 +210,17 @@ export default {
     }
   },
   created () {
-    this.initResults()
-    this.runAnimate()
+    setIndicator(() => {
+      this.init()
+      this.initResults()
+      this.runAnimate()
+    }, () => {
+      this.stopAnimate()
+      _.each(this.codes, (code) => {
+        clearInterval(this[`timer-${code}`])
+        clearInterval(this[`issueInterval-${code}`])
+      })
+    })
   },
   beforeDestroy () {
     this.stopAnimate()
