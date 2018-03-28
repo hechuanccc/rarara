@@ -135,7 +135,7 @@
                       @click="switchStickers(sticker.name)"
                       v-for="(sticker, index) in stickerGroups"
                       :key="index">
-                      <img class="img" v-if="sticker.logo" :src="sticker.logo" alt="sticker.logo">
+                      <img class="img" v-if="sticker.logo" :src="sticker.logo" alt="sticker.logo"/>
                       <span class="text" v-else>{{sticker.display_name}}</span>
                     </div>
                   </div>
@@ -164,6 +164,7 @@
               </span>
             </label>
           </a>
+
           <div v-if="chat.current.roomId === 1 && !personal_setting.block" class="envelope-icon pointer" @click="handleEnvelopeIconClick">
             <img class="img" src="../assets/envelope_icon.png" alt="envelope-icon">
           </div>
