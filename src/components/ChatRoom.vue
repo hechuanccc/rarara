@@ -354,6 +354,7 @@ export default {
         let gotSticker = localStorage.getItem('stickers')
         let formattedGotSticker = JSON.parse(gotSticker)
         this.nowSticker = firstStickerName
+        this.$refs.stickerCarousel.setActiveItem(firstStickerName)
         if (gotSticker && formattedGotSticker[firstStickerName]) {
           this.stickers[firstStickerName] = formattedGotSticker[firstStickerName]
         } else {
