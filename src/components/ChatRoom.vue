@@ -95,57 +95,54 @@
             :popper-class="'emoji-popover'"
             ref="popover4"
             placement="top-start"
-            :width="stickerTab === 'stickers' ? 800 : 260"
+            :width="stickerTab === 'stickers' ? 600 : 260"
             trigger="click">
             <el-tabs type="border-card" class="stickers-tab" v-model="stickerTab">
-                <el-tab-pane label="表情符号" name="emojis">
-                  <div class="emoji-container">
-                    <a href="javascript:void(0)"
-                      v-for="(item, index) in emojis.people.slice(0, 42)"
+              <el-tab-pane label="表情符号" name="emojis">
+                <div class="emoji-container text-center">
+                  <a href="javascript:void(0)"
+                    v-for="(item, index) in emojis.people.slice(0, 42)"
+                    :key="index"
+                    class="emoji"
+                    @click="personal_setting.chat.status ? msgContent = msgContent + item.emoji + ' ' : ''">
+                    {{item.emoji}}
+                  </a>
+                </div>
+              </el-tab-pane>
+
+              <el-tab-pane v-if="stickerGroups.length" label="表情包" name="stickers">
+                <div class="stickers-container">
+                  <el-carousel ref="stickerCarousel"
+                    v-loading="stickerLoading"
+                    indicator-position="none"
+                    arrow="never"
+                    height="250px"
+                    :autoplay="false"
+                    class="stickers-packs">
+                    <el-carousel-item :name="sticker.name"
+                      v-for="(sticker, index) in stickerGroups"
                       :key="index"
-                      class="emoji"
-                      @click="personal_setting.chat.status ? msgContent = msgContent + item.emoji + ' ' : ''">
-                      {{item.emoji}}
-                    </a>
-                  </div>
-                </el-tab-pane>
-
-                <el-tab-pane v-if="stickerGroups.length" label="表情包" name="stickers">
-                  <div class="stickers-container">
-                    <el-carousel ref="stickerCarousel"
-                      v-loading="stickerLoading"
-                      indicator-position="none"
-                      arrow="never"
-                      height="170px"
-                      :autoplay="false"
-                      class="stickers-packs">
-                      <el-carousel-item :name="sticker.name"
-                        v-for="(sticker, index) in stickerGroups"
-                        :key="index"
-                        >
-                        <ul class="sticker-container">
-                          <li class="sticker-pack m-l-lg m-r-lg m-t" v-for="(item, index) in stickers[sticker.name]" :key="index">
-                            <img class="sticker-img pointer" @click="sendSticker(item.id, chat.current.roomId)" :src="item.url" :alt="index"/>
-                          </li>
-                        </ul>
-                      </el-carousel-item>
-                    </el-carousel>
-
-                    <div class="indicators">
-                      <div :class="['indicator','pointer', {active: nowSticker === sticker.name}]"
-                        @click="switchStickers(sticker.name)"
-                        v-for="(sticker, index) in stickerGroups"
-                        :key="index">
-                        <img class="img" v-if="sticker.logo" :src="sticker.logo" alt="sticker.logo">
-                        <span class="text" v-else>{{sticker.display_name}}</span>
-                      </div>
+                      >
+                      <ul class="sticker-container">
+                        <li class="sticker-pack m-l-lg m-r-lg m-t-lg" v-for="(item, index) in stickers[sticker.name]" :key="index">
+                          <img class="sticker-img pointer" @click="sendSticker(item.id, chat.current.roomId)" :src="item.url" :alt="index"/>
+                        </li>
+                      </ul>
+                    </el-carousel-item>
+                  </el-carousel>
+                  <div class="indicators">
+                    <div :class="['indicator','pointer', {active: nowSticker === sticker.name}]"
+                      @click="switchStickers(sticker.name)"
+                      v-for="(sticker, index) in stickerGroups"
+                      :key="index">
+                      <img class="img" v-if="sticker.logo" :src="sticker.logo" alt="sticker.logo">
+                      <span class="text" v-else>{{sticker.display_name}}</span>
                     </div>
-
                   </div>
-                </el-tab-pane>
-
+                </div>
+              </el-tab-pane>
               </el-tabs>
-          </el-popover>
+            </el-popover>
           <a v-popover:popover4
             v-if="emojiSuccess"
             href="javascript:void(0)"
@@ -1430,15 +1427,14 @@ export default {
 }
 
 .emoji-container {
-  height: 220px;
-  max-height: 220px;
+  height: 300px;
+  max-height: 300px;
   overflow-y: auto;
   .emoji {
-    padding: 2px 6px 0 4px;
-    display: inline-block;
-    cursor: pointer;
     position: relative;
-    font-size: 18px;
+    display: inline-block;
+    font-size: 22px;
+    margin: 3px 5px;
     text-align: center;
     border: 2px solid transparent;
   }
@@ -1448,8 +1444,8 @@ export default {
 }
 
 .stickers-container {
-  height: 220px;
-  max-height: 220px;
+  height: 300px;
+  max-height: 300px;
   overflow-y: auto;
 
   .indicators {
@@ -1463,23 +1459,23 @@ export default {
       line-height: 50px;
       text-align: center;
       &.active {
-        background: rgba(0, 0, 0, .3);
+        background: white;
       }
       &:hover {
-        background: rgba(0, 0, 0, .5);
+        background: rgba(0, 0, 0, .1);
       }
     }
     .img {
-      width: 40px;
-      height: 40px;
-      padding-top: 5px;
+      width: 35px;
+      height: 35px;
+      padding-top: 10px;
     }
   }
   .sticker-container {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-start;
-    height: 170px;
+    height: 250px;
     overflow: auto;
   }
   .sticker-pack {
