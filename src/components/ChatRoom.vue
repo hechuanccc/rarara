@@ -110,7 +110,7 @@
                   </div>
                 </el-tab-pane>
 
-                <el-tab-pane label="表情包" name="stickers">
+                <el-tab-pane v-if="stickerGroups.length" label="表情包" name="stickers">
                   <div class="stickers-container">
                     <el-carousel ref="stickerCarousel"
                       v-loading="stickerLoading"
