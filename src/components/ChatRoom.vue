@@ -92,10 +92,11 @@
       <el-footer class="footer" height="100">
         <div class="control-bar">
           <el-popover
+            v-model="showStickerPopover"
             :popper-class="'emoji-popover'"
             ref="popover4"
             placement="top-start"
-            :width="stickerTab === 'stickers' ? 600 : 260"
+            :width="stickerTab === 'stickers' ? 460 : 300"
             trigger="click">
             <el-tabs type="border-card" class="stickers-tab" v-model="stickerTab">
               <el-tab-pane label="表情符号" name="emojis">
@@ -125,7 +126,7 @@
                       :key="index"
                       >
                       <ul class="sticker-container">
-                        <li class="sticker-pack m-l-lg m-r-lg m-t-lg" v-for="(item, index) in stickers[sticker.name]" :key="index">
+                        <li class="sticker-pack m-l m-r m-t" v-for="(item, index) in stickers[sticker.name]" :key="index">
                           <img class="sticker-img pointer" @click="sendSticker(item.id, chat.current.roomId)" :src="item.url" :alt="index"/>
                         </li>
                       </ul>
@@ -338,7 +339,8 @@ export default {
       stickerTab: 'emojis',
       stickerLoading: false,
       nowSticker: '',
-      imgLoadCount: 0
+      imgLoadCount: 0,
+      showStickerPopover: false
     }
   },
   watch: {
@@ -469,8 +471,10 @@ export default {
       if (this.stickerLoading) {
         return
       }
+
       this.$refs.stickerCarousel.setActiveItem(name)
       this.nowSticker = name
+
       let gotSticker = localStorage.getItem('stickers')
       let formattedGotSticker = JSON.parse(gotSticker)
 
@@ -845,6 +849,7 @@ export default {
         type: 7,
         sticker: stickerId
       }))
+      this.showStickerPopover = false
     },
     sendMsgImg (e) {
       let fileInp = this.$refs.fileImgSend
@@ -1438,7 +1443,7 @@ export default {
     position: relative;
     display: inline-block;
     font-size: 22px;
-    margin: 3px 5px;
+    margin: 5px 5px;
     text-align: center;
     border: 2px solid transparent;
   }
@@ -1605,6 +1610,9 @@ export default {
 .emoji-popover {
   &.el-popover {
     padding: 0;
+  }
+  .el-tabs--border-card {
+    border: 0;
   }
 }
 

@@ -51,7 +51,7 @@
             v-model="emojiShowing"
             ref="emoji-popover"
             placement="top-start"
-            width="260"
+            width="280"
             trigger="click">
             <div class="emoji-container">
               <span v-for="(item, index) in emojis.people.slice(0, 42)"
