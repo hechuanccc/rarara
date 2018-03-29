@@ -356,6 +356,7 @@ export default {
         let formattedGotSticker = JSON.parse(gotSticker)
         this.$refs.stickerCarousel.setActiveItem(firstStickerName)
         this.nowSticker = firstStickerName
+
         if (gotSticker && formattedGotSticker[firstStickerName]) {
           this.stickers[firstStickerName] = formattedGotSticker[firstStickerName]
         } else {
