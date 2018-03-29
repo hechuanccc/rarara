@@ -91,6 +91,7 @@
       </el-main>
       <el-footer class="footer" height="100">
         <div class="control-bar">
+
           <el-popover
             v-model="showStickerPopover"
             :popper-class="'emoji-popover'"
@@ -100,51 +101,19 @@
             trigger="click">
             <el-tabs type="border-card" class="stickers-tab" v-model="stickerTab">
               <el-tab-pane label="表情符号" name="emojis">
-                <div class="emoji-container text-center">
-                  <a href="javascript:void(0)"
-                    v-for="(item, index) in emojis.people.slice(0, 42)"
-                    :key="index"
-                    class="emoji"
-                    @click="personal_setting.chat.status ? msgContent = msgContent + item.emoji + ' ' : ''">
-                    {{item.emoji}}
-                  </a>
+                <div class="emoji-container">
+                  <Emojis :emojis="emojis.people.slice(0, 42)" @emojiClick="handleEmojiClick"/>
                 </div>
               </el-tab-pane>
 
               <el-tab-pane v-if="stickerGroups.length" label="表情包" name="stickers">
                 <div class="stickers-container">
-                  <el-carousel ref="stickerCarousel"
-                    v-loading="stickerLoading"
-                    indicator-position="none"
-                    arrow="never"
-                    height="250px"
-                    :autoplay="false"
-                    class="stickers-packs">
-                    <el-carousel-item :name="sticker.name"
-                      v-if="stickerTab === 'stickers'"
-                      v-for="(sticker, index) in stickerGroups"
-                      :key="index"
-                      >
-                      <ul class="sticker-container">
-                        <li class="sticker-pack m-l m-r m-t" v-for="(item, index) in stickers[sticker.name]" :key="index">
-                          <img class="sticker-img pointer" @click="sendSticker(item.id, chat.current.roomId)" :src="item.url" :alt="index"/>
-                        </li>
-                      </ul>
-                    </el-carousel-item>
-                  </el-carousel>
-                  <div class="indicators">
-                    <div :class="['indicator','pointer', {active: nowSticker === sticker.name}]"
-                      @click="switchStickers(sticker.name)"
-                      v-for="(sticker, index) in stickerGroups"
-                      :key="index">
-                      <img class="img" v-if="sticker.logo" :src="sticker.logo" alt="sticker.logo"/>
-                      <span class="text" v-else>{{sticker.display_name}}</span>
-                    </div>
-                  </div>
+                  <Stickers @sendSticker="sendSticker" v-if="stickerTab === 'stickers'"/>
                 </div>
               </el-tab-pane>
               </el-tabs>
             </el-popover>
+
           <a v-popover:popover4
             v-if="emojiSuccess"
             href="javascript:void(0)"
@@ -272,7 +241,7 @@
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/cog'
 import 'vue-awesome/icons/smile-o'
-import { fetchChatEmoji, sendImgToChat, getChatUser, buildRoom, getChatList, takeEnvelope, fetchStickers } from '../api'
+import { fetchChatEmoji, sendImgToChat, getChatUser, buildRoom, getChatList, takeEnvelope } from '../api'
 import urls from '../api/urls'
 import { msgFormatter } from '../utils'
 import config from '../../config'
@@ -281,6 +250,8 @@ import PrivateChat from '../components/PrivateChat'
 import Envelope from '../components/Envelope'
 import Restraint from './Restraint'
 import ImgAsync from './ImgAsync'
+import Emojis from './Emojis'
+import Stickers from './Stickers'
 
 const WSHOST = config.chatHost
 
@@ -290,7 +261,9 @@ export default {
     Restraint,
     PrivateChat,
     Envelope,
-    ImgAsync
+    ImgAsync,
+    Emojis,
+    Stickers
   },
   data () {
     return {
@@ -335,12 +308,9 @@ export default {
         visible: false,
         envelope: {}
       },
-      stickers: {},
+      showStickerPopover: false,
       stickerTab: 'emojis',
-      stickerLoading: false,
-      nowSticker: '',
-      imgLoadCount: 0,
-      showStickerPopover: false
+      imgLoadCount: 0
     }
   },
   watch: {
@@ -349,21 +319,6 @@ export default {
         this.$nextTick(() => {
           this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
         })
-      }
-    },
-    'stickerTab': function (val, oldVal) {
-      if (val === 'stickers') {
-        let firstStickerName = this.stickerGroups[0].name
-        let gotSticker = localStorage.getItem('stickers')
-        let formattedGotSticker = JSON.parse(gotSticker)
-        this.$refs.stickerCarousel.setActiveItem(firstStickerName)
-        this.nowSticker = firstStickerName
-
-        if (gotSticker && formattedGotSticker[firstStickerName]) {
-          this.stickers[firstStickerName] = formattedGotSticker[firstStickerName]
-        } else {
-          this.getStickers(firstStickerName)
-        }
       }
     },
     'chat.current.roomId' (val) {
@@ -460,31 +415,8 @@ export default {
     localStorage.setItem('stickers', '{}')
   },
   methods: {
-    getStickers (stickerName) {
-      this.stickerLoading = true
-      fetchStickers(stickerName).then((res) => {
-        this.$set(this.stickers, stickerName, res[stickerName])
-
-        localStorage.setItem('stickers', JSON.stringify(this.stickers))
-        this.stickerLoading = false
-      })
-    },
-    switchStickers (name) {
-      if (this.stickerLoading) {
-        return
-      }
-
-      this.$refs.stickerCarousel.setActiveItem(name)
-      this.nowSticker = name
-
-      let gotSticker = localStorage.getItem('stickers')
-      let formattedGotSticker = JSON.parse(gotSticker)
-
-      if (gotSticker && formattedGotSticker[name]) {
-        this.$set(this.stickers, name, formattedGotSticker[name])
-      } else {
-        this.getStickers(name)
-      }
+    handleEmojiClick (emoji) {
+      this.msgContent = this.msgContent + emoji.emoji + ' '
     },
     closeEnvelope () {
       this.envelope.visible = false
@@ -844,13 +776,7 @@ export default {
         this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
       }, 1000)
     },
-    sendSticker (stickerId, receiver) {
-      this.ws.send(JSON.stringify({
-        command: 'send',
-        receivers: [receiver],
-        type: 7,
-        sticker: stickerId
-      }))
+    sendSticker () {
       this.showStickerPopover = false
     },
     sendMsgImg (e) {
@@ -1441,62 +1367,12 @@ export default {
   height: 300px;
   max-height: 300px;
   overflow-y: auto;
-  .emoji {
-    position: relative;
-    display: inline-block;
-    font-size: 22px;
-    margin: 5px 5px;
-    text-align: center;
-    border: 2px solid transparent;
-  }
-  .emoji:hover {
-    border-color: #ff5a00;
-  }
 }
 
 .stickers-container {
   height: 300px;
   max-height: 300px;
   overflow-y: auto;
-
-  .indicators {
-    height: 50px;
-    background: #ddd;
-    .indicator {
-      box-sizing: border-box;
-      display: inline-block;
-      width: 50px;
-      height: 50px;
-      line-height: 50px;
-      text-align: center;
-      &.active {
-        background: white;
-      }
-      &:hover {
-        background: rgba(0, 0, 0, .1);
-      }
-    }
-    .img {
-      width: 35px;
-      height: 35px;
-      padding-top: 10px;
-    }
-  }
-  .sticker-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    height: 250px;
-    overflow: auto;
-  }
-  .sticker-pack {
-    width: 70px;
-    height: 70px;
-    .sticker-img {
-      width: 100%;
-      height: 100%;
-    }
-  }
 }
 
 
