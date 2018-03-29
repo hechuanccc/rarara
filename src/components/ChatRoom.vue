@@ -456,6 +456,8 @@ export default {
     } else {
       this.joinChatRoom()
     }
+
+    localStorage.setItem('stickers', '{}')
   },
   methods: {
     getStickers (stickerName) {
