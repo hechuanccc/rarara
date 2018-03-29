@@ -17,10 +17,20 @@
               <span v-if="getRoles(msg).includes('customer service')" :class="character">
                 客服人员
               </span>
-              <span class="time">{{msg.created_at | moment('HH:mm:ss')}}</span>
+              <span class="time p-l-sm p-r-sm">{{msg.created_at | moment('HH:mm:ss')}}</span>
               <div class="content-box">
                 <div v-if="msg.type === 0" class="content p-l p-r m-t-sm">{{msg.content}}</div>
-                <img class="content" v-else-if="msg.type === 1" :src="msg.content" :alt="msg.content">
+                <img-async class="content"
+                   v-else-if="msg.type === 1"
+                   :src="msg.content"
+                   @imgStart="imgLoadCount++"
+                   @imgLoad="imgLoadCount--"/>
+                 <div class="sticker-msg" v-else-if="msg.type === 7">
+                   <img-async class="img"
+                     :src="msg.content"
+                     @imgStart="imgLoadCount++"
+                     @imgLoad="imgLoadCount--"/>
+                 </div>
               </div>
             </div>
           </div>
@@ -41,7 +51,7 @@
             v-model="emojiShowing"
             ref="emoji-popover"
             placement="top-start"
-            width="260"
+            width="280"
             trigger="click">
             <div class="emoji-container">
               <span v-for="(item, index) in emojis.people.slice(0, 42)"
@@ -90,16 +100,19 @@ import { sendImgToChat } from '../api'
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/smile-o'
 import {mapState} from 'vuex'
+import ImgAsync from './ImgAsync'
 
 export default {
   components: {
-    Icon
+    Icon,
+    ImgAsync
   },
   data () {
     return {
       speakingContent: '',
       emojiShowing: false,
-      showing: this.roomMsgs[this.chat.current.roomId]
+      showing: this.roomMsgs[this.chat.current.roomId],
+      imgLoadCount: 0
     }
   },
   props: {
@@ -139,6 +152,13 @@ export default {
         })
       },
       deep: true
+    },
+    'imgLoadCount': function (count) {
+      if (count === 0) {
+        this.$nextTick(() => {
+          this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
+        })
+      }
     }
   },
   methods: {
@@ -333,7 +353,7 @@ export default {
     padding: 2px 6px 0 4px;
     display: inline-block;
     position: relative;
-    font-size: 18px;
+    font-size: 22px;
     text-align: center;
     border: 2px solid transparent;
   }
@@ -354,6 +374,15 @@ export default {
     outline: none;
     border: none;
     background-color: transparent;
+  }
+}
+
+.sticker-msg {
+  width: 150px;
+  height: auto;
+  .img {
+    width: 100%;
+    height: 100%;
   }
 }
 </style>
