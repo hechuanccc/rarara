@@ -120,6 +120,7 @@
                     :autoplay="false"
                     class="stickers-packs">
                     <el-carousel-item :name="sticker.name"
+                      v-if="stickerTab === 'stickers'"
                       v-for="(sticker, index) in stickerGroups"
                       :key="index"
                       >
@@ -353,8 +354,8 @@ export default {
         let firstStickerName = this.stickerGroups[0].name
         let gotSticker = localStorage.getItem('stickers')
         let formattedGotSticker = JSON.parse(gotSticker)
-        this.nowSticker = firstStickerName
         this.$refs.stickerCarousel.setActiveItem(firstStickerName)
+        this.nowSticker = firstStickerName
         if (gotSticker && formattedGotSticker[firstStickerName]) {
           this.stickers[firstStickerName] = formattedGotSticker[firstStickerName]
         } else {
