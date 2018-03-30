@@ -31,7 +31,7 @@
                    <el-form-item>
                      <el-button type="primary" @click="submit">登录</el-button>
                    </el-form-item>
-                   <div class="m-t">
+                   <div class="m-t" v-if="false">
                      <el-button @click.native="trial" type="primary" plain>游客试玩</el-button>
                    </div>
                  </div>
@@ -39,7 +39,6 @@
                <div class="register">
                 <div class="tip">还没有账号？</div>
                 <router-link to="/register"><el-button type="primary" plain>立即注册</el-button></router-link>
-
                </div>
              </div>
            </el-main>
