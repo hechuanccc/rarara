@@ -3,7 +3,6 @@
     <el-container
       class="chat-box"
       v-loading="loading"
-      id="chatBox"
       element-loading-text="正在登录计划聊天室">
       <el-main class="content" id="chatBox">
         <ul class="lay-scroll">
@@ -91,7 +90,6 @@
       </el-main>
       <el-footer class="footer" height="100">
         <div class="control-bar">
-
           <el-popover
             v-model="showStickerPopover"
             :popper-class="'emoji-popover'"
@@ -113,7 +111,6 @@
               </el-tab-pane>
               </el-tabs>
             </el-popover>
-
           <a v-popover:popover4
             v-if="emojiSuccess"
             href="javascript:void(0)"
@@ -720,18 +717,18 @@ export default {
                     }
 
                     this.$forceUpdate()
-                }
 
-                let chatBox = document.getElementById('chatBox')
-                if (chatBox) {
-                  let h = chatBox.clientHeight
-                  let sh = chatBox.scrollHeight || chatBox.offsetHeigth
-                  let st = chatBox.scrollTop || document.documentElement.scrollTop || document.body.scrollTop
-                  if (h + st + 100 >= sh || (data.sender && data.sender.username === this.user.username)) {
                     this.$nextTick(() => {
-                      this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
+                      let chatBox = document.getElementById('chatBox')
+
+                      let clientHeight = chatBox.clientHeight
+                      let scrollHeight = chatBox.scrollHeight
+                      let scrollTop = chatBox.scrollTop
+
+                      if (scrollTop + clientHeight > (scrollHeight - 100) || (data.sender && data.sender.username === this.user.username)) {
+                        this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
+                      }
                     })
-                  }
                 }
               }
             } else {
