@@ -27,10 +27,20 @@
               <qr-code :text="globalPreference.mobile_url"></qr-code>
             </div>
           </div>
-          <div class="user-info">
+          <div class="user-info fr pointer" v-if="myRoles && !myRoles.includes('visitor')">
             <img @click="showProfileDiag = true" :src="user.avatar ? user.avatar : require('../assets/avatar.png')" height="25" width="25">
             <span @click="showProfileDiag = true" class="username">{{user.nickname || user.username}}</span>
             <a class="logout" @click="logout">退出</a>
+          </div>
+          <div class="visitor-actions fr" v-else>
+            <span class="greeting m-r">游客, 您好</span>
+            <span class="login pointer" @click="$router.push({name: 'Login'})">
+              登入
+            </span>
+            <span>|</span>
+            <span class="register pointer" @click="$router.push({name: 'Register'})">
+              注册
+            </span>
           </div>
         </el-col>
       </el-row>
@@ -811,17 +821,21 @@ export default {
     }
   }
 
-  .user-info {
-    float: right;
-    cursor: pointer;
-  }
-
   .logout {
     &:hover {
       text-decoration: underline;
     }
     &:active {
       color: #ccc;
+    }
+  }
+
+  .visitor-actions {
+    .login, .register {
+      display: inline-block;
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
 }

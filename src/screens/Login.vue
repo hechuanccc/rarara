@@ -31,11 +31,15 @@
                    <el-form-item>
                      <el-button type="primary" @click="submit">登录</el-button>
                    </el-form-item>
+                   <div class="m-t">
+                     <el-button @click.native="trial" type="primary" plain>游客试玩</el-button>
+                   </div>
                  </div>
                </el-form>
                <div class="register">
                 <div class="tip">还没有账号？</div>
                 <router-link to="/register"><el-button type="primary" plain>立即注册</el-button></router-link>
+
                </div>
              </div>
            </el-main>
@@ -49,6 +53,9 @@
 
 </template>
 <script>
+import { register } from '../api'
+import { msgFormatter } from '../utils'
+
 export default {
   name: 'login',
   data () {
@@ -86,6 +93,24 @@ export default {
         this.$router.push(next || '/')
       }, errorMsg => {
         this.errorMsg = errorMsg.response.data.message
+      })
+    },
+    trial () {
+      register({visitor: 'True'}).then(result => {
+        return this.$store.dispatch('login', {
+          user: {
+            username: this.user.username,
+            password: this.user.password
+          }
+        })
+      }).then(result => {
+        this.$router.push('/')
+      }, errorMsg => {
+        this.$message({
+          showClose: true,
+          message: msgFormatter(errorMsg),
+          type: 'error'
+        })
       })
     }
   },

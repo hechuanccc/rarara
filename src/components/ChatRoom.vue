@@ -35,25 +35,31 @@
                   </span>
                   <span class="msg-time">{{item.created_at | moment('HH:mm:ss')}}</span>
                 </div>
-                <div :class="['envelope-message','pointer', {'null': item.envelope_status.remaining === 0 && !item.envelope_status.users.map(item => item.receiver_id).includes(user.id)}]" v-if="item.type === 5 && item.envelope_status && !item.envelope_status.expired" @click="takeEnvelope(item)">
+                <div v-if="item.type === 5">
+                  <div :class="['envelope-message','pointer',
+                  {'null': item.envelope_status.remaining === 0 && !item.envelope_status.users.map(item => item.receiver_id).includes(user.id)}]"
+                  v-if="item.envelope_status && !item.envelope_status.expired"
+                  @click="takeEnvelope(item)">
                   <img class="img m-r" src="../assets/envelope_message.png" alt="envelope"/>
                   <div class="send-texts" v-if="item.type === 5">
                     <p class="slogan">{{item.content ? item.content : '恭喜发财 大吉大利'}}</p>
-                    <p class="action">
+                    <p class="action" v-if="myRoles && !myRoles.includes('visitor')">
                       {{
                         item.envelope_status.users.map(item => item.receiver_id).includes(user.id) ?
                         '已领取' : item.envelope_status.remaining === 0  ?
                         '已领完' : '待领取'
                       }}
                     </p>
+                    <p v-else>会员才可以抢红包！</p>
                   </div>
-                </div>
-
-                <div class="envelope-message expired" v-else-if="item.type === 5 && item.envelope_status.expired">
-                  <img class="img m-r" src="../assets/envelope_message.png" alt="envelope"/>
-                  <div class="send-texts">
-                    <p class="slogan">{{item.content ? item.content : '恭喜发财 大吉大利'}}</p>
-                    <p>已过期</p>
+                  </div>
+                  <div class="envelope-message expired"
+                    v-else-if="item.envelope_status.expired">
+                    <img class="img m-r" src="../assets/envelope_message.png" alt="envelope"/>
+                    <div class="send-texts">
+                      <p class="slogan">{{item.content ? item.content : '恭喜发财 大吉大利'}}</p>
+                      <p>已过期</p>
+                    </div>
                   </div>
                 </div>
                 <div class="text-center sticker-msg" v-else-if="item.type === 7">
@@ -88,7 +94,7 @@
           <li ref="msgEnd" id="msgEnd" class="msgEnd"></li>
         </ul>
       </el-main>
-      <el-footer class="footer" height="100">
+      <el-footer class="footer m-t" height="100" v-if="myRoles && !myRoles.includes('visitor')">
         <div class="control-bar">
           <el-popover
             v-model="showStickerPopover"
@@ -313,9 +319,18 @@ export default {
   watch: {
     'imgLoadCount': function (count) {
       if (count === 0) {
-        this.$nextTick(() => {
-          this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
-        })
+        let chatBox = document.getElementById('chatBox')
+        if (chatBox) {
+          let clientHeight = chatBox.clientHeight
+          let scrollHeight = chatBox.scrollHeight
+          let scrollTop = chatBox.scrollTop
+
+          this.$nextTick(() => {
+            if (scrollTop + clientHeight > (scrollHeight - 200)) {
+              this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
+            }
+          })
+        }
       }
     },
     'chat.current.roomId' (val) {
@@ -419,9 +434,10 @@ export default {
       this.envelope.visible = false
     },
     takeEnvelope (envelope) {
-      if (this.personal_setting.block) {
+      if (this.personal_setting.block || this.myRoles.includes('visitor')) {
         return
       }
+
       this.envelope.content = envelope.content
       this.envelope.status = 'taking'
 
@@ -553,7 +569,6 @@ export default {
       let token = this.$cookie.get('access_token')
       this.loading = true
       this.$store.dispatch('startLoading')
-
       this.ws = new WebSocket(`${WSHOST}/chat/stream?token=${token}`)
 
       this.ws.onopen = () => {
@@ -640,7 +655,6 @@ export default {
                       this.openMessageBox(data.content, 'error')
                     } else if (data.command === 'unblock') {
                       this.personal_setting.blocked = false
-                      this.joinChatRoom()
                     } else if (data.command === 'unbanned') {
                       this.personal_setting.chat.status = 1
                     }
@@ -797,7 +811,7 @@ export default {
     sendMsg () {
       if (!this.msgContent.trim()) { return false }
       if (!this.ws) {
-        return this.joinChatRoom()
+        this.joinChatRoom()
       }
 
       this.ws.send(JSON.stringify({
@@ -922,7 +936,6 @@ export default {
   background-attachment: fixed;
   background-size: cover;
   padding: 10px;
-  margin-bottom: 10px;
 }
 
 .chat-announce {
