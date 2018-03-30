@@ -313,24 +313,30 @@ export default {
       },
       showStickerPopover: false,
       stickerTab: 'emojis',
-      imgLoadCount: 0
+      imgLoadCount: 0,
+      needScrollToBottom: true
     }
   },
   watch: {
     'imgLoadCount': function (count) {
       if (count === 0) {
-        let chatBox = document.getElementById('chatBox')
-        if (chatBox) {
-          let clientHeight = chatBox.clientHeight
-          let scrollHeight = chatBox.scrollHeight
-          let scrollTop = chatBox.scrollTop
-
+        if (this.needScrollToBottom) {
           this.$nextTick(() => {
-            if (scrollTop + clientHeight > (scrollHeight - 200)) {
-              this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
-            }
+            this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
           })
+          this.needScrollToBottom = false
         }
+
+        let chatBox = document.getElementById('chatBox')
+        let clientHeight = chatBox.clientHeight
+        let scrollHeight = chatBox.scrollHeight
+        let scrollTop = chatBox.scrollTop
+
+        this.$nextTick(() => {
+          if (scrollTop + clientHeight > (scrollHeight - 200)) {
+            this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
+          }
+        })
       }
     },
     'chat.current.roomId' (val) {
@@ -652,9 +658,11 @@ export default {
                   case 2:
 
                     if (data.command === 'banned') {
+                      this.personal_setting.chat.status = 0
                       this.openMessageBox(data.content, 'error')
                     } else if (data.command === 'unblock') {
-                      this.personal_setting.blocked = false
+                      this.personal_setting.block = false
+                      this.personal_setting.chat.status = 1
                     } else if (data.command === 'unbanned') {
                       this.personal_setting.chat.status = 1
                     }
