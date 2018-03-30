@@ -716,15 +716,14 @@ export default {
                       this.$store.dispatch('updateChatRead', {username: data.sender.username, read: false})
                     }
 
+                    let chatBox = document.getElementById('chatBox')
+                    let clientHeight = chatBox.clientHeight
+                    let scrollHeight = chatBox.scrollHeight
+
                     this.$forceUpdate()
+                    let scrollTop = chatBox.scrollTop
 
                     this.$nextTick(() => {
-                      let chatBox = document.getElementById('chatBox')
-
-                      let clientHeight = chatBox.clientHeight
-                      let scrollHeight = chatBox.scrollHeight
-                      let scrollTop = chatBox.scrollTop
-
                       if (scrollTop + clientHeight > (scrollHeight - 200) || (data.sender && data.sender.username === this.user.username)) {
                         this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
                       }
