@@ -314,7 +314,7 @@ export default {
       showStickerPopover: false,
       stickerTab: 'emojis',
       imgLoadCount: 0,
-      needScrollToBottom: true
+      needScrollToBottom: false
     }
   },
   watch: {
@@ -324,19 +324,7 @@ export default {
           this.$nextTick(() => {
             this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
           })
-          this.needScrollToBottom = false
         }
-
-        let chatBox = document.getElementById('chatBox')
-        let clientHeight = chatBox.clientHeight
-        let scrollHeight = chatBox.scrollHeight
-        let scrollTop = chatBox.scrollTop
-
-        this.$nextTick(() => {
-          if (scrollTop + clientHeight > (scrollHeight - 200)) {
-            this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
-          }
-        })
       }
     },
     'chat.current.roomId' (val) {
@@ -623,7 +611,7 @@ export default {
               if (latestMsgs) {
                 if (data.count) {
                   let lastMsg = latestMsgs[0]
-
+                  this.needScrollToBottom = true
                   latestMsgs.forEach((msg) => {
                     if (msg.type === 7) {
                       msg.content = this.host + msg.content
@@ -744,10 +732,13 @@ export default {
 
                     this.$forceUpdate()
                     let scrollTop = chatBox.scrollTop
+                    this.needScrollToBottom = true
 
                     this.$nextTick(() => {
                       if (scrollTop + clientHeight > (scrollHeight - 200) || (data.sender && data.sender.username === this.user.username)) {
                         this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
+                      } else {
+                        this.needScrollToBottom = false
                       }
                     })
                 }
