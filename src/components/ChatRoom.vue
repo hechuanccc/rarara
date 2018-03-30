@@ -725,7 +725,7 @@ export default {
                       let scrollHeight = chatBox.scrollHeight
                       let scrollTop = chatBox.scrollTop
 
-                      if (scrollTop + clientHeight > (scrollHeight - 100) || (data.sender && data.sender.username === this.user.username)) {
+                      if (scrollTop + clientHeight > (scrollHeight - 200) || (data.sender && data.sender.username === this.user.username)) {
                         this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
                       }
                     })
