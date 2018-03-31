@@ -74,30 +74,42 @@ export default {
         ]
       },
       errorMsg: '',
-      clientH: document.documentElement.clientHeight || document.body.clientHeight
+      clientH: document.documentElement.clientHeight || document.body.clientHeight,
+      loading: false
     }
   },
   methods: {
     submit () {
+      if (this.loading) {
+        return
+      }
       if (!this.user.username || !this.user.password) {
         this.$refs.username && this.$refs.username.focus()
         return
       }
+      this.loading = true
       this.$store.dispatch('login', {
         user: {
           username: this.user.username,
           password: this.user.password
         }
       }).then(result => {
-        this.$store.dispatch('fetchUser')
         const next = this.$route.query.next
-        this.$router.push(next || '/')
+        this.$store.dispatch('fetchUser').then(() => {
+          this.loading = false
+          this.$router.push(next || '/')
+        })
       }, errorMsg => {
         this.errorMsg = errorMsg.response.data.message
+        this.loading = false
       })
     },
     trial () {
+      if (this.loading) {
+        return
+      }
       this.$refs['user'].clearValidate()
+      this.loading = true
       register({visitor: 'True'}).then(visitor => {
         return this.$store.dispatch('login', {
           user: {
@@ -107,6 +119,7 @@ export default {
         })
       }).then(result => {
         this.$store.dispatch('fetchUser').then(() => {
+          this.loading = false
           this.$router.push('/')
         })
       }, errorMsg => {
@@ -115,6 +128,7 @@ export default {
           message: msgFormatter(errorMsg),
           type: 'error'
         })
+        this.loading = false
       })
     }
   },
