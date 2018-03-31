@@ -36,7 +36,7 @@
                   <span class="msg-time">{{item.created_at | moment('HH:mm:ss')}}</span>
                 </div>
                 <div v-if="item.type === 5">
-                  <div :class="['envelope-message','pointer',
+                  <div :class="['envelope-message',{'pointer': !myRoles.includes('visitor')},
                   {'null': item.envelope_status.remaining === 0 && !item.envelope_status.users.map(item => item.receiver_id).includes(user.id)}]"
                   v-if="item.envelope_status && !item.envelope_status.expired"
                   @click="takeEnvelope(item)">
@@ -284,9 +284,7 @@ export default {
       chatHall: 1,
       RECEIVER: 1,
       personal_setting: {
-        chat: {
-          reasons: []
-        }
+        chat: {}
       },
       blockedUsers: [],
       bannedUsers: [],
