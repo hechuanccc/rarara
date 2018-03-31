@@ -36,26 +36,34 @@
                   <span class="msg-time">{{item.created_at | moment('HH:mm:ss')}}</span>
                 </div>
                 <div v-if="item.type === 5">
-                  <div :class="['envelope-message',{'pointer': !myRoles.includes('visitor')},
-                  {'null': item.envelope_status.remaining === 0 && !item.envelope_status.users.map(item => item.receiver_id).includes(user.id)}]"
-                  v-if="item.envelope_status && !item.envelope_status.expired"
-                  @click="takeEnvelope(item)">
-                  <img class="img m-r" src="../assets/envelope_message.png" alt="envelope"/>
-                  <div class="send-texts" v-if="item.type === 5">
-                    <p class="slogan">{{item.content ? item.content : '恭喜发财 大吉大利'}}</p>
-                    <p class="action" v-if="myRoles && !myRoles.includes('visitor')">
-                      {{
-                        item.envelope_status.users.map(item => item.receiver_id).includes(user.id) ?
-                        '已领取' : item.envelope_status.remaining === 0  ?
-                        '已领完' : '待领取'
-                      }}
-                    </p>
-                    <p v-else>会员才可以抢红包！</p>
+                  <div v-if="myRoles && myRoles.includes('visitor')" class="envelope-message expired">
+                    <img class="img m-r" src="../assets/envelope_message.png" alt="envelope"/>
+                    <div class="send-texts">
+                      <p class="slogan">{{item.content ? item.content : '恭喜发财 大吉大利'}}</p>
+                      <p class="action">会员才可以抢红包！</p>
+                    </div>
                   </div>
+                  <div :class="['envelope-message','pointer',
+                    {'null': item.envelope_status.remaining === 0 && !item.envelope_status.users.map(item => item.receiver_id).includes(user.id)}]"
+                    v-else-if="item.envelope_status && !item.envelope_status.expired"
+                    @click="takeEnvelope(item)">
+                    <img class="img m-r" src="../assets/envelope_message.png" alt="envelope"/>
+                    <div class="send-texts">
+                      <p class="slogan">{{item.content ? item.content : '恭喜发财 大吉大利'}}</p>
+                      <p class="action">
+                        {{
+                          item.envelope_status.users.map(item => item.receiver_id).includes(user.id) ?
+                          '已领取' : item.envelope_status.remaining === 0  ?
+                          '已领完' : '待领取'
+                        }}
+                      </p>
+                    </div>
                   </div>
                   <div class="envelope-message expired"
                     v-else-if="item.envelope_status.expired">
-                    <img class="img m-r" src="../assets/envelope_message.png" alt="envelope"/>
+                    <img class="img m-r"
+                      src="../assets/envelope_message.png"
+                      alt="envelope"/>
                     <div class="send-texts">
                       <p class="slogan">{{item.content ? item.content : '恭喜发财 大吉大利'}}</p>
                       <p>已过期</p>
@@ -112,7 +120,6 @@
                   <Emojis :emojis="emojis.people.slice(0, 42)" @emojiClick="handleEmojiClick"/>
                 </div>
               </el-tab-pane>
-
               <el-tab-pane v-if="stickerGroups.length" label="表情包" name="stickers">
                 <div class="stickers-container">
                   <Stickers @sendSticker="sendSticker" v-if="stickerTab === 'stickers'"/>
@@ -120,6 +127,7 @@
               </el-tab-pane>
               </el-tabs>
             </el-popover>
+
           <a v-popover:popover4
             v-if="emojiSuccess"
             href="javascript:void(0)"
@@ -127,6 +135,7 @@
             class="btn-control btn-smile">
             <icon scale="1.3" name="smile-o"></icon>
           </a>
+
           <a href="javascript:void(0)" class="btn-control btn-smile">
             <label for="imgUploadInput">
               <span title="上传图片">
@@ -180,6 +189,14 @@
           </div>
         </div>
       </el-footer>
+
+
+
+
+
+
+
+
     </el-container>
 
     <!-- chatting image lightbox -->
