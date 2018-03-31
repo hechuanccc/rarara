@@ -94,7 +94,10 @@
           <li ref="msgEnd" id="msgEnd" class="msgEnd"></li>
         </ul>
       </el-main>
-      <el-footer class="footer m-t" height="100" v-if="myRoles && !myRoles.includes('visitor')">
+
+      <el-footer class="footer m-t"
+        height="100"
+        v-show="myRoles && !myRoles.includes('visitor')">
         <div class="control-bar">
           <el-popover
             v-model="showStickerPopover"
@@ -409,7 +412,7 @@ export default {
     }
   },
   created () {
-    if (!this.myRoles.includes('customer service')) {
+    if (!this.myRoles.includes('manager') && !this.myRoles.includes('visitor')) {
       this.getChatList({offset: 0, limit: 20})
     }
     if (this.$route.name !== 'Home') {

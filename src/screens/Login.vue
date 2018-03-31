@@ -31,14 +31,16 @@
                    <el-form-item>
                      <el-button type="primary" @click="submit">登录</el-button>
                    </el-form-item>
-                   <div class="m-t" v-if="false">
+                   <div class="m-t">
                      <el-button @click.native="trial" type="primary" plain>游客试玩</el-button>
                    </div>
                  </div>
                </el-form>
                <div class="register">
                 <div class="tip">还没有账号？</div>
-                <router-link to="/register"><el-button type="primary" plain>立即注册</el-button></router-link>
+                <router-link to="/register">
+                  <el-button type="primary" plain>立即注册</el-button>
+                </router-link>
                </div>
              </div>
            </el-main>
@@ -95,15 +97,18 @@ export default {
       })
     },
     trial () {
-      register({visitor: 'True'}).then(result => {
+      this.$refs['user'].clearValidate()
+      register({visitor: 'True'}).then(visitor => {
         return this.$store.dispatch('login', {
           user: {
-            username: this.user.username,
-            password: this.user.password
+            username: visitor.username,
+            password: visitor.password
           }
         })
       }).then(result => {
-        this.$router.push('/')
+        this.$store.dispatch('fetchUser').then(() => {
+          this.$router.push('/')
+        })
       }, errorMsg => {
         this.$message({
           showClose: true,
