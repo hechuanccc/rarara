@@ -38,7 +38,9 @@
                </el-form>
                <div class="register">
                 <div class="tip">还没有账号？</div>
-                <router-link to="/register"><el-button type="primary" plain>立即注册</el-button></router-link>
+                <router-link to="/register">
+                  <el-button type="primary" plain>立即注册</el-button>
+                </router-link>
                </div>
              </div>
            </el-main>
@@ -95,6 +97,7 @@ export default {
       })
     },
     trial () {
+      this.$refs['user'].clearValidate()
       register({visitor: 'True'}).then(visitor => {
         return this.$store.dispatch('login', {
           user: {
