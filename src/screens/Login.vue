@@ -101,6 +101,7 @@ export default {
         })
       }, errorMsg => {
         this.errorMsg = errorMsg.response.data.message
+        this.loading = false
       })
     },
     trial () {
@@ -127,6 +128,7 @@ export default {
           message: msgFormatter(errorMsg),
           type: 'error'
         })
+        this.loading = false
       })
     }
   },
