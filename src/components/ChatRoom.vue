@@ -190,13 +190,6 @@
         </div>
       </el-footer>
 
-
-
-
-
-
-
-
     </el-container>
 
     <!-- chatting image lightbox -->
