@@ -1,50 +1,44 @@
 <template>
   <div class="full-height">
     <div class="box full-height">
-         <el-container class="full-height login-box login-container">
-           <el-header class="login-head">
-             <div class="title">会员登录</div>
-             <!-- <a :href="$store.state.globalPreference.customer_service_url" target="_blank" class="service">客服中心</a> -->
-           </el-header>
-           <el-main class="full-height">
-             <div class="login">
-               <el-form :model="user" status-icon ref="user" :rules="rules">
-                 <el-form-item prop="username" label="用户名"  label-width="65px">
-                   <el-input v-model="user.username"
-                             :autofocus="true"
-                             class="inp"
-                             ref="username">
-                   </el-input>
-                 </el-form-item>
-                 <el-form-item prop="password" label="密码" label-width="65px">
-                   <el-input v-model="user.password"
-                             type="password"
-                             ref="password"
-                             @keyup.enter.native="submit"
-                             class="inp">
-                   </el-input>
-                 </el-form-item>
-                 <transition name="el-fade-in">
-                   <span class="error" v-if="errorMsg">{{errorMsg}}</span>
-                 </transition>
-                 <div class="login-actions">
-                   <el-form-item>
-                     <el-button type="primary" @click="submit">登录</el-button>
-                   </el-form-item>
-                   <div class="m-t">
-                     <el-button @click.native="trial" type="primary" plain>游客试玩</el-button>
-                   </div>
-                 </div>
-               </el-form>
-               <div class="register">
-                <div class="tip">还没有账号？</div>
-                <router-link to="/register">
-                  <el-button type="primary" plain>立即注册</el-button>
-                </router-link>
-               </div>
-             </div>
-           </el-main>
-         </el-container>
+      <el-container class="full-height login-container">
+        <el-header class="login-head text-center m-t-xlg">
+          <div class="title">会员登录</div>
+        </el-header>
+        <el-main class="full-height">
+          <div class="login">
+            <el-form :model="user" status-icon ref="user" :rules="rules">
+              <el-form-item prop="username" label="用户名"  label-width="65px">
+                <el-input v-model="user.username"
+                          :autofocus="true"
+                          class="inp"
+                          ref="username">
+                </el-input>
+              </el-form-item>
+              <el-form-item prop="password" label="密码" label-width="65px">
+                <el-input v-model="user.password"
+                          type="password"
+                          ref="password"
+                          @keyup.enter.native="submit"
+                          class="inp">
+                </el-input>
+              </el-form-item>
+              <transition name="el-fade-in">
+                <span class="error" v-if="errorMsg">{{errorMsg}}</span>
+              </transition>
+              <div class="login-actions">
+                <el-form-item>
+                  <el-button type="primary" @click="submit">登录</el-button>
+                </el-form-item>
+                <el-form-item class="m-t guest-actions">
+                  <el-button @click.native="trial" type="primary" plain>游客体验</el-button>
+                  <el-button @click.native="$router.push({name: 'Register'})" type="primary" plain>立即注册</el-button>
+                </el-form-item>
+              </div>
+            </el-form>
+          </div>
+        </el-main>
+      </el-container>
     </div>
     <div class="footer">
       <p class="p1">投资有风险，入市须谨慎</p>
@@ -162,28 +156,10 @@ export default {
 
 .login-head {
   position: relative;
-  margin-top: 20px;
-  text-align: center;
+
   .title {
     display: inline-block;
-    line-height: 40px;
     font-size: 20px;
-    span {
-      color: #9b9b9b;
-    }
-  }
-  .service {
-    display: inline-block;
-    right: 15px;
-    top: 20px;
-    width: 100px;
-    height: 40px;
-    line-height: 40px;
-    border-radius: 2px;
-    font-size: 14px;
-    font-weight: 500;
-    background-color: #f57723;
-    color: #ffffff;
   }
 }
 
@@ -195,39 +171,25 @@ export default {
     width: 220px;
   }
 }
-.register {
-  .tip {
-    color: #999;
-    width: 220px;
-    text-align: center;
-    margin: 20px 0 10px;
-  }
-  margin-bottom: 30px;
-  padding-left: 65px;
-}
-.el-input {
-  width: 223px;
-  height: 40px;
-}
 
-.forgot-password {
-  display: inline-block;
-  width: 223px;
-  text-align: left;
-  position: relative;
-  bottom: 20px;
-  margin-top: 20px;
-  a {
-    font-size: 14px;
-    color: #4a90e2;
-    font-weight: 500;
-    text-decoration: none;
-  }
+.el-input {
+  width: 220px;
+  height: 40px;
 }
 
 .login-actions {
   padding-left: 65px;
+  .guest-actions {
+    display: flex;
+    width: 220px;
+    justify-content: space-between;
+    margin-bottom: 25px;
+    .el-button {
+      width: 100px;
+    }
+  }
 }
+
 .error {
   display: block;
   font-size: 13px;
