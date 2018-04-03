@@ -31,10 +31,10 @@
       </div>
     </div>
     <div class="body">
-      <div class="congratulation" v-if="checkinData.normal_bonus || checkinData.special_bonus">
+      <div class="congratulation" v-if="Number(checkinData.special_bonus)">
         <div class="text-center">
           <p class="text">获取彩金</p>
-          <p class="amount m-t">¥{{checkinData.normal_bonus || checkinData.special_bonus}}</p>
+          <p class="amount m-t">¥{{checkinData.special_bonus}}</p>
         </div>
       </div>
 
@@ -42,11 +42,11 @@
         <ul class="row" v-for="(row, index) in progressRows" :key="index">
           <li :class="['step',
             {checked: day - continuousCheckins <= 0},
-            {pointer: day === checkinDay}]"
+            {pointer: day === checkinDay && !hasChecked}]"
             @click="checkin(day)"
             v-for="(day, index) in row"
             :key="index">
-            <div :class="['gift', 'm-l','text-center', {today: (day === checkinDay) && !hasChecked}]"
+            <div :class="['gift', 'm-l','text-center', {today: (day === checkinDay)}, {clickable: (day === checkinDay) && !hasChecked}]"
               v-if="day % progress.giftDay === 0">
               <img class="img"
                 :src="require(`../assets/gift_${day}@2x.png`)"
@@ -58,7 +58,7 @@
               </div>
             </div>
 
-            <div :class="['ordinary', {today: (day === checkinDay) && !hasChecked}]" v-else>
+            <div :class="['ordinary', {today: (day === checkinDay)},{clickable: (day === checkinDay) && !hasChecked}]" v-else>
               <transition name="fade">
                 <span class="status-popover text-center"
                   v-if="day === checkinDay && statusPopoverVisible"
@@ -120,7 +120,7 @@ export default {
       },
       checkinData: {
         status: '',
-        normal_bonus: null
+        special_bonus: null
       },
       today: {
         continuous: this.continuousCheckins
@@ -163,12 +163,6 @@ export default {
       return this.continuousCheckins % 7 * 10 + 'px'
     },
     checkin (day) {
-      if (this.checkinDay === day && this.hasChecked) {
-        this.statusPopoverVisible = true
-        setTimeout(() => {
-          this.statusPopoverVisible = false
-        }, 2000)
-      }
       if (this.checkinDay !== day ||
         this.hasChecked ||
         this.loading) {
@@ -178,7 +172,7 @@ export default {
 
       checkin().then(response => {
         this.$store.dispatch('fetchUser').then(() => {
-          this.statusPopoverVisible = false
+          this.statusPopoverVisible = true
           this.checkinData = response
           this.loading = false
         })
@@ -305,13 +299,21 @@ export default {
     height: 50px;
     border-radius: 5px;
     background-color: #f8f7f3;
-    &.today {
+    &.clickable {
       box-shadow: 0 3px 5px 0 rgba(0, 0, 0, 0.5);
       border: solid 2px #3e73b1;
       .day {
         background-color: #3e73b1;
         border-radius: 0;
         color:#fff;
+      }
+    }
+
+    &.today {
+      .day {
+        background-color: #3e73b1;
+        color: #fff;
+        border-radius: 0px;
       }
     }
     .coin-icon {
@@ -339,7 +341,7 @@ export default {
 
   .gift {
 
-    &.today {
+    &.clickable {
       background-color: #f8e71c;
       border-radius: 50%;
       &:before {
