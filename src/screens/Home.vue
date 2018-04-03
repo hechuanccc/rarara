@@ -243,12 +243,12 @@
                     </el-table-column>
                   </el-table>
                   <el-pagination
-                    :page-size="envelopePagination.limit"
+                    :page-size="tablePagination.limit"
                     :current-page="1"
-                    v-if="envelopePagination.total"
+                    v-if="tablePagination.total"
                     @current-change="handleEnvelopePagination"
                     layout="prev, pager, next"
-                    :total="envelopePagination.total">
+                    :total="tablePagination.total">
                   </el-pagination>
                 </div>
               </el-tab-pane>
@@ -287,6 +287,14 @@
                       </template>
                     </el-table-column>
                   </el-table>
+                  <el-pagination
+                    :page-size="tablePagination.limit"
+                    :current-page="1"
+                    v-if="tablePagination.total"
+                    @current-change="handleCheckinPagination"
+                    layout="prev, pager, next"
+                    :total="tablePagination.total">
+                  </el-pagination>
                 </div>
               </el-tab-pane>
 
@@ -500,7 +508,7 @@ export default {
         chat: {}
       },
       envelopeRecord: [],
-      envelopePagination: {
+      tablePagination: {
         total: 0,
         currentPage: 1,
         limit: 40
@@ -566,10 +574,10 @@ export default {
     },
     'activePanel': function (panel) {
       if (panel === 'record') {
-        this.getEnvelopeRecord(0, this.envelopePagination.limit)
+        this.getEnvelopeRecord(0, this.tablePagination.limit)
       }
       if (panel === 'checkin') {
-        this.getCheckinRecord()
+        this.getCheckinRecord(0, this.tablePagination.limit)
       }
     }
   },
@@ -577,29 +585,35 @@ export default {
     this.getAnnouce()
   },
   methods: {
-    getCheckinRecord () {
+    getCheckinRecord (offset, limit) {
       this.tableLoading = true
-      fetchCheckinRecord().then((res) => {
-        this.checkinRecord = res
+      fetchCheckinRecord(offset, limit).then((res) => {
+        this.tablePagination.total = res.count
+
+        this.checkinRecord = res.results
         this.tableLoading = false
       })
     },
+    handleCheckinPagination (currentPage) {
+      this.tablePagination.currentPage = currentPage
+      this.getCheckinRecord((currentPage - 1) * this.tablePagination.limit, this.tablePagination.limit)
+    },
     closeCheckinDialog () {
       this.checkingDialog.visible = false
-    },
-    handleEnvelopePagination (currentPage) {
-      this.envelopePagination.currentPage = currentPage
-      this.getEnvelopeRecord((currentPage - 1) * this.envelopePagination.limit, this.envelopePagination.limit)
     },
     handleProfileDialogClose () {
       this.currentChooseAvatar = null
       this.activePanel = 'account'
     },
+    handleEnvelopePagination (currentPage) {
+      this.tablePagination.currentPage = currentPage
+      this.getEnvelopeRecord((currentPage - 1) * this.tablePagination.limit, this.tablePagination.limit)
+    },
     getEnvelopeRecord (offset, limit) {
       this.tableLoading = true
 
       getEnvelopeRecord(offset, limit).then(res => {
-        this.envelopePagination.total = res.count
+        this.tablePagination.total = res.count
 
         res.results.forEach((item) => {
           let amount = '' + item.amount
