@@ -178,8 +178,8 @@ export function updateMember (userId, remarks) {
   })
 }
 
-export function fetchCheckinRecord () {
-  return axios.get(`${urls.checkin}`)
+export function fetchCheckinRecord (offset, limit) {
+  return axios.get(`${urls.checkin}?offset=${offset}&limit=${limit}`)
 }
 
 export function checkin () {
