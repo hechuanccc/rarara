@@ -107,6 +107,9 @@ body {
 .p-t {
   padding-top: 10px;
 }
+.p-t-lg {
+  padding-top: 10px;
+}
 .p-t-xlg {
   padding-top: 40px;
 }
@@ -204,3 +207,10 @@ body {
 
 }
 @include scrollbars(10px, #666, 10px);
+
+
+.init-dialog {
+  .el-dialog__header, .el-dialog__body {
+    padding: 0;
+  }
+}

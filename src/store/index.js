@@ -15,7 +15,8 @@ export function createStore () {
       },
       loading: false,
       globalPreference: {
-        mobile_url: ''
+        mobile_url: '',
+        checkin_settings: {}
       },
       stickerGroups: [],
       chatList: [],

@@ -27,6 +27,11 @@
               <qr-code :text="globalPreference.mobile_url"></qr-code>
             </div>
           </div>
+          <div v-if="!myRoles.includes('visitor')" class="checkin-btn m-l pointer" @click="checkingDialog.visible = true">
+            <img class="img m-r-sm" src="../assets/money.png" alt="money">
+            <span class="text">签到</span>
+            <span class="badge" v-if="user.last_checkin !== $moment().format('YYYY-MM-DD')"></span>
+          </div>
           <div class="user-info fr pointer" v-if="myRoles && !myRoles.includes('visitor')">
             <img @click="showProfileDiag = true" :src="user.avatar ? user.avatar : require('../assets/avatar.png')" height="25" width="25">
             <span @click="showProfileDiag = true" class="username">{{user.nickname || user.username}}</span>
@@ -248,6 +253,43 @@
                 </div>
               </el-tab-pane>
 
+              <el-tab-pane label="签到纪录" name="checkin">
+                <div  v-if="activePanel === 'checkin'" v-loading="tableLoading">
+                  <el-table
+                    :data="checkinRecord"
+                    class="envelope-table"
+                    style="width: 100%">
+                    <el-table-column
+                      label="签到装置"
+                      width="100px">
+                      <template slot-scope="scope">
+                        <span>{{ scope.row.platform | platform}}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column
+                      :prop="'normal_bonus' || special_bonus"
+                      label="获得金额"
+                      width="100px">
+                      <template slot-scope="scope">
+                        <span>¥{{ scope.row.normal_bonus ||  scope.row.special_bonus}}</span>
+                      </template>
+                    </el-table-column>
+                    <el-table-column
+                      prop="continuous_checkins"
+                      width="100px"
+                      label="连续天数">
+                    </el-table-column>
+                    <el-table-column
+                      width="190px"
+                      label="签到时间">
+                      <template slot-scope="scope">
+                        <span>{{ scope.row.checkin_time | moment('YYYY-MM-HH HH:mm:ss') }}</span>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </div>
+              </el-tab-pane>
+
               <el-tab-pane class="edit-password-panel"
                 label="修改密码"
                 name="password"
@@ -290,6 +332,20 @@
             </el-tabs>
           </div>
         </el-dialog>
+
+        <el-dialog
+          v-if="user.username && globalPreference.checkin_settings.single_day_amount && !myRoles.includes('visitor')"
+          :custom-class="'checking-dialog init-dialog'"
+          :show-close="false"
+          :visible.sync="checkingDialog.visible"
+          width="400px">
+          <Checking @closeCheckinDialog="closeCheckinDialog"
+            v-if="checkingDialog.visible"
+            :continuousCheckins="user.continuous_checkins"
+            :hasChecked="user.last_checkin === $moment().format('YYYY-MM-DD')"
+            :singleDayAmount="globalPreference.checkin_settings.single_day_amount"></Checking>
+        </el-dialog>
+
       </el-container>
 
   </el-container>
@@ -303,7 +359,7 @@ import 'vue-awesome/icons/mobile-phone'
 import 'vue-awesome/icons/comments'
 import 'vue-awesome/icons/search'
 import ChatRoom from '../components/ChatRoom'
-import { fetchAnnouce, updateUser, getEnvelopeRecord } from '../api'
+import { fetchAnnouce, updateUser, getEnvelopeRecord, fetchCheckinRecord } from '../api'
 import { msgFormatter, filtAmount } from '../utils'
 import { validatePhone, validateQQ, validatePassword } from '../validate'
 import urls from '../api/urls'
@@ -311,7 +367,7 @@ import Result from '../components/Result'
 import { mapState, mapGetters } from 'vuex'
 import ChatList from '../components/ChatList'
 import EditUser from '../components/EditUser'
-
+import Checking from '../components/Checking.vue'
 Vue.filter('truncate', function (text, stop) {
   return text.slice(0, stop) + (stop < text.length ? '...' : '')
 })
@@ -322,7 +378,8 @@ export default {
     ChatRoom,
     Result,
     ChatList,
-    EditUser
+    EditUser,
+    Checking
   },
   data () {
     const qqValidator = (rule, value, callback) => {
@@ -448,7 +505,16 @@ export default {
         currentPage: 1,
         limit: 40
       },
-      tableLoading: false
+      tableLoading: false,
+      checkingDialog: {
+        visible: false
+      },
+      checkinRecord: []
+    }
+  },
+  filters: {
+    platform: function (platform) {
+      return platform === 1 ? '手机' : '桌机'
     }
   },
   computed: {
@@ -502,12 +568,25 @@ export default {
       if (panel === 'record') {
         this.getEnvelopeRecord(0, this.envelopePagination.limit)
       }
+      if (panel === 'checkin') {
+        this.getCheckinRecord()
+      }
     }
   },
   created () {
     this.getAnnouce()
   },
   methods: {
+    getCheckinRecord () {
+      this.tableLoading = true
+      fetchCheckinRecord().then((res) => {
+        this.checkinRecord = res
+        this.tableLoading = false
+      })
+    },
+    closeCheckinDialog () {
+      this.checkingDialog.visible = false
+    },
     handleEnvelopePagination (currentPage) {
       this.envelopePagination.currentPage = currentPage
       this.getEnvelopeRecord((currentPage - 1) * this.envelopePagination.limit, this.envelopePagination.limit)
@@ -798,6 +877,37 @@ export default {
 .head-right {
   line-height: 50px;
   vertical-align: middle;
+  .checkin-btn {
+    position: relative;
+    display: inline-block;
+    line-height: 25px;
+    padding: 1px 15px 1px 10px;
+    border-radius: 4px;
+    border: solid 1px #f8b91c;
+    background-color: #f5a623;
+
+    .img {
+      width: 20px;
+      height: 20px;
+    }
+
+    .text {
+      font-size: 14px;
+      font-weight: bold;
+      letter-spacing: 3px;
+    }
+
+    .badge {
+      position: absolute;
+      top: 3px;
+      right: 10px;
+      width: 7px;
+      height: 7px;
+      background-color: red;
+      border-radius: 50%;
+    }
+  }
+
   .username {
     padding: 0 10px 0 0;
     &:hover {
@@ -1040,4 +1150,5 @@ export default {
     text-align: center;
   }
 }
+
 </style>
