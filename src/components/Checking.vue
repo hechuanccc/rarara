@@ -294,7 +294,10 @@ export default {
   }
 
   .ordinary {
-    display: inline-block;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-sizing: border-box;
     width: 45px;
     height: 50px;
     border-radius: 5px;
