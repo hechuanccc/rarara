@@ -711,6 +711,9 @@ export default {
                     return
 
                   default:
+                    if (data.command === 'live') {
+                      return
+                    }
                     if (data.sender && data.sender.avatar !== null) {
                       data.sender.avatar = this.host + '/' + data.sender.avatar.replace('websocket/', '')
                       if (data.sender.avatar.indexOf('//upload') !== -1) {

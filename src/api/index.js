@@ -177,3 +177,11 @@ export function updateMember (userId, remarks) {
     remarks: remarks
   })
 }
+
+export function fetchCheckinRecord () {
+  return axios.get(`${urls.checkin}`)
+}
+
+export function checkin () {
+  return axios.post(urls.checkin, {platform: 0})
+}

@@ -14,7 +14,7 @@
             </div>
             <div class="information">
               <span class="user">{{msg.sender.nickname || msg.sender.username}}</span>
-              <span v-if="getRoles(msg).includes('customer service')" :class="character">
+              <span v-if="getRoles(msg).includes('customer service')" class="character">
                 客服人员
               </span>
               <span class="time p-l-sm p-r-sm">{{msg.created_at | moment('HH:mm:ss')}}</span>
