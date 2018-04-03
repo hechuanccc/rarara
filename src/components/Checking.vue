@@ -282,7 +282,7 @@ export default {
 
   .status-popover {
     position: absolute;
-    top: -25px;
+    top: -15px;
     display: inline-block;
     width: 45px;
     height: 25px;
