@@ -63,7 +63,7 @@ axios.interceptors.response.use(res => {
       type: 'error'
     })
   }
-  if (error.response.status === 401 || error.response.status === 403) {
+  if (error.response.status === 401) {
     toHomeAndLogin(router)
   } else if (error.response.status !== 587) { // 表示為意料之外的錯誤
     let msg = error.response.data.error
@@ -97,10 +97,10 @@ router.beforeEach((to, from, next) => {
         next()
       })
       .catch(() => {
-        toHomeAndLogin(router)
+        next('/login')
       })
     } else {
-      toHomeAndLogin(router)
+      next('/login')
     }
   } else {
     next()
@@ -121,7 +121,8 @@ fetchGlobalData().then(res => {
     title: globalData.title,
     web_background: globalData.web_background,
     mobile_url: globalData.mobile_url,
-    envelope_settings: globalData.envelope_settings
+    envelope_settings: globalData.envelope_settings,
+    checkin_settings: globalData.checkin_settings
   })
   if (stickerGroups.length) {
     store.dispatch('setStickerGroups', stickerGroups)
