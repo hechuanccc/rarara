@@ -358,7 +358,7 @@
         <el-dialog
           :custom-class="'unlogined-dialog init-dialog'"
           :visible.sync="unloginedDialog.visible"
-          width="400px">
+          width="360px">
           <UnloginedDialog/>
         </el-dialog>
 
@@ -726,7 +726,7 @@ export default {
       this.oldUser = Object.assign({}, this.editUser)
     },
     logout () {
-      this.$store.dispatch('trial')
+      this.$store.dispatch('logout').then(() => { this.$store.dispatch('trial') })
     },
     submit () {
       let hasChanged = false
