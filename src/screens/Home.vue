@@ -271,7 +271,8 @@
                       label="获得金额"
                       width="100px">
                       <template slot-scope="scope">
-                        <span>¥{{ scope.row.normal_bonus ||  scope.row.special_bonus}}</span>
+                        <span v-if="scope.row.special_reason">¥{{ scope.row.special_bonus}}</span>
+                        <span v-else>¥{{ scope.row.normal_bonus}}</span>
                       </template>
                     </el-table-column>
                     <el-table-column
