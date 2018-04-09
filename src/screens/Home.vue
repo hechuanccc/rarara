@@ -32,7 +32,7 @@
             <span class="text">签到</span>
             <span class="badge" v-if="(user.last_checkin !== $moment().format('YYYY-MM-DD')) && !myRoles.includes('visitor')"></span>
           </div>
-          <div class="user-info fr pointer" v-if="myRoles && !myRoles.includes('visitor')">
+          <div class="user-info fr pointer" v-if="user.id && myRoles && !myRoles.includes('visitor')">
             <img @click="showProfileDiag = true" :src="user.avatar ? user.avatar : require('../assets/avatar.png')" height="25" width="25">
             <span @click="showProfileDiag = true" class="username">{{user.nickname || user.username}}</span>
             <a class="logout" @click="logout">退出</a>
@@ -343,11 +343,12 @@
         </el-dialog>
 
         <el-dialog
-          v-if="user.username && globalPreference.checkin_settings.single_day_amount && !myRoles.includes('visitor')"
+          v-if="false"
           :custom-class="'checking-dialog init-dialog'"
           :show-close="false"
           :visible.sync="checkingDialog.visible"
           width="400px">
+          <!-- //user.username && globalPreference.checkin_settings.single_day_amount && !myRoles.includes('visitor') -->
           <Checking @closeCheckinDialog="closeCheckinDialog"
             v-if="checkingDialog.visible"
             :continuousCheckins="user.continuous_checkins"
