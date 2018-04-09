@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-tabs v-model="unloginedDialog.status" type="border-card">
+    <el-tabs v-model="unloginedDialog.status" type="card">
       <el-tab-pane label="登入" name="Login">
         <div class="login">
           <Login></Login>

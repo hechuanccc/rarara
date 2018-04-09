@@ -1177,3 +1177,11 @@ export default {
 }
 
 </style>
+
+<style lang="scss">
+.unlogined-dialog {
+  .el-dialog__headerbtn {
+    z-index: 1;
+  }
+}
+</style>
