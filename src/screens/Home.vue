@@ -253,7 +253,7 @@
                 </div>
               </el-tab-pane>
 
-              <el-tab-pane label="签到纪录" name="checkin">
+              <el-tab-pane v-if="false" label="签到纪录" name="checkin">
                 <div  v-if="activePanel === 'checkin'" v-loading="tableLoading">
                   <el-table
                     :data="checkinRecord"
