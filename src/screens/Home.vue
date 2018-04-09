@@ -343,11 +343,12 @@
         </el-dialog>
 
         <el-dialog
-          v-if="user.username && globalPreference.checkin_settings.single_day_amount && !myRoles.includes('visitor')"
+          v-if="false"
           :custom-class="'checking-dialog init-dialog'"
           :show-close="false"
           :visible.sync="checkingDialog.visible"
           width="400px">
+          <!-- //user.username && globalPreference.checkin_settings.single_day_amount && !myRoles.includes('visitor') -->
           <Checking @closeCheckinDialog="closeCheckinDialog"
             v-if="checkingDialog.visible"
             :continuousCheckins="user.continuous_checkins"
