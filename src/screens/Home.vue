@@ -27,10 +27,10 @@
               <qr-code :text="globalPreference.mobile_url"></qr-code>
             </div>
           </div>
-          <div v-if="!myRoles.includes('visitor')" class="checkin-btn m-l pointer" @click="checkingDialog.visible = true">
+          <div v-if="false" class="checkin-btn m-l pointer" @click="handleCheckinClick">
             <img class="img m-r-sm" src="../assets/money.png" alt="money">
             <span class="text">签到</span>
-            <span class="badge" v-if="user.last_checkin !== $moment().format('YYYY-MM-DD')"></span>
+            <span class="badge" v-if="(user.last_checkin !== $moment().format('YYYY-MM-DD')) && !myRoles.includes('visitor')"></span>
           </div>
           <div class="user-info fr pointer" v-if="myRoles && !myRoles.includes('visitor')">
             <img @click="showProfileDiag = true" :src="user.avatar ? user.avatar : require('../assets/avatar.png')" height="25" width="25">
@@ -39,11 +39,11 @@
           </div>
           <div class="visitor-actions fr" v-else>
             <span class="greeting m-r">游客, 您好</span>
-            <span class="login pointer" @click="$router.push({name: 'Login'})">
+            <span class="login pointer" @click="$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})">
               登入
             </span>
             <span>|</span>
-            <span class="register pointer" @click="$router.push({name: 'Register'})">
+            <span class="register pointer" @click="$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Register'})">
               注册
             </span>
           </div>
@@ -83,7 +83,7 @@
       </el-aside>
 
       <el-main class="chat-area full-height">
-        <chat-room :class="{'p-l': !asideShown}" :rejoin="rejoinFlag" @handleAvatarClick="handleAvatarClick"></chat-room>
+        <chat-room :class="{'p-l': !asideShown}" @handleAvatarClick="handleAvatarClick"></chat-room>
       </el-main>
 
       <el-aside width="395px" class="aside">
@@ -355,6 +355,13 @@
             :singleDayAmount="globalPreference.checkin_settings.single_day_amount"></Checking>
         </el-dialog>
 
+        <el-dialog
+          :custom-class="'unlogined-dialog init-dialog'"
+          :visible.sync="unloginedDialog.visible"
+          width="400px">
+          <UnloginedDialog/>
+        </el-dialog>
+
       </el-container>
 
   </el-container>
@@ -377,6 +384,7 @@ import { mapState, mapGetters } from 'vuex'
 import ChatList from '../components/ChatList'
 import EditUser from '../components/EditUser'
 import Checking from '../components/Checking.vue'
+import UnloginedDialog from '../components/UnloginedDialog.vue'
 Vue.filter('truncate', function (text, stop) {
   return text.slice(0, stop) + (stop < text.length ? '...' : '')
 })
@@ -388,7 +396,8 @@ export default {
     Result,
     ChatList,
     EditUser,
-    Checking
+    Checking,
+    UnloginedDialog
   },
   data () {
     const qqValidator = (rule, value, callback) => {
@@ -443,7 +452,6 @@ export default {
       activeTab: 'chats',
       swichAvatar: false,
       uploadUrl: urls.user,
-      nickname_q: '',
       showProfileDiag: false,
       searchStr: '',
       announcementStyle: {
@@ -518,8 +526,7 @@ export default {
       checkingDialog: {
         visible: false
       },
-      checkinRecord: [],
-      rejoinFlag: false
+      checkinRecord: []
     }
   },
   filters: {
@@ -532,7 +539,8 @@ export default {
       'globalPreference',
       'loading',
       'user',
-      'rooms'
+      'rooms',
+      'unloginedDialog'
     ]),
     ...mapGetters([
       'myRoles'
@@ -561,11 +569,6 @@ export default {
     }
   },
   watch: {
-    'nickname_q': function (val) {
-      if (val === '') {
-        this.exitSearch()
-      }
-    },
     'showProfileDiag': function () {
       this.$nextTick(() => {
         this.$refs['editUser'].clearValidate()
@@ -587,6 +590,13 @@ export default {
     this.getAnnouce()
   },
   methods: {
+    handleCheckinClick () {
+      if (this.myRoles.includes('visitor')) {
+        this.$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
+      } else {
+        this.checkingDialog.visible = true
+      }
+    },
     getCheckinRecord (offset, limit) {
       this.tableLoading = true
       fetchCheckinRecord(offset, limit).then((res) => {
@@ -716,9 +726,7 @@ export default {
       this.oldUser = Object.assign({}, this.editUser)
     },
     logout () {
-      this.$store.dispatch('logout').then(() => {
-        this.rejoinFlag = true
-      })
+      this.$store.dispatch('trial')
     },
     submit () {
       let hasChanged = false

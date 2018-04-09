@@ -31,6 +31,9 @@ export default {
   [types.UPDATE_CHATLIST]: (state, data) => {
     state.chatList = data || []
   },
+  [types.UPDATE_UNLOGINEDDIALOG]: (state, data) => {
+    state.unloginedDialog = data || {}
+  },
   [types.GET_CHATMESSAGES]: (state, data) => {
     state.chat.current.messages = [...data]
   },

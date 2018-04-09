@@ -13,8 +13,12 @@ import {
 
 export default {
   login: ({ commit, state, dispatch }, { user }) => {
+    if (state.user.logined) {
+      commit(types.RESET_USER)
+    }
     return login(user).then(res => {
       let expires = new Date(res.expires_in)
+
       if (res.access_token && res.refresh_token) {
         Vue.cookie.set('access_token', res.access_token, {
           expires: expires
@@ -41,8 +45,6 @@ export default {
         Vue.cookie.delete('access_token')
         Vue.cookie.delete('refresh_token')
         commit(types.RESET_USER)
-
-        return dispatch('trial')
       },
       errRes => Promise.reject(errRes)
     )
@@ -132,5 +134,8 @@ export default {
   },
   collectEnvelope: ({ commit, state }, data) => {
     commit(types.COLLECT_ENVELOPE, data)
+  },
+  updateUnloginedDialog: ({ commit, state }, data) => {
+    commit(types.UPDATE_UNLOGINEDDIALOG, data)
   }
 }
