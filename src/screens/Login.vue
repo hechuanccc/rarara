@@ -31,7 +31,6 @@
                   <el-button type="primary" @click="submit">登录</el-button>
                 </el-form-item>
                 <el-form-item class="m-t guest-actions">
-                  <el-button @click.native="trial" type="primary" plain>游客体验</el-button>
                   <el-button @click.native="$router.push({name: 'Register'})" type="primary" plain>立即注册</el-button>
                 </el-form-item>
               </div>
@@ -184,9 +183,6 @@ export default {
     width: 220px;
     justify-content: space-between;
     margin-bottom: 25px;
-    .el-button {
-      width: 100px;
-    }
   }
 }
 

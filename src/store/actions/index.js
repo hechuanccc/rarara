@@ -7,7 +7,8 @@ import {
   login,
   logout,
   fetchUser,
-  updateUser
+  updateUser,
+  register
 } from '../../api'
 
 export default {
@@ -34,12 +35,14 @@ export default {
       return Promise.reject(error)
     })
   },
-  logout: ({ commit, state }) => {
+  logout: ({ commit, state, dispatch }) => {
     return logout().then(
       res => {
         Vue.cookie.delete('access_token')
         Vue.cookie.delete('refresh_token')
         commit(types.RESET_USER)
+
+        return dispatch('trial')
       },
       errRes => Promise.reject(errRes)
     )
@@ -71,6 +74,18 @@ export default {
       commit(types.SET_USER, {
         user: data
       })
+    })
+  },
+  trial: ({commit, state, dispatch}) => {
+    return register({visitor: 'True'}).then(visitor => {
+      return dispatch('login', {
+        user: {
+          username: visitor.username,
+          password: visitor.password
+        }
+      })
+    }).then(result => {
+      return dispatch('fetchUser')
     })
   },
   setUser: ({commit, state}, data) => {

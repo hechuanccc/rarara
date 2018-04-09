@@ -90,6 +90,7 @@ let firstEnter = true
 router.beforeEach((to, from, next) => {
   if (firstEnter && to.meta.requiresAuth === true) {
     let token = VueCookie.get('access_token')
+
     if (token) {
       store.dispatch('fetchUser')
       .then(res => {
@@ -97,10 +98,10 @@ router.beforeEach((to, from, next) => {
         next()
       })
       .catch(() => {
-        next('/login')
+        store.dispatch('trial')
       })
     } else {
-      next('/login')
+      store.dispatch('trial')
     }
   } else {
     next()

@@ -272,6 +272,12 @@ import Stickers from './Stickers'
 const WSHOST = config.chatHost
 
 export default {
+  props: {
+    rejoin: {
+      type: Boolean,
+      default: false
+    }
+  },
   components: {
     Icon,
     Restraint,
@@ -376,6 +382,11 @@ export default {
         this.$forceUpdate()
       },
       deep: true
+    },
+    'rejoin': function (flag) {
+      if (flag) {
+        this.joinChatRoom()
+      }
     }
   },
   beforeDestroy () {
@@ -572,6 +583,7 @@ export default {
     },
     joinChatRoom () {
       let token = this.$cookie.get('access_token')
+
       this.loading = true
       this.$store.dispatch('startLoading')
       this.ws = new WebSocket(`${WSHOST}/chat/stream?token=${token}`)
