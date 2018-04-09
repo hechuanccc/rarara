@@ -83,7 +83,7 @@
       </el-aside>
 
       <el-main class="chat-area full-height">
-        <chat-room :class="{'p-l': !asideShown}" @handleAvatarClick="handleAvatarClick"></chat-room>
+        <chat-room :class="{'p-l': !asideShown}" :rejoin="rejoinFlag" @handleAvatarClick="handleAvatarClick"></chat-room>
       </el-main>
 
       <el-aside width="395px" class="aside">
@@ -518,12 +518,13 @@ export default {
       checkingDialog: {
         visible: false
       },
-      checkinRecord: []
+      checkinRecord: [],
+      rejoinFlag: false
     }
   },
   filters: {
     platform: function (platform) {
-      return platform === 1 ? '手机' : '桌机'
+      return platform === 1 ? '手机' : '电脑'
     }
   },
   computed: {
@@ -715,10 +716,9 @@ export default {
       this.oldUser = Object.assign({}, this.editUser)
     },
     logout () {
-      this.$store.dispatch('logout')
-        .then(() => {
-          this.$router.push('/login')
-        })
+      this.$store.dispatch('logout').then(() => {
+        this.rejoinFlag = true
+      })
     },
     submit () {
       let hasChanged = false
@@ -924,6 +924,8 @@ export default {
   }
 
   .username {
+    display: inline-block;
+    width: 60px;
     padding: 0 10px 0 0;
     &:hover {
       text-decoration: underline;
