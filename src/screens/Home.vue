@@ -197,7 +197,7 @@
                     <p class="member-info">{{user.balance}}</p>
                   </el-form-item>
                   <el-form-item label="注册时间"  label-width="85px">
-                    <p class="member-info">{{user.date_joined | moment('YYYY-MM-HH')}}</p>
+                    <p class="member-info">{{user.date_joined | moment('YYYY-MM-DD')}}</p>
                   </el-form-item>
                   <el-form-item v-if="promoteUrl" label="推广链接"  label-width="85px">
                     <p class="member-info">{{promoteUrl}}</p>
@@ -284,7 +284,7 @@
                       width="190px"
                       label="签到时间">
                       <template slot-scope="scope">
-                        <span>{{ scope.row.checkin_time | moment('YYYY-MM-HH HH:mm:ss') }}</span>
+                        <span>{{ scope.row.checkin_time | moment('YYYY-MM-DD HH:mm:ss') }}</span>
                       </template>
                     </el-table-column>
                   </el-table>
