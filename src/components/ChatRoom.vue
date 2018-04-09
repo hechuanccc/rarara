@@ -104,10 +104,10 @@
       </el-main>
 
       <el-footer class="footer m-t"
-        height="100"
-        v-show="myRoles && !myRoles.includes('visitor')">
+        height="100">
         <div class="control-bar">
           <el-popover
+            :disabled="myRoles.includes('visitor')"
             v-model="showStickerPopover"
             :popper-class="'emoji-popover'"
             ref="popover4"
@@ -130,6 +130,7 @@
 
           <a v-popover:popover4
             v-if="emojiSuccess"
+            @click="handleEmojiIconClick"
             href="javascript:void(0)"
             title="发送表情"
             class="btn-control btn-smile">
@@ -137,7 +138,7 @@
           </a>
 
           <a href="javascript:void(0)" class="btn-control btn-smile">
-            <label for="imgUploadInput">
+            <label for="imgUploadInput" @click="handleImgIconClick($event)">
               <span title="上传图片">
                 <i class="el-icon-picture"></i>
                 <input :disabled="!personal_setting.chat.status"
@@ -272,12 +273,6 @@ import Stickers from './Stickers'
 const WSHOST = config.chatHost
 
 export default {
-  props: {
-    rejoin: {
-      type: Boolean,
-      default: false
-    }
-  },
   components: {
     Icon,
     Restraint,
@@ -383,8 +378,8 @@ export default {
       },
       deep: true
     },
-    'rejoin': function (flag) {
-      if (flag) {
+    'user.logined': function (login) {
+      if (login) {
         this.joinChatRoom()
       }
     }
@@ -434,6 +429,7 @@ export default {
     if (!this.myRoles.includes('manager') && !this.myRoles.includes('visitor')) {
       this.getChatList({offset: 0, limit: 20})
     }
+
     if (this.$route.name !== 'Home') {
       this.leaveRoom()
     } else {
@@ -443,6 +439,17 @@ export default {
     localStorage.setItem('stickers', '{}')
   },
   methods: {
+    handleImgIconClick (e) {
+      if (this.myRoles.includes('visitor')) {
+        e.preventDefault()
+        this.$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
+      }
+    },
+    handleEmojiIconClick () {
+      if (this.myRoles.includes('visitor')) {
+        this.$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
+      }
+    },
     handleEmojiClick (emoji) {
       this.msgContent = this.msgContent + emoji.emoji + ' '
     },
@@ -496,9 +503,13 @@ export default {
       })
     },
     handleEnvelopeIconClick () {
-      this.envelope.status = 'sending'
-      this.envelope.visible = true
-      this.envelope.envelope = {}
+      if (this.myRoles.includes('visitor')) {
+        this.$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
+      } else {
+        this.envelope.status = 'sending'
+        this.envelope.visible = true
+        this.envelope.envelope = {}
+      }
     },
     showingName (user) {
       return user.usernickname ? user.usernickname : user.username
@@ -786,7 +797,7 @@ export default {
                     this.openMessageBox(data.msg, 'error')
                     setTimeout(() => {
                       this.$store.dispatch('logout').then(res => {
-                        this.$router.push({name: 'Login'})
+                        this.$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
                       })
                     }, 3000)
                     break
@@ -794,7 +805,7 @@ export default {
                     this.openMessageBox(data.msg, 'error')
                     setTimeout(() => {
                       this.$store.dispatch('resetUser')
-                      this.$router.push({name: 'Login'})
+                      this.$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
                     }, 3000)
                     break
                   default:
@@ -815,6 +826,10 @@ export default {
       this.showStickerPopover = false
     },
     sendMsgImg (e) {
+      if (this.myRoles.includes('visitor')) {
+        this.$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
+        return
+      }
       let fileInp = this.$refs.fileImgSend
       let file = fileInp.files[0]
       if (!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(fileInp.value) || !this.personal_setting.chat.status) {
@@ -835,6 +850,11 @@ export default {
     },
     sendMsg () {
       if (!this.msgContent.trim()) { return false }
+      if (this.myRoles.includes('visitor')) {
+        this.$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
+        return
+      }
+
       if (!this.ws) {
         this.joinChatRoom()
       }

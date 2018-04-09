@@ -30,7 +30,11 @@ export function createStore () {
       roomMsgs: {},
       rooms: [],
       envelopes: {},
-      ws: null
+      ws: null,
+      unloginedDialog: {
+        visible: false,
+        status: 'Login'
+      }
     },
     actions,
     mutations,
