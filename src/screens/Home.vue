@@ -1,13 +1,13 @@
 <template>
   <el-container class="chat-box" :style="{backgroundImage: `url(${globalPreference.web_background})`}">
-    <el-header class="header" height="50px">
+    <el-header class="header" height="80px">
       <el-row>
         <el-col :span="14">
           <el-row>
             <el-col :span="4" class="logo" :style="{backgroundImage: `url(${globalPreference.logo})`}">
             </el-col>
             <el-col :span="20" class="annouce-box" @click.native="announcementDialogVisible = true">
-              <div class="title fl">
+              <div class="title fl m-r">
                 <span>公告</span>
                 <icon class="volume-up" name="volume-up" scale="1"></icon>
               </div>
@@ -25,7 +25,7 @@
         </el-col>
         <el-col class="head-right fr" :span="10">
           <div class="mobile-promotion" @mouseover="showQR = true" @mouseleave="showQR = false">
-            <icon class="icon m-r" name="mobile-phone" scale="2"></icon>
+            <icon class="icon m-r-sm" name="mobile-phone" scale="2.5"></icon>
             <span class="text">手机版聊天室</span>
             <div class="qrcode" v-show="showQR">
               <qr-code :text="globalPreference.mobile_url"></qr-code>
@@ -37,18 +37,38 @@
             <span class="badge" v-if="(user.last_checkin !== $moment().format('YYYY-MM-DD')) && !myRoles.includes('visitor')"></span>
           </div>
           <div class="user-info fr pointer" v-if="user.id && myRoles && !myRoles.includes('visitor')">
-            <img class="img" @click="showProfileDiag = true" :src="user.avatar ? user.avatar : require('../assets/avatar.png')">
-            <span @click="showProfileDiag = true" class="username m-r">{{user.nickname || user.username | truncate(5)}}</span>
-            <a class="logout" @click="logout">退出</a>
+             <el-popover
+              v-model="memberPopoverVisible"
+              ref="member-popover"
+              :popper-class="'member-popover'"
+              placement="bottom"
+              :offset="10"
+              trigger="click">
+              <ul class="member-popover m-t">
+                <li class="li m-b pointer" @click="showProfileDiag = true, memberPopoverVisible = false">
+                  <icon class="icon m-r-sm" name="user-circle" scale="2"></icon>
+                  <span class="text">用户中心</span>
+                </li>
+                <li class="li pointer m-b" @click="logout(), memberPopoverVisible = false">
+                  <icon class="icon m-r-sm" name="sign-out" scale="2"></icon>
+                  <span class="text">退出登陆</span>
+                </li>
+              </ul>
+            </el-popover>
+            <div class="memberpopover-trigger" v-popover:member-popover>
+              <img class="img" :src="user.avatar ? user.avatar : require('../assets/avatar.png')">
+              <span class="username m-r-lg">{{user.nickname || user.username | truncate(5)}}</span>
+            </div>
+
           </div>
           <div class="visitor-actions fr" v-else>
-            <span class="greeting m-r">游客, 您好</span>
-            <span class="login pointer" @click="$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})">
-              登入
+            <span class="login m-r-sm pointer" @click="$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})">
+              <icon class="icon m-r-sm" name="user" scale="2"></icon>
+              <span class="text">登入</span>
             </span>
-            <span>|</span>
             <span class="register pointer" @click="$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Register'})">
-              注册
+              <icon class="icon m-r-sm" name="pencil-square" scale="2"></icon>
+              <span class="text">注册</span>
             </span>
           </div>
         </el-col>
@@ -377,7 +397,10 @@ import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/volume-up'
 import 'vue-awesome/icons/mobile-phone'
 import 'vue-awesome/icons/comments'
-import 'vue-awesome/icons/search'
+import 'vue-awesome/icons/user-circle'
+import 'vue-awesome/icons/user'
+import 'vue-awesome/icons/pencil-square'
+import 'vue-awesome/icons/sign-out'
 import ChatRoom from '../components/ChatRoom'
 import { fetchAnnouce, updateUser, getEnvelopeRecord, fetchCheckinRecord } from '../api'
 import { msgFormatter, filtAmount } from '../utils'
@@ -389,9 +412,11 @@ import ChatList from '../components/ChatList'
 import EditUser from '../components/EditUser'
 import Checking from '../components/Checking.vue'
 import UnloginedDialog from '../components/UnloginedDialog.vue'
+
 Vue.filter('truncate', function (text, stop) {
   return text.slice(0, stop) + (stop < text.length ? '...' : '')
 })
+
 export default {
   name: 'home',
   components: {
@@ -530,7 +555,8 @@ export default {
       checkingDialog: {
         visible: false
       },
-      checkinRecord: []
+      checkinRecord: [],
+      memberPopoverVisible: false
     }
   },
   filters: {
@@ -859,7 +885,7 @@ export default {
   background-repeat: no-repeat;
 }
 .header {
-  height: 50px;
+  height: 80px;
   background: rgba(0,0,0,.3);
   margin-bottom: 10px;
   color: #fff;
@@ -869,7 +895,7 @@ export default {
     background-size: contain;
     background-repeat: no-repeat;
     width: 230px;
-    height: 50px;
+    height: 80px;
     margin-left: -10px;
     h1 {
       text-indent: -999px;
@@ -883,17 +909,18 @@ export default {
 
 .annouce-box {
   display: inline-block;
-  width: 50%;
-  height: 50px;
-  line-height: 50px;
+  width: 70%;
+  height: 80px;
+  line-height: 80px;
   margin-left: 5px;
+  font-size: 14px;
   .text {
     cursor: pointer;
   }
   .title {
     width: 60px;
-    height: 50px;
-    line-height: 50px;
+    height: 80px;
+    line-height: 80px;
     text-align: center;
     align-self: flex-start;
     display: flex;
@@ -913,9 +940,10 @@ export default {
 .mobile-link {
   float: left;
 }
+
 .head-right {
   width: 375px;
-  line-height: 50px;
+  line-height: 80px;
   vertical-align: middle;
   .checkin-btn {
     position: relative;
@@ -948,41 +976,58 @@ export default {
       border-radius: 50%;
     }
   }
+
   .user-info {
     .img {
       display: inline-block;
-      width: 25px;
-      height: 25px;
+      width: 38px;
+      height: 38px;
       vertical-align: middle;
     }
 
     .username {
       display: inline-flex;
-      max-width: 60px;
+      max-width: 80px;
       white-space: nowrap;
+      font-size: 14px;
       @include text-hover();
     }
   }
 
 
   .mobile-promotion {
+    cursor: default;
     text-align: center;
     display: inline-block;
 
     .icon, .text {
       vertical-align: middle;
     }
-  }
 
-  .logout {
-    @include text-hover();
+    .text {
+      font-size: 14px;
+    }
   }
 
   .visitor-actions {
     .login, .register {
       display: inline-block;
-      @include text-hover();
+      &:hover {
+        color: #ddd;
+      }
     }
+
+    .icon {
+      vertical-align: middle;
+    }
+
+    .text {
+      font-size: 14px;
+    }
+  }
+
+  .memberpopover-trigger {
+    height: 60px; // to set the popover offset
   }
 }
 
@@ -1108,6 +1153,7 @@ export default {
     }
   }
 }
+
 .results-container {
   height: 100%;
   overflow-y: hidden;
@@ -1162,6 +1208,29 @@ export default {
 .unlogined-dialog {
   .el-dialog__headerbtn {
     z-index: 1;
+  }
+  .el-tabs__nav {
+    width: calc(100% - 45px);
+    border-radius: 0;
+  }
+
+  .el-tabs__item {
+    text-align: center;
+    width: 50%;
+  }
+}
+
+.member-popover {
+  text-align: center;
+  padding: 0;
+  .icon {
+    vertical-align: middle;
+  }
+
+  .li {
+    &:hover {
+      color: #333;
+    }
   }
 }
 </style>
