@@ -13,10 +13,14 @@ import {
 
 export default {
   login: ({ commit, state, dispatch }, { user }) => {
-    if (state.user.logined) {
-      commit(types.RESET_USER)
+    let token = Vue.cookie.access_token
+    if (state.user.logined && token) {
+      dispatch('logout')
     }
+
     return login(user).then(res => {
+      commit(types.RESET_USER)
+
       let expires = new Date(res.expires_in)
 
       if (res.access_token && res.refresh_token) {
@@ -44,7 +48,7 @@ export default {
       res => {
         Vue.cookie.delete('access_token')
         Vue.cookie.delete('refresh_token')
-        commit(types.RESET_USER)
+        // commit(types.RESET_USER)
       },
       errRes => Promise.reject(errRes)
     )

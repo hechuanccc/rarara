@@ -71,25 +71,23 @@ export default {
       }
       this.loading = true
 
-      this.$store.dispatch('logout').then(() => {
-        this.$store.dispatch('login', {
-          user: {
-            username: this.user.username,
-            password: this.user.password
-          }
-        }).then(result => {
-          const next = this.$route.query.next
+      this.$store.dispatch('login', {
+        user: {
+          username: this.user.username,
+          password: this.user.password
+        }
+      }).then(result => {
+        const next = this.$route.query.next
 
-          this.$store.dispatch('fetchUser').then(() => {
-            this.loading = false
-            this.$router.push(next || '/')
-
-            this.$store.dispatch('updateUnloginedDialog', {visible: false, status: 'Login'})
-          })
-        }, errorMsg => {
-          this.errorMsg = msgFormatter(errorMsg)
+        this.$store.dispatch('fetchUser').then(() => {
           this.loading = false
+          this.$router.push(next || '/')
+
+          this.$store.dispatch('updateUnloginedDialog', {visible: false, status: 'Login'})
         })
+      }, errorMsg => {
+        this.errorMsg = msgFormatter(errorMsg)
+        this.loading = false
       })
     }
   },
