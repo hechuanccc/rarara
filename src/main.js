@@ -98,10 +98,14 @@ router.beforeEach((to, from, next) => {
         next()
       })
       .catch(() => {
-        store.dispatch('trial')
+        store.dispatch('trial').then(() => {
+          next()
+        })
       })
     } else {
-      store.dispatch('trial')
+      store.dispatch('trial').then(() => {
+        next()
+      })
     }
   } else {
     next()
@@ -113,6 +117,7 @@ sync(store, router)
 fetchGlobalData().then(res => {
   const globalData = res.global_preferences
   const stickerGroups = res.sticker_groups
+
   store.dispatch('setGlobalConfig', {
     mobile_lottery_url: globalData.mobile_lottery_url,
     customer_service_url: globalData.customer_service_url,

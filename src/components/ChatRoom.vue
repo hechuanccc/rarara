@@ -850,11 +850,11 @@ export default {
       })
     },
     sendMsg () {
-      if (!this.msgContent.trim()) { return false }
       if (this.myRoles.includes('visitor')) {
         this.$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
         return
       }
+      if (!this.msgContent.trim()) { return false }
 
       if (!this.ws) {
         this.joinChatRoom()

@@ -953,7 +953,10 @@ export default {
     border-radius: 4px;
     border: solid 1px #f8b91c;
     background-color: #f5a623;
-
+    &:hover {
+      border: solid 1px darken(#f8b91c, 30%);
+      background-color: darken(#f5a623, 5%);
+    }
     .img {
       vertical-align: middle;
       width: 20px;
