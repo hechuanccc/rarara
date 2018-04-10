@@ -3,7 +3,7 @@
     <el-header class="header" height="80px">
       <el-row>
         <el-col :span="14">
-          <el-row>
+          <el-row type="flex">
             <el-col :span="4" class="logo" :style="{backgroundImage: `url(${globalPreference.logo})`}">
             </el-col>
             <el-col :span="20" class="annouce-box" @click.native="announcementDialogVisible = true">
@@ -36,7 +36,7 @@
             <span class="text">签到</span>
             <span class="badge" v-if="(user.last_checkin !== $moment().format('YYYY-MM-DD')) && !myRoles.includes('visitor')"></span>
           </div>
-          <div class="user-info fr pointer" v-if="user.id && myRoles && !myRoles.includes('visitor')">
+          <div class="user-info m-l pointer" v-if="user.id && myRoles && !myRoles.includes('visitor')">
              <el-popover
               v-model="memberPopoverVisible"
               ref="member-popover"
@@ -55,10 +55,10 @@
                 </li>
               </ul>
             </el-popover>
-            <div class="memberpopover-trigger" v-popover:member-popover>
+            <a :class="['memberpopover-trigger', {'underline': memberPopoverVisible}]" v-popover:member-popover>
               <img class="img" :src="user.avatar ? user.avatar : require('../assets/avatar.png')">
               <span class="username m-r-lg">{{user.nickname || user.username | truncate(5)}}</span>
-            </div>
+            </a>
 
           </div>
           <div class="visitor-actions fr" v-else>
@@ -909,14 +909,19 @@ export default {
 
 .annouce-box {
   display: inline-block;
-  width: 70%;
+  max-width: 70%;
   height: 80px;
   line-height: 80px;
   margin-left: 5px;
   font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
   .text {
     cursor: pointer;
   }
+
   .title {
     width: 60px;
     height: 80px;
@@ -981,6 +986,8 @@ export default {
   }
 
   .user-info {
+    display: inline-block;
+    outline: none;
     .img {
       display: inline-block;
       width: 38px;
@@ -1031,6 +1038,9 @@ export default {
 
   .memberpopover-trigger {
     height: 60px; // to set the popover offset
+    &.underline {
+      text-decoration: underline;
+    }
   }
 }
 
