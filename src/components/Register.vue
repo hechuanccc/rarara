@@ -28,14 +28,14 @@
                 <el-form-item>
                   <el-button type="primary" class="inp" @click="submit">同意条款并注册</el-button>
                 </el-form-item>
-                <el-form-item :label="''" prop="hasAgree">
+                <!-- <el-form-item :label="''" prop="hasAgree">
                   <el-checkbox-group v-model="user.hasAgree">
                     <el-checkbox :label="'hasAgree'" name="hasAgree">
                       我已阅读并完全同意
                     </el-checkbox>
                     <a class="agreement-link" @click.stop="dialogVisible = true;">《网站服务条款》</a>
                   </el-checkbox-group>
-                </el-form-item>
+                </el-form-item> -->
               </div>
             </el-form>
             <transition name="el-fade-in">
@@ -244,6 +244,10 @@
 </script>
 
 <style lang="scss" scoped>
+.register-container {
+  padding-left: 10px;
+}
+
 .login-head {
   margin-top: 20px;
   text-align: center;

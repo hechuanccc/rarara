@@ -1,5 +1,5 @@
 <template>
-  <el-container class="full-height">
+  <el-container class="full-height p-l">
     <el-header class="text-center m-t-lg">
       <div class="title">会员登录</div>
     </el-header>
