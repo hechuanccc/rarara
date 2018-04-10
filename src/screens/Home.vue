@@ -23,7 +23,7 @@
             </el-col>
           </el-row>
         </el-col>
-        <el-col class="head-right" :span="10">
+        <el-col class="head-right fr" :span="10">
           <div class="mobile-promotion" @mouseover="showQR = true" @mouseleave="showQR = false">
             <icon class="icon m-r" name="mobile-phone" scale="2"></icon>
             <span class="text">手机版聊天室</span>
