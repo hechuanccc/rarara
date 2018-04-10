@@ -160,7 +160,7 @@
             <icon name="cog" class="font-cog" scale="1.4"></icon>
           </span>
 
-          <div class="chat-buttons" v-if="ws && (!myRoles.includes('customer service') && !myRoles.includes('manager'))">
+          <div class="chat-buttons" v-if="ws && (!myRoles.includes('customer service') && !myRoles.includes('manager') && !myRoles.includes('visitor'))">
             <el-button :type="chat.read ? '' : 'warning'"
               class="chat-button"
               :plain="chat.read"
@@ -498,6 +498,7 @@ export default {
       this.envelope.visible = false
       this.envelope.status = ''
       this.$store.dispatch('fetchUser')
+
       this.$nextTick(() => {
         this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
       })
