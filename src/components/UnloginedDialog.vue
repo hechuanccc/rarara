@@ -2,12 +2,10 @@
   <div>
     <el-tabs v-model="unloginedDialog.status" type="card">
       <el-tab-pane label="登入" name="Login">
-        <div class="login">
-          <Login></Login>
-        </div>
+        <Login v-if="unloginedDialog.status === 'Login'"></Login>
       </el-tab-pane>
       <el-tab-pane label="注册" name="Register">
-        <Register></Register>
+        <Register v-if="unloginedDialog.status === 'Register'"></Register>
       </el-tab-pane>
     </el-tabs>
   </div>
