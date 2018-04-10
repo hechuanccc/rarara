@@ -38,7 +38,7 @@
           </div>
           <div class="user-info fr pointer" v-if="user.id && myRoles && !myRoles.includes('visitor')">
             <img class="img" @click="showProfileDiag = true" :src="user.avatar ? user.avatar : require('../assets/avatar.png')">
-            <span @click="showProfileDiag = true" class="username m-r">{{user.nickname || user.username | truncate(3)}}</span>
+            <span @click="showProfileDiag = true" class="username m-r">{{user.nickname || user.username | truncate(5)}}</span>
             <a class="logout" @click="logout">退出</a>
           </div>
           <div class="visitor-actions fr" v-else>
@@ -960,7 +960,6 @@ export default {
       display: inline-flex;
       max-width: 60px;
       white-space: nowrap;
-      overflow: hidden;
       @include text-hover();
     }
   }
