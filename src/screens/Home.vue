@@ -1111,6 +1111,7 @@ export default {
 .results-container {
   height: 100%;
   overflow-y: hidden;
+  padding: 10px;
 }
 
 .qrcode {
