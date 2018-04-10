@@ -2,24 +2,28 @@
   <el-container class="chat-box" :style="{backgroundImage: `url(${globalPreference.web_background})`}">
     <el-header class="header" height="50px">
       <el-row>
-        <el-col :span="4" class="logo clearfix" :style="{backgroundImage: `url(${globalPreference.logo})`}">
+        <el-col :span="14">
+          <el-row>
+            <el-col :span="4" class="logo" :style="{backgroundImage: `url(${globalPreference.logo})`}">
+            </el-col>
+            <el-col :span="20" class="annouce-box" @click.native="announcementDialogVisible = true">
+              <div class="title fl">
+                <span>公告</span>
+                <icon class="volume-up" name="volume-up" scale="1"></icon>
+              </div>
+              <div class="content">
+                <p class="text"
+                  :style="{
+                    'opacity': announcementStyle.opacity,
+                    'transform': `translateY(${announcementStyle.translateY}px)`
+                  }">
+                  {{currentAnnouncement}}
+                </p>
+              </div>
+            </el-col>
+          </el-row>
         </el-col>
-          <div class="annouce-box clearfix" @click="announcementDialogVisible = true">
-            <div class="title clearfix fl">
-              <span>公告</span>
-              <icon class="volume-up" name="volume-up" scale="1"></icon>
-            </div>
-            <div class="content">
-              <p class="text"
-                :style="{
-                  'opacity': announcementStyle.opacity,
-                  'transform': `translateY(${announcementStyle.translateY}px)`
-                }">
-                {{currentAnnouncement}}
-              </p>
-            </div>
-          </div>
-        <el-col class="head-right fr" :span="6">
+        <el-col class="head-right" :span="10">
           <div class="mobile-promotion" @mouseover="showQR = true" @mouseleave="showQR = false">
             <icon class="icon m-r" name="mobile-phone" scale="2"></icon>
             <span class="text">手机版聊天室</span>
@@ -27,14 +31,14 @@
               <qr-code :text="globalPreference.mobile_url"></qr-code>
             </div>
           </div>
-          <div v-if="false" class="checkin-btn m-l pointer" @click="handleCheckinClick">
+          <div class="checkin-btn m-l pointer" @click="handleCheckinClick">
             <img class="img m-r-sm" src="../assets/money.png" alt="money">
             <span class="text">签到</span>
             <span class="badge" v-if="(user.last_checkin !== $moment().format('YYYY-MM-DD')) && !myRoles.includes('visitor')"></span>
           </div>
           <div class="user-info fr pointer" v-if="user.id && myRoles && !myRoles.includes('visitor')">
-            <img @click="showProfileDiag = true" :src="user.avatar ? user.avatar : require('../assets/avatar.png')" height="25" width="25">
-            <span @click="showProfileDiag = true" class="username">{{user.nickname || user.username}}</span>
+            <img class="img" @click="showProfileDiag = true" :src="user.avatar ? user.avatar : require('../assets/avatar.png')">
+            <span @click="showProfileDiag = true" class="username m-r">{{user.nickname || user.username | truncate(3)}}</span>
             <a class="logout" @click="logout">退出</a>
           </div>
           <div class="visitor-actions fr" v-else>
@@ -253,7 +257,7 @@
                 </div>
               </el-tab-pane>
 
-              <el-tab-pane v-if="false" label="签到纪录" name="checkin">
+              <el-tab-pane label="签到纪录" name="checkin">
                 <div  v-if="activePanel === 'checkin'" v-loading="tableLoading">
                   <el-table
                     :data="checkinRecord"
@@ -343,12 +347,11 @@
         </el-dialog>
 
         <el-dialog
-          v-if="false"
+          v-if="user.username && globalPreference.checkin_settings && globalPreference.checkin_settings.single_day_amount && !myRoles.includes('visitor')"
           :custom-class="'checking-dialog init-dialog'"
           :show-close="false"
           :visible.sync="checkingDialog.visible"
           width="400px">
-          <!-- //user.username && globalPreference.checkin_settings.single_day_amount && !myRoles.includes('visitor') -->
           <Checking @closeCheckinDialog="closeCheckinDialog"
             v-if="checkingDialog.visible"
             :continuousCheckins="user.continuous_checkins"
@@ -836,6 +839,18 @@ export default {
 
 <style lang="scss" scoped>
 @import '../style/vars.scss';
+
+@mixin text-hover () {
+  & {
+    &:hover {
+      text-decoration: underline;
+    }
+    &:active {
+      color: #ccc;
+    }
+  }
+}
+
 .chat-box {
   width: 100%;
   height: 100%;
@@ -884,7 +899,7 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(255,255,255,.1);
     span {
       margin-right: 5px;
     }
@@ -899,6 +914,7 @@ export default {
   float: left;
 }
 .head-right {
+  width: 375px;
   line-height: 50px;
   vertical-align: middle;
   .checkin-btn {
@@ -911,6 +927,7 @@ export default {
     background-color: #f5a623;
 
     .img {
+      vertical-align: middle;
       width: 20px;
       height: 20px;
     }
@@ -931,50 +948,45 @@ export default {
       border-radius: 50%;
     }
   }
-
-  .username {
-    display: inline-block;
-    width: 60px;
-    padding: 0 10px 0 0;
-    &:hover {
-      text-decoration: underline;
+  .user-info {
+    .img {
+      display: inline-block;
+      width: 25px;
+      height: 25px;
+      vertical-align: middle;
     }
-    &:active {
-      color: #ccc;
+
+    .username {
+      display: inline-flex;
+      max-width: 60px;
+      white-space: nowrap;
+      overflow: hidden;
+      @include text-hover();
     }
   }
 
-  img {
-    vertical-align: middle;
-    display: inline-block;
-  }
 
   .mobile-promotion {
     text-align: center;
     display: inline-block;
+
     .icon, .text {
       vertical-align: middle;
     }
   }
 
   .logout {
-    &:hover {
-      text-decoration: underline;
-    }
-    &:active {
-      color: #ccc;
-    }
+    @include text-hover();
   }
 
   .visitor-actions {
     .login, .register {
       display: inline-block;
-      &:hover {
-        text-decoration: underline;
-      }
+      @include text-hover();
     }
   }
 }
+
 .aside {
   height: 100%;
   padding: 0 10px 10px;
@@ -990,9 +1002,11 @@ export default {
     margin-bottom: 0;
   }
 }
+
 .chat-area {
   padding: 0 0px 10px 0;
 }
+
 .members{
   height: calc(100vh - 163px);
   overflow-y: scroll;
@@ -1011,43 +1025,7 @@ export default {
     }
   }
 }
-.member-actions {
-  li {
-    cursor: pointer;
-    border-top: 1px solid #f0f0f0;
-    padding: 10px 0;
-  }
-}
-.empty {
-  color: #ccc;
-  text-align: center;
-}
-.ipt-search /deep/ .el-input__inner{
-  background: #999;
-  border: none;
-  color: #fff;
-  &::placeholder {
-    color: #ccc;
-  }
-}
-.search-tip {
-  color: #fff;
-  padding: 5px 0;
-  .exit-search {
-    float: right;
-    cursor: pointer;
-  }
-}
-.search-icon {
-  cursor: pointer;
-  position: absolute;
-  right: 10px;
-  top: 7px;
-  color: #fff;
-}
-.search-form, .results-container {
-  padding: 10px;
-}
+
 .chat-list {
   color: #ccc;
 }
@@ -1135,6 +1113,7 @@ export default {
   height: 100%;
   overflow-y: hidden;
 }
+
 .qrcode {
   position: absolute;
   z-index: 3;
