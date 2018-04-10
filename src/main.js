@@ -63,7 +63,8 @@ axios.interceptors.response.use(res => {
       type: 'error'
     })
   }
-  if (error.response.status === 401) {
+
+  if (error.response && error.response.status === 401) {
     toHomeAndLogin(router)
   } else if (error.response.status !== 587) { // 表示為意料之外的錯誤
     let msg = error.response.data.error

@@ -36,7 +36,7 @@
                   <span class="msg-time">{{item.created_at | moment('HH:mm:ss')}}</span>
                 </div>
                 <div v-if="item.type === 5">
-                  <div v-if="myRoles && myRoles.includes('visitor')" class="envelope-message expired">
+                  <div v-if="user.id && myRoles && myRoles.includes('visitor')" class="envelope-message expired">
                     <img class="img m-r" src="../assets/envelope_message.png" alt="envelope"/>
                     <div class="send-texts">
                       <p class="slogan">{{item.content ? item.content : '恭喜发财 大吉大利'}}</p>
