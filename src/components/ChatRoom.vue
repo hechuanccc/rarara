@@ -152,7 +152,7 @@
             </label>
           </a>
 
-          <div v-if="chat.current.roomId === 1 && !personal_setting.block" class="envelope-icon pointer" @click="handleEnvelopeIconClick">
+          <div v-if="globalPreference.envelope_settings.enabled === '1' && chat.current.roomId === 1 && !personal_setting.block" class="envelope-icon pointer" @click="handleEnvelopeIconClick">
             <img class="img" src="../assets/envelope_icon.png" alt="envelope-icon">
           </div>
 
@@ -238,6 +238,7 @@
 
     <!-- red envelope dialog -->
      <el-dialog
+       v-if="globalPreference.envelope_settings.enabled === '1'"
        class="red-envelope-dialog"
        :visible.sync="envelope.visible"
        :width="'400px'"
@@ -402,6 +403,7 @@ export default {
       'myRoles'
     ]),
     ...mapState([
+      'globalPreference',
       'user',
       'chat',
       'chatList',
