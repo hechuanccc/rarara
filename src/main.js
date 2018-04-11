@@ -95,6 +95,9 @@ router.beforeEach((to, from, next) => {
         store.dispatch('trial').then(() => {
           store.dispatch('endLoading')
           next()
+        }, () => {
+          store.dispatch('endLoading')
+          store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
         })
       })
     } else {
@@ -102,6 +105,9 @@ router.beforeEach((to, from, next) => {
       store.dispatch('trial').then(() => {
         store.dispatch('endLoading')
         next()
+      }, () => {
+        store.dispatch('endLoading')
+        store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
       })
     }
   } else {
