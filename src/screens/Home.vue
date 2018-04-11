@@ -6,7 +6,7 @@
           <el-row type="flex">
             <el-col :span="4" class="logo" :style="{backgroundImage: `url(${globalPreference.logo})`}">
             </el-col>
-            <el-col :span="20" class="annouce-box" @click.native="announcementDialogVisible = true">
+            <el-col v-if="announcements.length" :span="20" class="annouce-box" @click.native="announcementDialogVisible = true">
               <div class="title fl m-r">
                 <span>公告</span>
                 <icon class="volume-up" name="volume-up" scale="1"></icon>
@@ -31,7 +31,7 @@
               <qr-code :text="globalPreference.mobile_url"></qr-code>
             </div>
           </div>
-          <div class="checkin-btn m-l pointer" @click="handleCheckinClick">
+          <div v-if="globalPreference.checkin_settings.enabled === '1'" class="checkin-btn m-l pointer" @click="handleCheckinClick">
             <img class="img m-r-sm" src="../assets/money.png" alt="money">
             <span class="text">签到</span>
             <span class="badge" v-if="(user.last_checkin !== $moment().format('YYYY-MM-DD')) && !myRoles.includes('visitor')"></span>
@@ -55,14 +55,16 @@
                 </li>
               </ul>
             </el-popover>
-            <a :class="['memberpopover-trigger', {'underline': memberPopoverVisible}]" v-popover:member-popover>
+            <a :class="['memberpopover-trigger', {'underline': memberPopoverVisible}, {'m-l-xlg': globalPreference.checkin_settings.enabled !== '1'}]" v-popover:member-popover>
               <img class="img" :src="user.avatar ? user.avatar : require('../assets/avatar.png')">
-              <span class="username m-r-lg">{{user.nickname || user.username | truncate(5)}}</span>
+              <div class="info">
+                <span class="username">{{user.nickname || user.username}}</span>
+              </div>
             </a>
 
           </div>
           <div class="visitor-actions fr" v-else>
-            <span class="login m-r-sm pointer" @click="$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})">
+            <span class="login m-r-lg pointer" @click="$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})">
               <icon class="icon m-r-sm" name="user" scale="2"></icon>
               <span class="text">登入</span>
             </span>
@@ -367,7 +369,11 @@
         </el-dialog>
 
         <el-dialog
-          v-if="user.username && globalPreference.checkin_settings && globalPreference.checkin_settings.single_day_amount && !myRoles.includes('visitor')"
+          v-if="user.username &&
+            globalPreference.checkin_settings &&
+            globalPreference.checkin_settings.single_day_amount &&
+            !myRoles.includes('visitor') &&
+            globalPreference.checkin_settings.enabled === '1'"
           :custom-class="'checking-dialog init-dialog'"
           :show-close="false"
           :visible.sync="checkingDialog.visible"
@@ -988,6 +994,13 @@ export default {
   .user-info {
     display: inline-block;
     outline: none;
+    .memberpopover-trigger {
+      height: 60px; // to set the popover offset
+      &.underline {
+        text-decoration: underline;
+      }
+    }
+
     .img {
       display: inline-block;
       width: 38px;
@@ -995,10 +1008,18 @@ export default {
       vertical-align: middle;
     }
 
-    .username {
+    .info {
       display: inline-flex;
-      max-width: 80px;
+      height: 38px;
+      line-height: 38px;
+    }
+
+    .username {
+      display: inline-block;
+      max-width: 100px;
       white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
       font-size: 14px;
       @include text-hover();
     }
@@ -1036,12 +1057,6 @@ export default {
     }
   }
 
-  .memberpopover-trigger {
-    height: 60px; // to set the popover offset
-    &.underline {
-      text-decoration: underline;
-    }
-  }
 }
 
 .aside {

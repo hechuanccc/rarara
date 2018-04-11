@@ -152,7 +152,7 @@
             </label>
           </a>
 
-          <div v-if="chat.current.roomId === 1 && !personal_setting.block" class="envelope-icon pointer" @click="handleEnvelopeIconClick">
+          <div v-if="globalPreference.envelope_settings.enabled === '1' && chat.current.roomId === 1 && !personal_setting.block" class="envelope-icon pointer" @click="handleEnvelopeIconClick">
             <img class="img" src="../assets/envelope_icon.png" alt="envelope-icon">
           </div>
 
@@ -379,10 +379,19 @@ export default {
       deep: true
     },
     'user.logined': function (login) {
-      this.leaveRoom()
       if (login) {
         this.joinChatRoom()
+        const noServiceRoles = (role) => {
+          return (role === 'manager' || role === 'visitor')
+        }
+
+        if (this.myRoles.length && !this.myRoles.some(noServiceRoles)) {
+          this.getChatList({offset: 0, limit: 20})
+        }
       }
+    },
+    'user.id': function () {
+      this.leaveRoom()
     }
   },
   beforeDestroy () {
@@ -395,6 +404,7 @@ export default {
       'myRoles'
     ]),
     ...mapState([
+      'globalPreference',
       'user',
       'chat',
       'chatList',
@@ -427,15 +437,7 @@ export default {
     }
   },
   created () {
-    if (!this.myRoles.includes('manager') && !this.myRoles.includes('visitor')) {
-      this.getChatList({offset: 0, limit: 20})
-    }
-
-    if (this.$route.name !== 'Home') {
-      this.leaveRoom()
-    } else {
-      this.joinChatRoom()
-    }
+    this.joinChatRoom()
 
     localStorage.setItem('stickers', '{}')
   },
@@ -598,7 +600,6 @@ export default {
       let token = this.$cookie.get('access_token')
 
       this.loading = true
-      this.$store.dispatch('startLoading')
       this.ws = new WebSocket(`${WSHOST}/chat/stream?token=${token}`)
 
       this.ws.onopen = () => {
@@ -627,7 +628,6 @@ export default {
     },
     handleMsg () {
       this.loading = false
-      this.$store.dispatch('endLoading')
       if (!this.ws) { return false }
 
       this.ws.send(JSON.stringify({
