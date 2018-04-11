@@ -382,6 +382,13 @@ export default {
       this.leaveRoom()
       if (login) {
         this.joinChatRoom()
+        const noServiceRoles = (role) => {
+          return (role === 'manager' || role === 'visitor')
+        }
+
+        if (this.myRoles.length && !this.myRoles.some(noServiceRoles)) {
+          this.getChatList({offset: 0, limit: 20})
+        }
       }
     }
   },
@@ -427,19 +434,7 @@ export default {
     }
   },
   created () {
-    const noServiceRoles = (role) => {
-      return (role !== 'manager') && (role !== 'visitor')
-    }
-
-    if (this.myRoles.length && this.myRoles.some(noServiceRoles)) {
-      this.getChatList({offset: 0, limit: 20})
-    }
-
-    if (this.$route.name !== 'Home') {
-      this.leaveRoom()
-    } else {
-      this.joinChatRoom()
-    }
+    this.joinChatRoom()
 
     localStorage.setItem('stickers', '{}')
   },
