@@ -379,10 +379,8 @@ export default {
       deep: true
     },
     'user.logined': function (login) {
-      console.log('leave')
       this.leaveRoom()
       if (login) {
-        console.log('join')
         this.joinChatRoom()
       }
     }
