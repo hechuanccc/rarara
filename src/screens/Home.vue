@@ -55,14 +55,16 @@
                 </li>
               </ul>
             </el-popover>
-            <a :class="['memberpopover-trigger', {'underline': memberPopoverVisible}]" v-popover:member-popover>
+            <a :class="['memberpopover-trigger', {'underline': memberPopoverVisible}, {'m-l-xlg': globalPreference.checkin_settings.enabled !== '1'}]" v-popover:member-popover>
               <img class="img" :src="user.avatar ? user.avatar : require('../assets/avatar.png')">
-              <span class="username m-r-lg">{{user.nickname || user.username | truncate(5)}}</span>
+              <div class="info">
+                <span class="username">{{user.nickname || user.username}}</span>
+              </div>
             </a>
 
           </div>
           <div class="visitor-actions fr" v-else>
-            <span class="login m-r-sm pointer" @click="$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})">
+            <span class="login m-r-lg pointer" @click="$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})">
               <icon class="icon m-r-sm" name="user" scale="2"></icon>
               <span class="text">登入</span>
             </span>
@@ -992,6 +994,13 @@ export default {
   .user-info {
     display: inline-block;
     outline: none;
+    .memberpopover-trigger {
+      height: 60px; // to set the popover offset
+      &.underline {
+        text-decoration: underline;
+      }
+    }
+
     .img {
       display: inline-block;
       width: 38px;
@@ -999,10 +1008,18 @@ export default {
       vertical-align: middle;
     }
 
-    .username {
+    .info {
       display: inline-flex;
-      max-width: 80px;
+      height: 38px;
+      line-height: 38px;
+    }
+
+    .username {
+      display: inline-block;
+      max-width: 100px;
       white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
       font-size: 14px;
       @include text-hover();
     }
@@ -1040,12 +1057,6 @@ export default {
     }
   }
 
-  .memberpopover-trigger {
-    height: 60px; // to set the popover offset
-    &.underline {
-      text-decoration: underline;
-    }
-  }
 }
 
 .aside {

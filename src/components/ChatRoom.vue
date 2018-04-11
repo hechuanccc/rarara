@@ -379,8 +379,10 @@ export default {
       deep: true
     },
     'user.logined': function (login) {
+      console.log('leave')
       this.leaveRoom()
       if (login) {
+        console.log('join')
         this.joinChatRoom()
       }
     }
@@ -427,7 +429,11 @@ export default {
     }
   },
   created () {
-    if (this.myRoles.length && !this.myRoles.includes('manager') && !this.myRoles.includes('visitor')) {
+    const noServiceRoles = (role) => {
+      return (role !== 'manager') && (role !== 'visitor')
+    }
+
+    if (this.myRoles.length && this.myRoles.some(noServiceRoles)) {
       this.getChatList({offset: 0, limit: 20})
     }
 
