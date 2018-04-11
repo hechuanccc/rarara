@@ -70,8 +70,8 @@
     </div>
     <div class="data-container p-b full-height" v-if="(success || repeat || fail)">
       <div class="data">
-        <p class="title text-center" v-if="currentEnvelope.envelope_status.users.length !== currentEnvelope.envelope_status.users.length + currentEnvelope.envelope_status.remaining">{{currentEnvelope.envelope_status.users.length}}/{{currentEnvelope.envelope_status.users.length + currentEnvelope.envelope_status.remaining}} 人已領取</p>
-        <p class="title text-center" v-else>{{currentEnvelope.envelope_status.users.length}}/{{currentEnvelope.envelope_status.users.length + currentEnvelope.envelope_status.remaining}} 已領完</p>
+        <p class="title text-center" v-if="currentEnvelope.envelope_status.users.length !== currentEnvelope.envelope_status.total">{{currentEnvelope.envelope_status.users.length}}/{{currentEnvelope.envelope_status.total}} 人已領取</p>
+        <p class="title text-center" v-else>{{currentEnvelope.envelope_status.users.length}}/{{currentEnvelope.envelope_status.total}} 已領完</p>
         <table class="table">
           <tr :class="['tr', {self: member.receiver_id === user.id}]" v-for="(member, index) in currentEnvelope.envelope_status.users" :key="index">
             <td class="td">{{member.nickname}}</td>
