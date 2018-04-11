@@ -31,7 +31,7 @@
               <qr-code :text="globalPreference.mobile_url"></qr-code>
             </div>
           </div>
-          <div v-if="globalPreference.checkin_settings.enabled === '1'" class="checkin-btn m-l pointer" @click="handleCheckinClick">
+          <div v-if="globalPreference.checkin_settings.enabled === '1'" :class="['checkin-btn','m-l',{'pointer': chatStatus !== 'block'}, {'disabled': chatStatus === 'block'}]" @click="handleCheckinClick">
             <img class="img m-r-sm" src="../assets/money.png" alt="money">
             <span class="text">签到</span>
             <span class="badge" v-if="(user.last_checkin !== $moment().format('YYYY-MM-DD')) && !myRoles.includes('visitor')"></span>
@@ -109,7 +109,7 @@
       </el-aside>
 
       <el-main class="chat-area full-height">
-        <chat-room :class="{'p-l': !asideShown}" @handleAvatarClick="handleAvatarClick"></chat-room>
+        <chat-room :class="{'p-l': !asideShown}" @handleAvatarClick="handleAvatarClick" @chatStatusChanged="chatStatusChanged"></chat-room>
       </el-main>
 
       <el-aside width="395px" class="aside">
@@ -204,6 +204,7 @@
                               class="inp">
                     </el-input>
                   </el-form-item>
+
                   <el-form-item prop="mobile" label="手机" label-width="85px">
                     <el-input v-model="editUser.mobile"
                               @keypress.native="filtAmount"
@@ -211,6 +212,7 @@
                               class="inp">
                     </el-input>
                   </el-form-item>
+
                   <el-form-item prop="QQ" label="QQ"  label-width="85px">
                     <el-input v-model="editUser.QQ"
                               @keypress.native="filtAmount"
@@ -562,7 +564,8 @@ export default {
         visible: false
       },
       checkinRecord: [],
-      memberPopoverVisible: false
+      memberPopoverVisible: false,
+      chatStatus: ''
     }
   },
   filters: {
@@ -626,9 +629,14 @@ export default {
     this.getAnnouce()
   },
   methods: {
+    chatStatusChanged (status) {
+      this.chatStatus = status
+    },
     handleCheckinClick () {
       if (this.myRoles.includes('visitor')) {
         this.$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
+      } else if (this.chatStatus === 'block') {
+        return false
       } else {
         this.checkingDialog.visible = true
       }
@@ -964,9 +972,14 @@ export default {
     border-radius: 4px;
     border: solid 1px #f8b91c;
     background-color: #f5a623;
+
     &:hover {
       border: solid 1px darken(#f8b91c, 30%);
       background-color: darken(#f5a623, 5%);
+    }
+
+    &.disabled {
+      cursor: not-allowed;
     }
     .img {
       vertical-align: middle;

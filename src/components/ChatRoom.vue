@@ -690,6 +690,7 @@ export default {
                     } else if (data.command === 'unbanned') {
                       this.personal_setting.chat.status = 1
                     }
+                    this.$emit('chatStatusChanged', data.command)
 
                     this.$notify({
                       message: data.content,
@@ -793,6 +794,7 @@ export default {
                   case 5:
                     this.personal_setting.block = true
                     this.personal_setting.chat.status = 0
+                    this.$emit('chatStatusChanged', 'block')
                     this.openMessageBox(data.msg, 'error')
                     break
                   case 6: // 同時登入
