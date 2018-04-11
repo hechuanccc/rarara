@@ -64,9 +64,7 @@ axios.interceptors.response.use(res => {
     })
   }
 
-  if (error.response && error.response.status === 401) {
-    toHomeAndLogin(router)
-  } else if (error.response.status !== 587) { // 表示為意料之外的錯誤
+  if (error.response.status !== 587) { // 表示為意料之外的錯誤
     let msg = error.response.data.error
     if (!msg) {
       msg = '系统发生了错误, 请联系客服'
@@ -80,31 +78,27 @@ axios.interceptors.response.use(res => {
   return Promise.reject(error)
 })
 
-const toHomeAndLogin = function (router) {
-  // store.commit('RESET_USER')
-  router.push({
-    path: '/login'
-  })
-}
-
 let firstEnter = true
 router.beforeEach((to, from, next) => {
   if (firstEnter && to.meta.requiresAuth === true) {
     let token = VueCookie.get('access_token')
 
     if (token) {
-      store.dispatch('fetchUser')
-      .then(res => {
+      store.dispatch('fetchUser').then(res => {
         firstEnter = false
         next()
       })
       .catch(() => {
+        store.dispatch('startLoading')
         store.dispatch('trial').then(() => {
+          store.dispatch('endLoading')
           next()
         })
       })
     } else {
+      store.dispatch('startLoading')
       store.dispatch('trial').then(() => {
+        store.dispatch('endLoading')
         next()
       })
     }
@@ -135,14 +129,6 @@ fetchGlobalData().then(res => {
     store.dispatch('setStickerGroups', stickerGroups)
   }
   document.title = store.state.globalPreference.title
-})
-
-Vue.mixin({
-  methods: {
-    performLogin () {
-      toHomeAndLogin(this.$router)
-    }
-  }
 })
 
 /* eslint-disable no-new */

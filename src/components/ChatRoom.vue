@@ -427,7 +427,7 @@ export default {
     }
   },
   created () {
-    if (!this.myRoles.includes('manager') && !this.myRoles.includes('visitor')) {
+    if (this.myRoles.length && !this.myRoles.includes('manager') && !this.myRoles.includes('visitor')) {
       this.getChatList({offset: 0, limit: 20})
     }
 
@@ -598,7 +598,6 @@ export default {
       let token = this.$cookie.get('access_token')
 
       this.loading = true
-      this.$store.dispatch('startLoading')
       this.ws = new WebSocket(`${WSHOST}/chat/stream?token=${token}`)
 
       this.ws.onopen = () => {
@@ -627,7 +626,6 @@ export default {
     },
     handleMsg () {
       this.loading = false
-      this.$store.dispatch('endLoading')
       if (!this.ws) { return false }
 
       this.ws.send(JSON.stringify({

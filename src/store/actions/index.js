@@ -34,8 +34,7 @@ export default {
         axios.defaults.headers.common['Authorization'] = 'Bearer ' + res.access_token
       }
 
-      dispatch('fetchUser')
-      return Promise.resolve(res)
+      dispatch('fetchUser').then(() => { return Promise.resolve(res) })
     }, error => {
       if (error.code === 9011) {
         Vue.cookie.set('sessionid', error.data.sessionid)
@@ -90,8 +89,8 @@ export default {
           password: visitor.password
         }
       })
-    }).then(result => {
-      return dispatch('fetchUser')
+    }, error => {
+      return Promise.reject(error)
     })
   },
   setUser: ({commit, state}, data) => {

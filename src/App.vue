@@ -1,5 +1,5 @@
 <template>
-  <div class="full-height">
+  <div class="full-height" v-loading="$store.state.loading">
     <router-view />
   </div>
 </template>
