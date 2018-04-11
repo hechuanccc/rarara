@@ -380,7 +380,6 @@ export default {
       deep: true
     },
     'user.logined': function (login) {
-      this.leaveRoom()
       if (login) {
         this.joinChatRoom()
         const noServiceRoles = (role) => {
@@ -391,6 +390,9 @@ export default {
           this.getChatList({offset: 0, limit: 20})
         }
       }
+    },
+    'user.id': function () {
+      this.leaveRoom()
     }
   },
   beforeDestroy () {
