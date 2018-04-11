@@ -690,10 +690,10 @@ export default {
                     } else if (data.command === 'unblock') {
                       this.personal_setting.block = false
                       this.personal_setting.chat.status = 1
+                      this.$emit('chatStatusChanged', data.command)
                     } else if (data.command === 'unbanned') {
                       this.personal_setting.chat.status = 1
                     }
-                    this.$emit('chatStatusChanged', data.command)
 
                     this.$notify({
                       message: data.content,
