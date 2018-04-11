@@ -44,7 +44,7 @@
                     </div>
                   </div>
                   <div :class="['envelope-message','pointer',
-                    {'null': item.envelope_status.remaining === 0 && !item.envelope_status.users.map(item => item.receiver_id).includes(user.id)}]"
+                    {'null': (item.envelope_status.total === item.envelope_status.users.length) && !item.envelope_status.users.map(item => item.receiver_id).includes(user.id)}]"
                     v-else-if="item.envelope_status && !item.envelope_status.expired"
                     @click="takeEnvelope(item)">
                     <img class="img m-r" src="../assets/envelope_message.png" alt="envelope"/>
@@ -53,7 +53,7 @@
                       <p class="action">
                         {{
                           item.envelope_status.users.map(item => item.receiver_id).includes(user.id) ?
-                          '已领取' : item.envelope_status.remaining === 0  ?
+                          '已领取' : (item.envelope_status.total === item.envelope_status.users.length)  ?
                           '已领完' : '待领取'
                         }}
                       </p>
@@ -690,6 +690,7 @@ export default {
                     } else if (data.command === 'unbanned') {
                       this.personal_setting.chat.status = 1
                     }
+                    this.$emit('chatStatusChanged', data.command)
 
                     this.$notify({
                       message: data.content,
@@ -793,6 +794,7 @@ export default {
                   case 5:
                     this.personal_setting.block = true
                     this.personal_setting.chat.status = 0
+                    this.$emit('chatStatusChanged', 'block')
                     this.openMessageBox(data.msg, 'error')
                     break
                   case 6: // 同時登入
@@ -970,7 +972,6 @@ export default {
   .right {
     font-size: 14px;
     .icon-user {
-      cursor: pointer;
       margin: 8px 10px;
       cursor: pointer;
     }
