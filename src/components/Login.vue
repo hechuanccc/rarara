@@ -130,7 +130,7 @@ export default {
 .error {
   display: block;
   font-size: 13px;
-  padding-left: 65px;
+  padding-left: 85px;
   color: red;
 }
 </style>

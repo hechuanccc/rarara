@@ -6,7 +6,7 @@
           <el-row type="flex">
             <el-col :span="4" class="logo" :style="{backgroundImage: `url(${globalPreference.logo})`}">
             </el-col>
-            <el-col :span="20" class="annouce-box" @click.native="announcementDialogVisible = true">
+            <el-col v-if="announcements.length" :span="20" class="annouce-box" @click.native="announcementDialogVisible = true">
               <div class="title fl m-r">
                 <span>公告</span>
                 <icon class="volume-up" name="volume-up" scale="1"></icon>
@@ -31,7 +31,7 @@
               <qr-code :text="globalPreference.mobile_url"></qr-code>
             </div>
           </div>
-          <div class="checkin-btn m-l pointer" @click="handleCheckinClick">
+          <div v-if="globalPreference.checkin_settings.enabled === '1'" class="checkin-btn m-l pointer" @click="handleCheckinClick">
             <img class="img m-r-sm" src="../assets/money.png" alt="money">
             <span class="text">签到</span>
             <span class="badge" v-if="(user.last_checkin !== $moment().format('YYYY-MM-DD')) && !myRoles.includes('visitor')"></span>
@@ -367,7 +367,11 @@
         </el-dialog>
 
         <el-dialog
-          v-if="user.username && globalPreference.checkin_settings && globalPreference.checkin_settings.single_day_amount && !myRoles.includes('visitor')"
+          v-if="user.username &&
+            globalPreference.checkin_settings &&
+            globalPreference.checkin_settings.single_day_amount &&
+            !myRoles.includes('visitor') &&
+            globalPreference.checkin_settings.enabled === '1'"
           :custom-class="'checking-dialog init-dialog'"
           :show-close="false"
           :visible.sync="checkingDialog.visible"

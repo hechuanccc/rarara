@@ -62,13 +62,15 @@ axios.interceptors.response.use(res => {
       message: '系统发生了错误, 请联系客服',
       type: 'error'
     })
+    return
   }
 
-  if (error.response.status !== 587) { // 表示為意料之外的錯誤
+  if (error && error.response && error.response.status !== 587) { // 表示為意料之外的錯誤
     let msg = error.response.data.error
     if (!msg) {
       msg = '系统发生了错误, 请联系客服'
     }
+
     Vue.prototype.$message({
       showClose: true,
       message: msg,

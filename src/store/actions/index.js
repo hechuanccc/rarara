@@ -90,6 +90,10 @@ export default {
         }
       })
     }, error => {
+      Vue.cookie.delete('csrftoken')
+      Vue.cookie.delete('access_token')
+      Vue.cookie.delete('refresh_token')
+
       return Promise.reject(error)
     })
   },
