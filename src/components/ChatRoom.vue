@@ -238,7 +238,6 @@
 
     <!-- red envelope dialog -->
      <el-dialog
-       v-if="globalPreference.envelope_settings.enabled === '1'"
        class="red-envelope-dialog"
        :visible.sync="envelope.visible"
        :width="'400px'"
