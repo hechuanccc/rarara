@@ -26,7 +26,7 @@
               </el-form-item>
               <div class="register-actions">
                 <el-form-item>
-                  <el-button type="primary" class="inp" @click="submit">同意条款并注册</el-button>
+                  <el-button type="primary" class="inp" @click="submit">确认送出</el-button>
                 </el-form-item>
                 <!-- <el-form-item :label="''" prop="hasAgree">
                   <el-checkbox-group v-model="user.hasAgree">
