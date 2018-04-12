@@ -53,7 +53,10 @@ export default {
     dispatch('setWebsocket', socket)
 
     state.ws.onopen = () => {
-      fn()
+      if (fn) {
+        fn()
+      }
+
       state.ws.send(JSON.stringify({
         'command': 'join',
         'receivers': [state.chat.current.roomId]
