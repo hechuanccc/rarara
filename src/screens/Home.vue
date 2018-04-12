@@ -833,6 +833,13 @@ export default {
             }
             setTimeout(() => {
               this.disabledEditProfile = false
+              this.changeProfileRes = ''
+              this.$store.dispatch('logout').then(() => {
+                this.showProfileDiag = false
+                this.$store.dispatch('trial').then(() => {
+                  this.$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
+                })
+              })
               this.$refs['editPassword'].resetFields()
             }, 1000)
           }, errorMsg => {
