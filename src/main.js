@@ -67,6 +67,11 @@ axios.interceptors.response.use(res => {
 
   if (error && error.response && error.response.status !== 587) { // 表示為意料之外的錯誤
     let msg = error.response.data.error
+
+    if (error.response.status === 401 || error.response.status === 403) {
+      return Promise.reject(error)
+    }
+
     if (!msg) {
       msg = '系统发生了错误, 请联系客服'
     }

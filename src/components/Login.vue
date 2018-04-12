@@ -77,14 +77,8 @@ export default {
           password: this.user.password
         }
       }).then(result => {
-        const next = this.$route.query.next
-
-        this.$store.dispatch('fetchUser').then(() => {
-          this.loading = false
-          this.$router.push(next || '/')
-
-          this.$store.dispatch('updateUnloginedDialog', {visible: false, status: 'Login'})
-        })
+        this.loading = false
+        this.$store.dispatch('updateUnloginedDialog', {visible: false, status: 'Login'})
       }, errorMsg => {
         this.errorMsg = msgFormatter(errorMsg)
         this.loading = false

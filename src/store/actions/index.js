@@ -2,6 +2,7 @@ import axios from 'axios'
 import Vue from 'vue'
 
 import * as types from '../mutations/mutation-types'
+import config from '../../../config'
 
 import {
   login,
@@ -13,7 +14,7 @@ import {
 
 export default {
   login: ({ commit, state, dispatch }, { user }) => {
-    let token = Vue.cookie.access_token
+    let token = Vue.cookie.get('access_token')
     if (state.user.logined && token) {
       dispatch('logout')
     }
@@ -34,7 +35,9 @@ export default {
         axios.defaults.headers.common['Authorization'] = 'Bearer ' + res.access_token
       }
 
-      dispatch('fetchUser').then(() => { return Promise.resolve(res) })
+      dispatch('fetchUser').then(() => {
+        return Promise.resolve(res)
+      })
     }, error => {
       if (error.code === 9011) {
         Vue.cookie.set('sessionid', error.data.sessionid)
@@ -42,15 +45,53 @@ export default {
       return Promise.reject(error)
     })
   },
+  connectSocket: ({commit, state, dispatch}, fn) => {
+    const WSHOST = config.chatHost
+    let token = Vue.cookie.get('access_token')
+    let socket = new WebSocket(`${WSHOST}/chat/stream?token=${token}`)
+
+    dispatch('setWebsocket', socket)
+
+    state.ws.onopen = () => {
+      if (fn) {
+        fn()
+      }
+
+      state.ws.send(JSON.stringify({
+        'command': 'join',
+        'receivers': [state.chat.current.roomId]
+      }))
+    }
+
+    state.ws.onclose = () => {
+      dispatch('setWebsocket', null)
+    }
+
+    state.ws.onerror = () => {
+      dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
+    }
+  },
   logout: ({ commit, state, dispatch }) => {
     return logout().then(
       res => {
         Vue.cookie.delete('access_token')
         Vue.cookie.delete('refresh_token')
-        // commit(types.RESET_USER)
+        dispatch('leaveSocket', state.chat.current.roomId)
       },
       errRes => Promise.reject(errRes)
     )
+  },
+  leaveSocket: ({commit, state, diapatch}, room) => {
+    if (state.ws) {
+      if (room) {
+        state.ws && state.ws.send(JSON.stringify({
+          'command': 'leave',
+          'receivers': [room]
+        }))
+      }
+
+      state.ws.close()
+    }
   },
   fetchUser: ({ commit, state }) => {
     return fetchUser().then(res => {
@@ -61,6 +102,7 @@ export default {
             logined: true
           }
         })
+
         return Promise.resolve(res)
       } else {
         return Promise.reject(res)
