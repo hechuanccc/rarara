@@ -107,7 +107,7 @@
         height="100">
         <div class="control-bar">
           <el-popover
-            :disabled="myRoles.includes('visitor')"
+            :disabled="myRoles.includes('visitor') || personal_setting.block"
             v-model="showStickerPopover"
             :popper-class="'emoji-popover'"
             ref="popover4"
@@ -133,14 +133,14 @@
             @click="handleEmojiIconClick"
             href="javascript:void(0)"
             title="发送表情"
-            class="btn-control btn-smile">
+            :class="['btn-control','btn-smile', 'pointer', {'not-allowed': personal_setting.block}]">
             <icon scale="1.3" name="smile-o"></icon>
           </a>
 
-          <a href="javascript:void(0)" class="btn-control btn-smile">
+          <a href="javascript:void(0)" :class="['btn-control', 'btn-smile', 'pointer', {'not-allowed': personal_setting.block}]">
             <label for="imgUploadInput" @click="handleImgIconClick($event)">
               <span title="上传图片">
-                <i class="el-icon-picture"></i>
+                <i :class="['el-icon-picture', {'not-allowed': personal_setting.block}]"></i>
                 <input :disabled="!personal_setting.chat.status"
                   @change="sendMsgImg"
                   type="file"
@@ -152,7 +152,8 @@
             </label>
           </a>
 
-          <div v-if="globalPreference.envelope_settings && globalPreference.envelope_settings.enabled === '1' && chat.current.roomId === 1" class="envelope-icon pointer" @click="handleEnvelopeIconClick">
+          <div v-if="globalPreference.envelope_settings && globalPreference.envelope_settings.enabled === '1' && chat.current.roomId === 1"
+            :class="['envelope-icon','pointer', {'not-allowed': personal_setting.block}]" @click="handleEnvelopeIconClick">
             <img class="img" src="../assets/envelope_icon.png" alt="envelope-icon">
           </div>
 
@@ -442,7 +443,10 @@ export default {
   },
   methods: {
     handleImgIconClick (e) {
-      if (this.myRoles.includes('visitor')) {
+      if (this.personal_setting.block) {
+        return
+      }
+      if ((this.myRoles.length && this.myRoles.includes('visitor'))) {
         e.preventDefault()
         this.$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
       }
@@ -1290,12 +1294,10 @@ export default {
     display: inline-block;
     padding: 5px 12px;
     color: #ddd;
-    cursor: pointer;
     &.right {
       float: right;
     }
     .el-icon-picture {
-      cursor: pointer;
       font-size: 20px;
     }
   }
