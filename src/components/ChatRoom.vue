@@ -152,7 +152,7 @@
             </label>
           </a>
 
-          <div v-if="globalPreference.envelope_settings.enabled === '1' && chat.current.roomId === 1" class="envelope-icon pointer" @click="handleEnvelopeIconClick">
+          <div v-if="globalPreference.envelope_settings && globalPreference.envelope_settings.enabled === '1' && chat.current.roomId === 1" class="envelope-icon pointer" @click="handleEnvelopeIconClick">
             <img class="img" src="../assets/envelope_icon.png" alt="envelope-icon">
           </div>
 
@@ -261,7 +261,6 @@ import 'vue-awesome/icons/smile-o'
 import { fetchChatEmoji, sendImgToChat, getChatUser, buildRoom, getChatList, takeEnvelope } from '../api'
 import urls from '../api/urls'
 import { msgFormatter } from '../utils'
-import config from '../../config'
 import { mapGetters, mapState } from 'vuex'
 import PrivateChat from '../components/PrivateChat'
 import Envelope from '../components/Envelope'
@@ -269,8 +268,6 @@ import Restraint from './Restraint'
 import ImgAsync from './ImgAsync'
 import Emojis from './Emojis'
 import Stickers from './Stickers'
-
-const WSHOST = config.chatHost
 
 export default {
   components: {
@@ -284,7 +281,6 @@ export default {
   },
   data () {
     return {
-      ws: null,
       msgContent: '',
       showImageMsg: false,
       showImageMsgUrl: '',
@@ -378,20 +374,21 @@ export default {
       },
       deep: true
     },
-    'user.logined': function (login) {
-      if (login) {
-        this.joinChatRoom()
-        const noServiceRoles = (role) => {
-          return (role === 'manager' || role === 'visitor')
-        }
+    'user.logined': {
+      handler: function (val, oldVal) {
+        if (val !== oldVal && val) {
+          clearInterval(this.liveInterval)
+          this.joinChatRoom()
+          const noServiceRoles = (role) => {
+            return (role === 'manager' || role === 'visitor')
+          }
 
-        if (this.myRoles.length && !this.myRoles.some(noServiceRoles)) {
-          this.getChatList({offset: 0, limit: 20})
+          if (this.myRoles.length && !this.myRoles.some(noServiceRoles)) {
+            this.getChatList({offset: 0, limit: 20})
+          }
         }
-      }
-    },
-    'user.id': function () {
-      this.leaveRoom()
+      },
+      deep: true
     }
   },
   beforeDestroy () {
@@ -410,7 +407,8 @@ export default {
       'chatList',
       'roomMsgs',
       'envelopes',
-      'stickerGroups'
+      'stickerGroups',
+      'ws'
     ]),
     isLogin () {
       return this.$store.state.user.logined && this.$route.name !== 'Home'
@@ -437,9 +435,10 @@ export default {
     }
   },
   created () {
-    this.joinChatRoom()
-
     localStorage.setItem('stickers', '{}')
+  },
+  mounted () {
+    this.joinChatRoom()
   },
   methods: {
     handleImgIconClick (e) {
@@ -600,17 +599,9 @@ export default {
       return message.sender.roles.map((role) => role.name)
     },
     joinChatRoom () {
-      let token = this.$cookie.get('access_token')
-
-      this.loading = true
-      this.ws = new WebSocket(`${WSHOST}/chat/stream?token=${token}`)
-
-      this.ws.onopen = () => {
-        this.$store.dispatch('setWebsocket', this.ws)
+      const callback = () => {
         this.checkLiving(this.ws)
-
         window.addEventListener('beforeunload', e => this.beforeunloadHandler(e))
-
         if (!this.emojis.people.length) {
           fetchChatEmoji().then((resData) => {
             this.emojis = resData
@@ -621,22 +612,25 @@ export default {
 
         this.handleMsg()
       }
-      this.ws.onclose = () => {
-        this.ws = null
-        this.$store.dispatch('setWebsocket', this.ws)
-      }
-      this.ws.onerror = (err) => {
-        console.log(err)
+
+      this.loading = true
+      let currentToken = this.$cookie.get('access_token')
+
+      if (this.ws) { // avoid rejoin room
+        let socketValidate = this.ws.url.indexOf(currentToken) !== -1
+        if (socketValidate) {
+          callback()
+        } else {
+          this.leaveRoom()
+          this.$store.dispatch('connectSocket', callback)
+        }
+      } else {
+        this.$store.dispatch('connectSocket', callback)
       }
     },
     handleMsg () {
       this.loading = false
       if (!this.ws) { return false }
-
-      this.ws.send(JSON.stringify({
-        'command': 'join',
-        'receivers': [this.chatHall]
-      }))
 
       this.ws.onmessage = (resData) => {
         let correctResponse = typeof (resData.data) === 'string'
@@ -803,7 +797,8 @@ export default {
                   case 6: // 同時登入
                     this.openMessageBox(data.msg, 'error')
                     setTimeout(() => {
-                      this.$store.dispatch('logout').then(res => {
+                      this.leaveRoom()
+                      this.$store.dispatch('trial').then(() => {
                         this.$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
                       })
                     }, 3000)
@@ -876,14 +871,7 @@ export default {
       this.msgContent = ''
     },
     leaveRoom () {
-      this.ws && this.ws.send(JSON.stringify({
-        'command': 'leave',
-        'receivers': [this.chatHall]
-      }))
-
-      if (this.ws) {
-        this.ws.close()
-      }
+      this.$store.dispatch('leaveSocket', this.chat.current.roomId)
     },
     getUser () {
       getChatUser(1).then(response => {

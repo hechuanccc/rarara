@@ -31,12 +31,12 @@
               <qr-code :text="globalPreference.mobile_url"></qr-code>
             </div>
           </div>
-          <div v-if="globalPreference.checkin_settings.enabled === '1'" :class="['checkin-btn','m-l',{'pointer': chatStatus !== 'block'}, {'disabled': chatStatus === 'block'}]" @click="handleCheckinClick">
+          <div v-if="globalPreference.envelope_settings && globalPreference.checkin_settings.enabled === '1'" :class="['checkin-btn','m-l',{'pointer': chatStatus !== 'block'}, {'disabled': chatStatus === 'block'}]" @click="handleCheckinClick">
             <img class="img m-r-sm" src="../assets/money.png" alt="money">
             <span class="text">签到</span>
             <span class="badge" v-if="(user.last_checkin !== $moment().format('YYYY-MM-DD')) && !myRoles.includes('visitor')"></span>
           </div>
-          <div class="user-info m-l pointer" v-if="user.id && myRoles && !myRoles.includes('visitor')">
+          <div class="user-info m-l pointer fr" v-if="user.id && myRoles && !myRoles.includes('visitor')">
              <el-popover
               v-model="memberPopoverVisible"
               ref="member-popover"
@@ -55,7 +55,7 @@
                 </li>
               </ul>
             </el-popover>
-            <a :class="['memberpopover-trigger', {'underline': memberPopoverVisible}, {'m-l-xlg': globalPreference.checkin_settings.enabled !== '1'}]" v-popover:member-popover>
+            <a :class="['memberpopover-trigger', {'underline': memberPopoverVisible}, {'m-l-xlg': globalPreference.envelope_settings && globalPreference.checkin_settings.enabled !== '1'}]" v-popover:member-popover>
               <img class="img" :src="user.avatar ? user.avatar : require('../assets/avatar.png')">
               <div class="info">
                 <span class="username">{{user.nickname || user.username}}</span>
@@ -770,7 +770,9 @@ export default {
       this.oldUser = Object.assign({}, this.editUser)
     },
     logout () {
-      this.$store.dispatch('logout').then(() => { this.$store.dispatch('trial') })
+      this.$store.dispatch('logout').then(() => {
+        this.$store.dispatch('trial')
+      })
     },
     submit () {
       let hasChanged = false
@@ -1009,6 +1011,7 @@ export default {
     outline: none;
     .memberpopover-trigger {
       height: 60px; // to set the popover offset
+      outline: none;
       &.underline {
         text-decoration: underline;
       }
@@ -1258,6 +1261,9 @@ export default {
   .el-tabs__item {
     text-align: center;
     width: 50%;
+  }
+  .el-form-item--small.el-form-item {
+    margin-bottom: 30px;
   }
 }
 

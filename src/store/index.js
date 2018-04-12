@@ -10,7 +10,7 @@ export function createStore () {
   return new Vuex.Store({
     state: {
       user: {
-        logined: '',
+        logined: false,
         roles: []
       },
       loading: false,
