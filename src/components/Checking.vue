@@ -22,7 +22,7 @@
 
           <div class="gift-day p-r-sm p-l-sm text-center">
             <div class="day">{{number * progress.giftDay}}日</div>
-            <div :class="['icon', {today: continuousCheckins  === (number * progress.giftDay)}]">
+            <div :class="['icon', {'checked': continuousCheckins >= (number * progress.giftDay)}]">
               <i class="el-icon-circle-check-outline"></i>
             </div>
           </div>
@@ -491,7 +491,7 @@ export default {
     }
   }
 
-  .icon.today {
+  .icon.checked {
     color: #3e73b1;
   }
 
