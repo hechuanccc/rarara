@@ -73,7 +73,7 @@
         <p class="title text-center" v-if="currentEnvelope.envelope_status.users.length !== currentEnvelope.envelope_status.total">{{currentEnvelope.envelope_status.users.length}}/{{currentEnvelope.envelope_status.total}} 人已領取</p>
         <p class="title text-center" v-else>{{currentEnvelope.envelope_status.users.length}}/{{currentEnvelope.envelope_status.total}} 已領完</p>
         <table class="table">
-          <tr :class="['tr', {self: member.receiver_id === user.id}]" v-for="(member, index) in currentEnvelope.envelope_status.users" :key="index">
+          <tr :class="['tr', {self: member.receiver_id === user.id}]" v-for="(member, index) in showingList" :key="index">
             <td class="td">{{member.nickname}}</td>
             <td class="td profit">¥ {{member.amount}}</td>
           </tr>
@@ -173,6 +173,9 @@ export default {
     },
     currentEnvelope () {
       return this.envelopes[this.envelope.envelope_id]
+    },
+    showingList () {
+      return this.fail ? Object.values(this.envelope.receive_users) : this.currentEnvelope.envelope_status.users
     },
     showingName () {
       return this.currentEnvelope.sender && this.currentEnvelope.sender.nickname ? this.currentEnvelope.sender.nickname : this.currentEnvelope.sender.username
