@@ -380,13 +380,6 @@ export default {
         if (val !== oldVal && val) {
           clearInterval(this.liveInterval)
           this.joinChatRoom()
-          const noServiceRoles = (role) => {
-            return (role === 'manager' || role === 'visitor')
-          }
-
-          if (this.myRoles.length && !this.myRoles.some(noServiceRoles)) {
-            this.getChatList({offset: 0, limit: 20})
-          }
         }
       },
       deep: true

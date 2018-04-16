@@ -9,7 +9,8 @@ import {
   logout,
   fetchUser,
   updateUser,
-  register
+  register,
+  getChatList
 } from '../../api'
 
 export default {
@@ -20,7 +21,7 @@ export default {
     }
 
     return login(user).then(res => {
-      commit(types.RESET_USER)
+      dispatch('resetUser')
 
       let expires = new Date(res.expires_in)
 
@@ -93,8 +94,11 @@ export default {
       state.ws.close()
     }
   },
-  fetchUser: ({ commit, state }) => {
+  fetchUser: ({ commit, state, dispatch, getters }) => {
     return fetchUser().then(res => {
+      const noServiceRoles = (role) => {
+        return (role === 'manager' || role === 'visitor')
+      }
       if (res) {
         commit(types.SET_USER, {
           user: {
@@ -102,7 +106,14 @@ export default {
             logined: true
           }
         })
-
+        // TODO: apply multiple chatroom chatList & roomList
+        if (getters.myRoles.length && !getters.myRoles.some(noServiceRoles)) {
+          if (state.chatList.length === 0) {
+            getChatList({offset: 0, limit: 20}).then(data => {
+              dispatch('updateChatList', data.results)
+            })
+          }
+        }
         return Promise.resolve(res)
       } else {
         return Promise.reject(res)
@@ -142,7 +153,8 @@ export default {
   setUser: ({commit, state}, data) => {
     commit(types.SET_USER, data)
   },
-  resetUser: ({commit, state}, data) => {
+  resetUser: ({commit, state, dispatch}, data) => {
+    dispatch('updateChatList', [])
     commit(types.RESET_USER)
   },
   startLoading: ({ commit }) => {
