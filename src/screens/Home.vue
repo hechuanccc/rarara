@@ -31,8 +31,8 @@
               <qr-code :text="globalPreference.mobile_url"></qr-code>
             </div>
           </div>
-          <div v-if="globalPreference.envelope_settings && globalPreference.checkin_settings.enabled === '1'" :class="['checkin-btn','m-l',{'pointer': chatStatus !== 'block'}, {'disabled': chatStatus === 'block'}]" @click="handleCheckinClick">
-            <img class="img m-r-sm" src="../assets/money.png" alt="money">
+          <div v-if="globalPreference.envelope_settings && globalPreference.checkin_settings.enabled === '1'"
+            :class="['checkin-btn','m-l', 'text-center',{'pointer': chatStatus !== 'block'}, {'disabled': chatStatus === 'block'}]" @click="handleCheckinClick">
             <span class="text">签到</span>
             <span class="badge" v-if="(user.last_checkin !== $moment().format('YYYY-MM-DD')) && !myRoles.includes('visitor')"></span>
           </div>
@@ -43,7 +43,7 @@
               :popper-class="'member-popover'"
               placement="bottom"
               :offset="10"
-              trigger="click">
+              trigger="hover">
               <ul class="member-popover m-t">
                 <li class="li m-b pointer" @click="showProfileDiag = true, memberPopoverVisible = false">
                   <icon class="icon m-r-sm" name="user-circle" scale="2"></icon>
@@ -55,21 +55,23 @@
                 </li>
               </ul>
             </el-popover>
-            <a :class="['memberpopover-trigger', {'underline': memberPopoverVisible}, {'m-l-xlg': globalPreference.envelope_settings && globalPreference.checkin_settings.enabled !== '1'}]" v-popover:member-popover>
+            <a :class="['memberpopover-trigger', {'m-l-xlg': globalPreference.envelope_settings && globalPreference.checkin_settings.enabled !== '1'}]" v-popover:member-popover>
               <img class="img" :src="user.avatar ? user.avatar : require('../assets/avatar.png')">
               <div class="info">
-                <span class="username">{{user.nickname || user.username}}</span>
+                <span :class="['username', {'underline': memberPopoverVisible}]">{{user.nickname || user.username}}</span>
+                <i class="el-icon-caret-top p-t" v-if="memberPopoverVisible"></i>
+                <i class="el-icon-caret-bottom p-t" v-else></i>
               </div>
             </a>
 
           </div>
           <div class="visitor-actions fr" v-else>
             <span class="login m-r-lg pointer" @click="$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})">
-              <icon class="icon m-r-sm" name="user" scale="2"></icon>
+              <icon class="icon m-r-sm" name="user" scale="1.6"></icon>
               <span class="text">登入</span>
             </span>
             <span class="register pointer" @click="$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Register'})">
-              <icon class="icon m-r-sm" name="pencil-square" scale="2"></icon>
+              <icon class="icon m-r-sm" name="pencil-square" scale="1.6"></icon>
               <span class="text">注册</span>
             </span>
           </div>
@@ -163,8 +165,7 @@
           <div class="edit-profile">
             <el-tabs v-model="activePanel" type="card" @tab-click="changeProfileRes = ''">
               <el-tab-pane class="edit-user-panel" label="帐号信息" name="account">
-                <div
-                  v-if="activePanel === 'account'"
+                <div v-if="activePanel === 'account'"
                   class="avatar"
                   v-on:mouseover="swichAvatar = true"
                   v-on:mouseout="swichAvatar = false"
@@ -379,7 +380,7 @@
           :custom-class="'checking-dialog init-dialog'"
           :show-close="false"
           :visible.sync="checkingDialog.visible"
-          width="400px">
+          width="450px">
           <Checking @closeCheckinDialog="closeCheckinDialog"
             v-if="checkingDialog.visible"
             :continuousCheckins="user.continuous_checkins"
@@ -910,7 +911,6 @@ export default {
 .header {
   height: 80px;
   background: rgba(0,0,0,.3);
-  margin-bottom: 10px;
   color: #fff;
 
   .logo {
@@ -976,8 +976,8 @@ export default {
   .checkin-btn {
     position: relative;
     display: inline-block;
+    width: 85px;
     line-height: 25px;
-    padding: 1px 15px 1px 10px;
     border-radius: 4px;
     border: solid 1px #f8b91c;
     background-color: #f5a623;
@@ -990,11 +990,7 @@ export default {
     &.disabled {
       cursor: not-allowed;
     }
-    .img {
-      vertical-align: middle;
-      width: 20px;
-      height: 20px;
-    }
+
 
     .text {
       font-size: 14px;
@@ -1016,12 +1012,10 @@ export default {
   .user-info {
     display: inline-block;
     outline: none;
+
     .memberpopover-trigger {
       height: 60px; // to set the popover offset
       outline: none;
-      &.underline {
-        text-decoration: underline;
-      }
     }
 
     .img {
@@ -1045,6 +1039,9 @@ export default {
       overflow: hidden;
       font-size: 14px;
       @include text-hover();
+      &.underline {
+        text-decoration: underline;
+      }
     }
   }
 

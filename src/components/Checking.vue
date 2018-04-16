@@ -31,10 +31,13 @@
       </div>
     </div>
     <div class="body">
-      <div class="congratulation" v-if="Number(checkinData.special_bonus)">
-        <div class="text-center">
-          <p class="text">获取彩金</p>
-          <p class="amount m-t">¥{{checkinData.special_bonus}}</p>
+      <div :class="['congratulation', {loading: loadingSpin}]" v-if="Number(checkinData.special_bonus)">
+        <div class="loading-spin" v-if="loadingSpin">
+          <div class="loader text-center"></div>
+        </div>
+        <div class="text-center" v-else>
+          <p class="text">红包彩金</p>
+          <p class="amount m-t">{{checkinData.special_bonus}}</p>
         </div>
       </div>
 
@@ -42,6 +45,7 @@
         <ul class="row" v-for="(row, index) in progressRows" :key="index">
           <li :class="['step',
             {checked: day - continuousCheckins <= 0},
+            {'gift-award': day % progress.giftDay === 0},
             {pointer: day === checkinDay && !hasChecked}]"
             @click="checkin(day)"
             v-for="(day, index) in row"
@@ -65,7 +69,7 @@
                   :style="{
                     backgroundImage: `url(${hasChecked ? require('../assets/hint_success@2x.png') : require('../assets/hint_click@2x.png')})`
                     }">
-                  <span v-if="hasChecked">成功</span>
+                  <span v-if="hasChecked">已领</span>
                   <span v-else>￥{{singleDayAmount}}</span>
                 </span>
               </transition>
@@ -79,19 +83,25 @@
         </ul>
       </div>
     </div>
-
-    <div class="rules" v-if="rulesVisible">
-      <p>签到规则</p>
-      <ol>
-        <li>
-          1. 签到方式：<p>用户登录时，在页面点击“签到”按钮进行签到，全天都可以签。</p>
-        </li>
-        <li>
-          2. 签到奖励：<p>每日签到即获得签到彩金，连续签到7日、14日、21日能领取更多金额彩金</p>
-        </li>
-      </ol>
-    </div>
-
+    <transition name="fade">
+      <div class="rules" v-if="rulesVisible" @mouseover="rulesVisible = true" @mouseleave="rulesVisible = false">
+        <p>签到规则</p>
+        <ol>
+          <li>
+            1. 签到方式：
+            <p class="p-l">  用户每日登录后，在页面点击“签到”按钮后进行签到，每天只能签到一次。</p>
+          </li>
+          <li>
+            2. 签到奖励：
+            <p class="p-l">  每日签到即获得签到彩金 {{checkinSettings.single_day_amount}}。</p>
+            <p class="p-l">  连续签到7日有机会获得红包彩金 {{checkinSettings.d7_min_amount}}〜{{checkinSettings.d7_max_amount}}。</p>
+            <p class="p-l">  连续签到14日有机会获得红包彩金{{checkinSettings.d14_min_amount}}〜{{checkinSettings.d14_max_amount}}。</p>
+            <p class="p-l">  连续签到21日有机会获得红包彩金{{checkinSettings.d21_min_amount}}〜{{checkinSettings.d21_max_amount}}。</p>
+            <p class="p-l">  连续签到21日后，则签到天数重置。</p>
+          </li>
+        </ol>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -99,6 +109,7 @@
 import _ from 'lodash'
 import { checkin } from '../api'
 import { msgFormatter } from '../utils'
+import { mapState } from 'vuex'
 
 export default {
   props: {
@@ -127,7 +138,8 @@ export default {
       },
       statusPopoverVisible: false,
       rulesVisible: false,
-      loading: false
+      loading: false,
+      loadingSpin: false
     }
   },
   filters: {
@@ -136,6 +148,13 @@ export default {
     }
   },
   computed: {
+    ...mapState([
+      'user',
+      'globalPreference'
+    ]),
+    checkinSettings () {
+      return this.globalPreference.checkin_settings
+    },
     progressRows () {
       const total = Array.from(Array(this.progress.parts * this.progress.giftDay).keys()).map(item => item + 1)
       return _.chunk(total, this.progress.giftDay)
@@ -174,6 +193,12 @@ export default {
         this.$store.dispatch('fetchUser').then(() => {
           this.statusPopoverVisible = true
           this.checkinData = response
+          if (this.user.continuous_checkins % this.progress.giftDay === 0) {
+            this.loadingSpin = true
+            setTimeout(() => {
+              this.loadingSpin = false
+            }, 2000)
+          }
           this.loading = false
         })
       },
@@ -192,10 +217,10 @@ export default {
 <style lang="scss" scoped>
 
 .checking-area {
-  min-height: 380px;
+  min-height: 420px;
   .header {
-    min-height: 135px;
-    background: url('../assets/checkinBg.png');
+    min-height: 150px;
+    background-image: linear-gradient(to top, #fad961, #f76b1c);
     background-position: center center;
     background-size: cover;
     background-repeat: no-repeat;
@@ -204,7 +229,7 @@ export default {
 
   .body {
     box-sizing: border-box;
-    min-height: 245px;
+    min-height: 270px;
   }
 }
 
@@ -225,6 +250,10 @@ export default {
     width: 60px;
     font-size: 20px;
   }
+
+  .title {
+    font-size: 16px;
+  }
 }
 
 .continue-day {
@@ -244,11 +273,12 @@ export default {
   display: flex;
   flex-wrap: wrap;
   width: 100%;
-  height: 245px;
+  height: 270px;
   justify-content: center;
   align-items: center;
   color: #ffffff;
   font-weight: 600;
+  background-color: #de5547;
   background-image: url('../assets/checkinCongratBg.png');
   background-repeat: no-repeat;
   background-size: cover;
@@ -262,6 +292,9 @@ export default {
     font-size: 36px;
   }
 
+  &.loading {
+    background-image: none;
+  }
 }
 
 /* checkin step */
@@ -343,12 +376,11 @@ export default {
   }
 
   .gift {
-
     &.clickable {
       background-color: #f8e71c;
       border-radius: 50%;
       &:before {
-        content: '领取';
+        content: '红包';
         position: absolute;
         top: -15px;
         font-size: 12px;
@@ -404,7 +436,6 @@ export default {
     }
   }
 
-
   &.checked {
     .ordinary {
       border: solid 2px #3e73b1;
@@ -417,7 +448,9 @@ export default {
     .gift {
       filter: grayscale(1);
     }
-
+    &.gift-award:after {
+      left: 24px;
+    }
     &:after {
       content: '';
       position: absolute;
@@ -432,6 +465,7 @@ export default {
     }
   }
 }
+
 
 /* progress bar */
 
@@ -480,10 +514,10 @@ export default {
 
 .rules {
   position: absolute;;
-  top: 40px;
+  top: 30px;
   left: 10px;
-  width: 200px;
-  height: 175px;
+  width: 300px;
+  height: 250px;
   padding: 10px;
   box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.2);
   font-size: 12px;
@@ -492,10 +526,75 @@ export default {
 }
 
 
+/* animate */
+
 .fade-enter-active, .fade-leave-active {
-  transition: opacity .5s;
+  transition: opacity .3s;
 }
 .fade-enter, .fade-leave-to {
   opacity: 0;
+}
+
+.loader {
+  font-size: 10px;
+  margin: 50px auto;
+  text-indent: -9999em;
+  width: 11em;
+  height: 11em;
+  border-radius: 50%;
+  background: #f8e71c;
+  background: linear-gradient(to right, #f8e71c 10%, rgba(255, 255, 255, 0) 42%);
+  position: relative;
+  animation: load3 1.4s infinite linear;
+  transform: translateZ(0);
+  &.small {
+    width: 12px;
+    height: 12px;
+    margin: 0 auto;
+    background: #fff;
+    background: linear-gradient(to right, #fff 10%, rgba(255, 255, 255, 0) 42%);
+    &:after {
+      width: 50%;
+      height: 50%;
+      background: #e6a23c;
+    }
+    &:before {
+      background: #fff;
+    }
+  }
+}
+
+.loader:before {
+  width: 50%;
+  height: 50%;
+  background: #f8e71c;
+  border-radius: 100% 0 0 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  content: '';
+}
+
+.loader:after {
+  content: '';
+  background: #de5547;
+  width: 90%;
+  height: 90%;
+  border-radius: 50%;
+  margin: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+@keyframes load3 {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>
