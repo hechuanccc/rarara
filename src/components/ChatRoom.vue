@@ -98,7 +98,7 @@
             </div>
 
           </li>
-          <li v-if="personal_setting.block" class="block-user-info">您已被管理员拉黑，请联系客服。<li>
+          <li v-if="personalSetting.blocked" class="block-user-info">您已被管理员拉黑，请联系客服。<li>
           <li ref="msgEnd" id="msgEnd" class="msgEnd"></li>
         </ul>
       </el-main>
@@ -107,7 +107,7 @@
         height="100">
         <div class="control-bar">
           <el-popover
-            :disabled="myRoles.includes('visitor') || personal_setting.block"
+            :disabled="myRoles.includes('visitor') || personalSetting.blocked"
             v-model="showStickerPopover"
             :popper-class="'emoji-popover'"
             ref="popover4"
@@ -133,15 +133,15 @@
             @click="handleEmojiIconClick"
             href="javascript:void(0)"
             title="发送表情"
-            :class="['btn-control','btn-smile', 'pointer', {'not-allowed': personal_setting.block}]">
+            :class="['btn-control','btn-smile', 'pointer', {'not-allowed': personalSetting.blocked}]">
             <icon scale="1.3" name="smile-o"></icon>
           </a>
 
-          <a href="javascript:void(0)" :class="['btn-control', 'btn-smile', 'pointer', {'not-allowed': personal_setting.block}]">
+          <a href="javascript:void(0)" :class="['btn-control', 'btn-smile', 'pointer', {'not-allowed': personalSetting.blocked}]">
             <label for="imgUploadInput" @click="handleImgIconClick($event)">
               <span title="上传图片">
-                <i :class="['el-icon-picture', {'not-allowed': personal_setting.block}]"></i>
-                <input :disabled="!personal_setting.chat.status"
+                <i :class="['el-icon-picture', {'not-allowed': personalSetting.blocked}]"></i>
+                <input :disabled="!chatable"
                   @change="sendMsgImg"
                   type="file"
                   ref="fileImgSend"
@@ -153,11 +153,11 @@
           </a>
 
           <div v-if="globalPreference.envelope_settings && globalPreference.envelope_settings.enabled === '1' && chat.current.roomId === 1"
-            :class="['envelope-icon','pointer', {'not-allowed': personal_setting.block}]" @click="handleEnvelopeIconClick">
+            :class="['envelope-icon','pointer', {'not-allowed': personalSetting.blocked}]" @click="handleEnvelopeIconClick">
             <img class="img" src="../assets/envelope_icon.png" alt="envelope-icon">
           </div>
 
-          <span v-if="personal_setting.user && myRoles.includes('manager')" class="btn-control right" @click="openManageDialog()" >
+          <span v-if="myRoles.includes('manager')" class="btn-control right" @click="openManageDialog()" >
             <icon name="cog" class="font-cog" scale="1.4"></icon>
           </span>
 
@@ -175,7 +175,7 @@
 
         </div>
         <div class="typing">
-          <div :class="['txtinput', 'el-textarea', !personal_setting.chat.status ? 'is-disabled' : '']">
+          <div :class="['txtinput', 'el-textarea', !chatable ? 'is-disabled' : '']">
             <textarea  @keyup.enter="sendMsg"
               placeholder="请文明发言"
               type="textarea" rows="2"
@@ -183,7 +183,7 @@
               validateevent="true"
               class="el-textarea-inner"
               v-model="msgContent"
-              :disabled="!personal_setting.chat.status">
+              :disabled="!chatable">
             </textarea>
           </div>
           <div class="sendbtn fr">
@@ -229,8 +229,7 @@
        @close="closeChatDialog()"
        top="10vh"
        center>
-      <PrivateChat :personalSetting="personal_setting"
-        :emojis="emojis"
+      <PrivateChat :emojis="emojis"
         :joinChatRoom="joinChatRoom"
         :roomMsgs="roomMsgs"
         :chat="chat"
@@ -289,11 +288,8 @@ export default {
       emojis: {
         people: []
       },
-      chatHall: 1,
       RECEIVER: 1,
-      personal_setting: {
-        chat: {}
-      },
+      personalSetting: {},
       blockedUsers: [],
       bannedUsers: [],
       restraint: {
@@ -426,6 +422,9 @@ export default {
     showingMessages () {
       const showing = this.myRoles.includes('customer service') ? this.roomMessages[this.chat.current.roomId] : this.roomMessages[1]
       return showing
+    },
+    chatable () {
+      return !this.personalSetting.blocked || !this.personalSetting.banned
     }
   },
   created () {
@@ -436,7 +435,7 @@ export default {
   },
   methods: {
     handleImgIconClick (e) {
-      if (this.personal_setting.block) {
+      if (this.personalSetting.blocked) {
         return
       }
       if ((this.myRoles.length && this.myRoles.includes('visitor'))) {
@@ -456,7 +455,7 @@ export default {
       this.envelope.visible = false
     },
     takeEnvelope (envelope) {
-      if (this.personal_setting.block || this.myRoles.includes('visitor')) {
+      if (this.personalSetting.blocked || this.myRoles.includes('visitor')) {
         return
       }
 
@@ -503,7 +502,7 @@ export default {
       })
     },
     handleEnvelopeIconClick () {
-      if (this.personal_setting.block) {
+      if (this.personalSetting.blocked) {
         return
       }
       if (this.myRoles.includes('visitor')) {
@@ -666,24 +665,26 @@ export default {
 
                 return
               } else if (data.personal_setting) {
-                if (data.personal_setting.user.avatar && data.personal_setting.user.avatar.indexOf('http') === -1) {
-                  data.personal_setting.user.avatar = this.host + data.personal_setting.user.avatar
+                let personalData = {
+                  banned: data.personal_setting.banned,
+                  blocked: data.personal_setting.blocked,
+                  room: data.personal_setting.room
                 }
-                this.personal_setting = data.personal_setting
-                this.$store.dispatch('setUser', data.personal_setting)
+                this.$store.dispatch('setUser', {
+                  user: personalData
+                })
               } else {
                 switch (data.type) {
                   case 2:
 
                     if (data.command === 'banned') {
-                      this.personal_setting.chat.status = 0
+                      this.personalSetting.banned = true
                       this.openMessageBox(data.content, 'error')
                     } else if (data.command === 'unblock') {
-                      this.personal_setting.block = false
-                      this.personal_setting.chat.status = 1
+                      this.personalSetting.blocked = false
                       this.$emit('chatStatusChanged', data.command)
                     } else if (data.command === 'unbanned') {
-                      this.personal_setting.chat.status = 1
+                      this.personalSetting.banned = false
                     }
 
                     this.$notify({
@@ -781,13 +782,11 @@ export default {
               if (data.error_type !== 2 && data.error_type !== 3) {
                 switch (data.error_type) {
                   case 4:
-                    this.personal_setting.banned = true
-                    this.personal_setting.chat.status = 0
+                    this.personalSetting.banned = true
                     this.openMessageBox('您已被聊天室管理员禁言，在' + this.$moment(data.msg).format('YYYY-MM-DD HH:mm:ss') + '后才可以发言。', 'error')
                     break
                   case 5:
-                    this.personal_setting.block = true
-                    this.personal_setting.chat.status = 0
+                    this.personalSetting.blocked = true
                     this.$emit('chatStatusChanged', 'block')
                     this.openMessageBox(data.msg, 'error')
                     break
@@ -831,7 +830,7 @@ export default {
       }
       let fileInp = this.$refs.fileImgSend
       let file = fileInp.files[0]
-      if (!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(fileInp.value) || !this.personal_setting.chat.status) {
+      if (!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(fileInp.value) || !this.chatable) {
         this.openMessageBox('文件格式不正确或您目前尚不符合发言条件', 'error')
         return false
       }
@@ -881,9 +880,9 @@ export default {
       this.blockedUsers = data.block_users
     },
     handleAvatarClick (message) {
-      let role = message.sender.roles.map((role) => role.name)
+      let userRole = message.sender.roles.map((role) => role.name)
       if (this.myRoles.includes('manager')) {
-        if ((this.personal_setting.user.username === message.sender.username) || role.includes('manager')) {
+        if (userRole.includes('manager')) {
           return
         }
         this.restraint.user = message.sender
@@ -893,8 +892,8 @@ export default {
 
       if (this.chat.current.roomId === 1 &&
         this.myRoles.includes('customer service') &&
-        role.length === 1 &&
-        role[0] === 'member') {
+        userRole.length === 1 &&
+        userRole[0] === 'member') {
         this.$emit('handleAvatarClick', message.sender)
       }
     },

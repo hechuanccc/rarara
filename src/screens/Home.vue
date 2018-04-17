@@ -401,7 +401,7 @@
 </template>
 
 <script>
-import Vue from 'vue'
+import { mapState, mapGetters } from 'vuex'
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/volume-up'
 import 'vue-awesome/icons/mobile-phone'
@@ -414,17 +414,11 @@ import ChatRoom from '../components/ChatRoom'
 import { fetchAnnouce, updateUser, getEnvelopeRecord, fetchCheckinRecord } from '../api'
 import { msgFormatter, filtAmount } from '../utils'
 import { validatePhone, validateQQ, validatePassword } from '../validate'
-import urls from '../api/urls'
 import Result from '../components/Result'
-import { mapState, mapGetters } from 'vuex'
 import ChatList from '../components/ChatList'
 import EditUser from '../components/EditUser'
 import Checking from '../components/Checking.vue'
 import UnloginedDialog from '../components/UnloginedDialog.vue'
-
-Vue.filter('truncate', function (text, stop) {
-  return text.slice(0, stop) + (stop < text.length ? '...' : '')
-})
 
 export default {
   name: 'home',
@@ -484,14 +478,9 @@ export default {
     }
 
     return {
-      activeRoom: {},
-      popoverMember: {},
-      searchEnabled: false,
       activeTab: 'chats',
       swichAvatar: false,
-      uploadUrl: urls.user,
       showProfileDiag: false,
-      searchStr: '',
       announcementStyle: {
         opacity: 1,
         translateY: 0
@@ -499,11 +488,6 @@ export default {
       announcements: [],
       currentAnnouncementIndex: 0,
       announcementDialogVisible: false,
-      memberLimit: 20,
-      memberPage: 0,
-      onlineMemberLoading: false,
-      onlineMembersEnded: false,
-      roomLoading: false,
       onlineMembers: [],
       editUser: {
         mobile: '',
@@ -544,11 +528,8 @@ export default {
       currentChooseAvatar: '',
       changeProfileSuccess: true,
       changeProfileRes: '',
-      createRoomLoading: false,
-      lasyLoadResult: false,
       showQR: false,
       activePanel: 'account',
-      hallLastMsg: '',
       tempAvatar: '',
       memberDialog: {
         visible: true,
@@ -585,9 +566,6 @@ export default {
     ...mapGetters([
       'myRoles'
     ]),
-    isHome () {
-      return ''
-    },
     currentAnnouncement () {
       if (this.announcements[this.currentAnnouncementIndex]) {
         return this.announcements[this.currentAnnouncementIndex].content
@@ -877,11 +855,6 @@ export default {
       }
       this.tempAvatar = URL.createObjectURL(file)
       this.currentChooseAvatar = URL.createObjectURL(file)
-    },
-    loadResult (tab) {
-      if (tab.index === '1') {
-        this.lasyLoadResult = true
-      }
     }
   }
 }

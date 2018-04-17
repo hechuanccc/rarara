@@ -122,9 +122,6 @@ export default {
     emojis: {
       type: Object
     },
-    personalSetting: {
-      type: Object
-    },
     roomMsgs: {
       type: Object
     },
