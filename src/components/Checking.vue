@@ -10,8 +10,8 @@
           <i class="el-icon-close pointer" @click="$emit('closeCheckinDialog')"></i>
         </span>
       </div>
-      <div class="continue-day text-center">连续签到
-        <span class="number">{{continuousCheckins | complete}}</span>天
+      <div class="continue-day text-center">已连续签到
+        <span class="number">{{continuousCheckins}}</span>天
       </div>
       <div class="progress p-t-lg p-b">
         <div class="progress-bar" v-for="(number, index) in progress.parts" :key="index">
@@ -140,11 +140,6 @@ export default {
       rulesVisible: false,
       loading: false,
       loadingSpin: false
-    }
-  },
-  filters: {
-    complete: function (num) {
-      return num > 9 ? num : `0${num}`
     }
   },
   computed: {
