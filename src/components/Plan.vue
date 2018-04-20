@@ -127,12 +127,12 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .plan {
   color: white;
   height: calc(100% - 40px);
 
-  /deep/.el-tabs__nav {
+  .el-tabs__nav {
     border: none;
     text-align: center;
     width: auto;
@@ -143,7 +143,6 @@ export default {
       font-size: 14px;
       color: white;
       line-height: 20px;
-      padding: 3px 6px 5px 6px;
       margin: 10px 5px;
       border: 0;
       border-radius: 4px;
@@ -159,7 +158,7 @@ export default {
     }
   }
 
-  /deep/.el-tabs__header {
+  .el-tabs__header {
     background: rgba(0, 0, 0, 0.2);
     margin: 0;
 
@@ -173,11 +172,11 @@ export default {
     }
   }
 
-  /deep/.el-tabs__content {
+  .el-tabs__content {
     height: calc(100% - 40px);
   }
 
-  /deep/.el-tab-pane {
+  .el-tab-pane {
     height: 100%;
   }
 
@@ -201,11 +200,14 @@ export default {
         color: #c5c4c4;
       }
       button.is-active {
+        border: none;
         color: white;
       }
     }
   }
-
+  .el-tabs--card>.el-tabs__header .el-tabs__nav {
+    border: none;
+  }
   .prediction {
     height: calc(100% - 110px);
     overflow-y: auto;
@@ -213,6 +215,17 @@ export default {
       line-height: 1.8;
       font-weight: 300;
       font-size: 14px;
+    }
+  }
+}
+
+</style>
+
+<style lang="scss" scoped>
+.plan {
+  .el-tabs__nav {
+    .el-tabs__item {
+      padding: 3px 6px 5px 6px;
     }
   }
 }

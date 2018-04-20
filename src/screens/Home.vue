@@ -64,7 +64,6 @@
                 <i class="el-icon-caret-bottom p-t" v-else></i>
               </div>
             </a>
-
           </div>
           <div class="visitor-actions fr" v-else>
             <span class="login m-r-lg pointer" @click="$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})">
@@ -86,6 +85,7 @@
         <el-tabs
           v-model="activeTab"
           type="border-card">
+
           <el-tab-pane
             :disabled="loading"
             label="会员列表"
@@ -99,6 +99,7 @@
               </ChatList>
             </div>
           </el-tab-pane>
+
           <el-tab-pane
             :disabled="loading"
             label="聊天列表"
@@ -108,6 +109,7 @@
               <RoomList :defaultHall="user.default_room_id" v-if="activeTab === 'rooms'"/>
             </div>
           </el-tab-pane>
+
         </el-tabs>
 
       </el-aside>
@@ -121,21 +123,20 @@
       </el-main>
 
       <el-aside width="395px" class="aside">
-        <el-tabs type="border-card" v-model="activeAside">
+        <el-tabs type="border-card" v-model="activeAside" class="alone">
           <el-tab-pane
             :label="'文字开奖'"
             class="full-height"
-            name="draw"
-          >
+            name="draw">
             <div class="results-container" v-if="activeAside === 'draw'">
               <result></result>
             </div>
           </el-tab-pane>
           <el-tab-pane
             :label="'彩票计划'"
+            v-if="false"
             class="full-height"
-            name="plan"
-          >
+            name="plan">
             <div class="plans-container" v-if="activeAside === 'plan'">
               <plan/>
             </div>
@@ -641,6 +642,11 @@ export default {
       if (!val) {
         this.activeTab = 'chats'
       }
+    },
+    'activeAside': function (val) {
+      if (!val) {
+        this.activeAside = 'draw'
+      }
     }
   },
   created () {
@@ -1094,25 +1100,6 @@ export default {
 
 }
 
-.aside {
-  height: 100%;
-  padding: 0 10px 10px;
-  overflow-y: hidden;
-  /deep/ .el-tabs {
-    height: 100%;
-    background: rgba(255, 255, 255, .2);
-  }
-  /deep/ .el-tabs__content {
-    padding: 0;
-  }
-  /deep/ .el-form-item--small.el-form-item {
-    margin-bottom: 0;
-  }
-
-  /deep/.el-tabs__nav {
-    width: 100%;
-  }
-}
 
 .chat-area {
   padding: 0 0px 10px 0;
@@ -1312,4 +1299,29 @@ export default {
     }
   }
 }
+
+
+.aside {
+  height: 100%;
+  padding: 0 10px 10px;
+  overflow-y: hidden;
+
+  /deep/ .el-tabs {
+    height: 100%;
+    background: rgba(255, 255, 255, .2);
+  }
+
+  /deep/ .el-tabs__content {
+    padding: 0;
+  }
+
+  /deep/ .el-form-item--small.el-form-item {
+    margin-bottom: 0;
+  }
+
+  /deep/.el-tabs__nav {
+    width: 100%;
+  }
+}
+
 </style>
