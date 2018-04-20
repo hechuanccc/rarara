@@ -25,5 +25,7 @@ export default {
   envelope: host + '/v1/envelope/',
   stickers: host + '/v1/stickers/',
   checkin: host + '/v1/member/checkin/',
+  game: host + '/v1/member/game/',
+  plan: host + '/v1/member/prediction/',
   decode
 }

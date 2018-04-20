@@ -199,3 +199,19 @@ export function checkin () {
 export function fetchRooms () {
   return axios.get(`${urls.memberRoom}`)
 }
+
+export function fetchGame () {
+  return axios.get(urls.game)
+}
+
+export function fetchPlan ({
+  plan = 'benz', scheme = '1st_place', numbers = 5
+}) {
+  return axios.get(urls.plan, {
+    params: {
+      plan,
+      scheme,
+      numbers
+    }
+  })
+}

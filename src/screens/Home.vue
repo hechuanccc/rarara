@@ -121,10 +121,23 @@
       </el-main>
 
       <el-aside width="395px" class="aside">
-        <el-tabs type="border-card" class="alone">
-          <el-tab-pane :label="'文字开奖'" class="full-height">
-            <div class="results-container">
+        <el-tabs type="border-card" v-model="activeAside">
+          <el-tab-pane
+            :label="'文字开奖'"
+            class="full-height"
+            name="draw"
+          >
+            <div class="results-container" v-if="activeAside === 'draw'">
               <result></result>
+            </div>
+          </el-tab-pane>
+          <el-tab-pane
+            :label="'彩票计划'"
+            class="full-height"
+            name="plan"
+          >
+            <div class="plans-container" v-if="activeAside === 'plan'">
+              <plan/>
             </div>
           </el-tab-pane>
         </el-tabs>
@@ -426,6 +439,7 @@ import EditUser from '../components/EditUser'
 import Checking from '../components/Checking.vue'
 import RoomList from '../components/RoomList.vue'
 import UnloginedDialog from '../components/UnloginedDialog.vue'
+import Plan from '../components/Plan'
 
 export default {
   name: 'home',
@@ -433,6 +447,7 @@ export default {
     Icon,
     ChatRoom,
     Result,
+    Plan,
     ChatList,
     RoomList,
     EditUser,
@@ -487,6 +502,7 @@ export default {
 
     return {
       activeTab: 'chats',
+      activeAside: 'draw',
       swichAvatar: false,
       showProfileDiag: false,
       announcementStyle: {
@@ -1092,6 +1108,10 @@ export default {
   /deep/ .el-form-item--small.el-form-item {
     margin-bottom: 0;
   }
+
+  /deep/.el-tabs__nav {
+    width: 100%;
+  }
 }
 
 .chat-area {
@@ -1209,6 +1229,11 @@ export default {
   height: 100%;
   overflow-y: hidden;
   padding: 10px;
+}
+
+.plans-container {
+  height: 100%;
+  overflow-y: hidden;
 }
 
 .qrcode {
