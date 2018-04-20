@@ -24,14 +24,15 @@
                 type="text"
                 :class="{'is-active': i === activeScheme}"
                 @click="changeScheme(i)"
-              >{{ s.display_name }}
+              >
+                {{ s.display_name }}
               </el-button>
             </li>
           </ul>
         </div>
         <div class="m-a prediction">
           <p v-for="p in prediction" :key="p.id">
-            {{ `${p.issue_numbers} ${p.scheme}  ( ${p.numbers_predicted} ) ${(p.result && p.result.draw_result.length) ? p.result.draw_result.join(', ') : ''}` }}
+            {{ `${p.issue_numbers} ${p.scheme}  ( ${p.numbers_predicted} ) ${(p.result && p.result.draw_result.length) ? `${p.result.draw_result || ''}` : ''}` }}
           </p>
           <p v-if="!(loading || prediction.length )">暂无资料</p>
           <p :ref="`prediction${i}`"></p>
@@ -132,7 +133,7 @@ export default {
   color: white;
   height: calc(100% - 40px);
 
-  .el-tabs__nav {
+  .el-tabs__nav-scroll > .el-tabs__nav {
     border: none;
     text-align: center;
     width: auto;
@@ -147,13 +148,14 @@ export default {
       border: 0;
       border-radius: 4px;
       transition: all .3s ease-in-out;
+      padding: 3px 6px 5px 6px;
 
       &.is-active {
         background: #4a96f3;
       }
 
       &:hover:not(.is-active){
-        background: #9b9b9b
+        background: #9b9b9b;
       }
     }
   }
@@ -220,14 +222,3 @@ export default {
 }
 
 </style>
-
-<style lang="scss" scoped>
-.plan {
-  .el-tabs__nav {
-    .el-tabs__item {
-      padding: 3px 6px 5px 6px;
-    }
-  }
-}
-</style>
-

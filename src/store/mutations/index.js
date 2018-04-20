@@ -66,7 +66,8 @@ export default {
   [types.END_CHAT]: (state, data) => {
     state.chat.dialogVisible = false
     state.chat.current = {
-      roomId: state.user.default_room_id
+      roomId: state.user.default_room_id,
+      type: 1
     }
   },
   [types.SET_ROOMS]: (state, data) => {
