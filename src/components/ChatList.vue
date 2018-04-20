@@ -1,24 +1,12 @@
 <template>
-  <div class="full-height" v-if="this.ws">
-    <ul class="rooms" v-if="unread">
-      <li :class="['public', {active: chat.current.roomId === 1}]"
-        @click="enterChat({isHall: true})">
-        <div class="meta">
-          <div class="illustration">
-            <icon class="volume-up" name="comments" scale="1.5"></icon>
-          </div>
-          <span class="title" >
-            计划聊天室
-          </span>
-        </div>
-      </li>
-    </ul>
-    <div class="search-form m-t m-b m-l m-r" v-if="!unread">
+  <div class="full-height">
+    <div class="search-form m-t m-b m-l m-r" v-if="false">
+      <!-- TODO: backend search query login change -->
       <el-input v-model="searchData.input"
         type="text"
         placeholder="请输入帐号名"
         class="ipt-search"
-        @keyup.native.enter="search">
+        @input="search">
       </el-input>
       <span class="el-icon-search pointer" @click="search"></span>
       <div v-if="searchData.searching">
@@ -26,49 +14,39 @@
         <span class="exit-search pointer" @click="exitSearch">退出搜索</span>
       </div>
     </div>
-    <div class="rooms-container">
-      <ul class="rooms m-b" v-if="showing.length">
+    <div class="chats-container">
+      <ul class="chats m-b" v-if="showing.length">
         <li v-for="(item, index) in showing"
           :key="index"
           v-if="item"
-          :class="{
-            active: (item.id === chat.current.chatWith) && unread,
-            unread: !item.read && unread
-          }">
-          <div class="meta" @click="enterChat(item)" v-if="unread">
-            <div class="illustration">
-              <img class="avatar"
-                :src="item.avatar? item.avatar : require('../assets/avatar.png')"
-                alt="avatar">
-            </div>
-            <span class="title">
-              <span>{{ item.remarks || item.username }}</span>
-            </span>
-          </div>
-
+          :class="['li', 'pointer',
+            {
+              online: item.online,
+            }]">
           <el-popover
-            v-else
             placement="right"
             trigger="click">
-            <div>
+            <div v-if="isManager">
+              <div class="action pointer" @click="ban(item, 15)">禁言 {{item.username}}</div>
+              <div class="action pointer" @click="block(item)">拉黑 {{item.username}}</div>
+            </div>
+            <div v-else>
               <div class="action pointer" @click="enterChat(item)">与 {{item.username}} 私聊</div>
               <div class="action pointer" @click="handleChatClick(item)">查看 {{item.username}}</div>
             </div>
-            <div class="meta" slot="reference">
+            <div slot="reference">
               <div class="illustration">
                 <img class="avatar"
-                  :src="item.avatar? item.avatar : require('../assets/avatar.png')"
+                  :src="item.avatar || require('../assets/avatar.png')"
                   alt="avatar">
               </div>
               <p class="title">
-                {{ item.remarks || item.username }}
+                {{ item.remarks || item.nickname || item.username }}
               </p>
             </div>
           </el-popover>
-
         </li>
-
-        <li  v-if="!unread && (pagination.total > chats.length && !searchData.input.length)" @click="fillMemberChats">更多...</li>
+        <li  v-if="(pagination.total > chats.length && !searchData.input.length)" @click="fillMemberChats">更多...</li>
       </ul>
       <ul class="text-center m-t" v-else>暂无进行中的聊天</ul>
     </div>
@@ -77,8 +55,9 @@
 
 <script>
 import Icon from 'vue-awesome/components/Icon'
-import { getChatList, buildRoom } from '../api'
-import { mapGetters, mapState } from 'vuex'
+import { getChatList, searchChatList, buildRoom, getChatUser, unbanChatUser, banChatUser, blockChatUser, unblockChatUser } from '../api'
+import { mapState, mapGetters } from 'vuex'
+import _ from 'lodash'
 
 export default {
   name: 'chatlist',
@@ -86,16 +65,6 @@ export default {
     Icon
   },
   props: {
-    unread: {
-      type: Boolean,
-      default: false
-    },
-    rooms: {
-      type: Object
-    },
-    roomAmount: {
-      type: Number
-    }
   },
   data () {
     return {
@@ -106,84 +75,48 @@ export default {
         offset: 0,
         limit: 40
       },
-      unreadChats: [],
       interval: null,
-      previousChat: null,
-      allChatList: [],
       searchData: {
         searching: false,
         input: '',
         result: []
-      },
-      roomList: []
+      }
     }
   },
   computed: {
-    ...mapGetters([
-      'myRoles'
-    ]),
     ...mapState([
       'chat',
-      'roomMsgs',
       'chatList',
       'user',
-      'ws'
+      'ws',
+      'restraintMembers'
+    ]),
+    ...mapGetters([
+      'myRoles'
     ]),
     showing () {
       let showing
       if (this.searchData.searching) {
         showing = this.searchData.result
       } else {
-        showing = this.unread ? this.roomList : this.chats
+        showing = this.chats
       }
       return showing
+    },
+    isManager () {
+      return this.myRoles.includes('manager')
     }
   },
   watch: {
-    'chat.current.roomId': {
-      handler: function (val, oldVal) {
-        if (val === 1 || oldVal === 1) {
-          return
-        }
-
-        let key = this.rooms[oldVal]
-        let previous = this.chatList.filter(chat => chat.id === key)
-
-        this.leaveChat(oldVal, previous[0])
-      },
-      deep: true
-    },
     'searchData.input': function (ipt) {
       if (!ipt.length) {
         this.exitSearch()
       }
-    },
-    'roomAmount': {
-      handler: function () {
-        this.initRoomList()
-      },
-      deep: true
     }
   },
   methods: {
-    initRoomList () {
-      if (!this.rooms) { return }
-      let temp = []
-      let values = Object.values(this.rooms)
-      getChatList().then(res => {
-        this.allChatList = res
-        values.forEach((val) => {
-          temp.push(this.allChatList.find((chat) => chat.id === val.id))
-        })
-        this.roomList = temp
-      })
-    },
     handleChatClick (chat) {
-      if (this.unread) {
-        this.enterChat()
-      } else {
-        this.$emit('getChosenChat', chat)
-      }
+      this.$emit('getChosenChat', chat)
     },
     exitSearch () {
       this.searchData = {
@@ -192,29 +125,19 @@ export default {
         result: []
       }
     },
-    search () {
+    search: _.debounce(function () {
       if (!this.searchData.input) {
         return
       }
+
       this.loading = true
       this.searchData.searching = true
-      if (!this.allChatList.length) {
-        getChatList().then(res => {
-          this.allChatList = res
-          let filtered = this.allChatList.filter(obj => obj.username.toLowerCase().indexOf(this.searchData.input.toLowerCase()) !== -1)
 
-          this.searchData.result = filtered
-
-          this.loading = false
-        })
-      } else {
-        let filtered = this.allChatList.filter(obj => obj.username.toLowerCase().indexOf(this.searchData.input.toLowerCase()) !== -1)
-        this.searchData.result = filtered
-      }
-    },
-    getRoles (user) {
-      return user.roles.map((role) => role.name)
-    },
+      searchChatList(this.searchData.input).then(res => {
+        this.searchData.result = res
+        this.loading = false
+      })
+    }, 500),
     fillMemberChats () {
       if (this.loading) {
         return
@@ -222,42 +145,15 @@ export default {
       this.loading = true
 
       getChatList(this.pagination).then(res => {
-        this.loading = false
-
         this.chats.push(...res.results)
         this.pagination.total = res.count
-
-        this.$store.dispatch('updateChatList', this.chats)
         this.pagination.offset += this.pagination.limit
+        this.$store.dispatch('updateChatList', this.chats)
+        this.loading = false
         return res
       })
     },
-    leaveChat (roomId, previousChat) {
-      if (!previousChat) {
-        return
-      }
-
-      let oldMsgs = this.roomMsgs[roomId].filter(msg => msg.type !== -1)
-      let oldLastMsg = oldMsgs[oldMsgs.length - 1]
-
-      if (oldLastMsg) {
-        let oldLastMsgData = {
-          id: oldLastMsg.id,
-          other: previousChat.id
-        }
-
-        this.$store.dispatch('updateChatRead', {username: previousChat.username, read: true})
-        this.read(this.ws, roomId, oldLastMsgData)
-      }
-    },
     enterChat (chat) {
-      if (chat && chat.isHall) {
-        this.$store.dispatch('startChat', {id: 1})
-        return
-      }
-      if (!this.unread) {
-        this.$emit('switchToRooms')
-      }
       if (this.loading) {
         return
       }
@@ -269,30 +165,14 @@ export default {
         last_message: '',
         users: [this.user.id, chat.id]
       }).then(res => {
-        this.$store.dispatch('setRooms', {
-          id: chat.id,
-          roomId: res.room.id,
-          username: chat.username
+        this.$store.dispatch('startChat', {
+          id: res.room.id,
+          chatWith: chat.id,
+          otherUser: chat.username,
+          type: 2
         })
-
-        this.$store.dispatch('startChat', {id: res.room.id, chatWith: chat.id, otherUser: chat.username})
-        this.$forceUpdate()
-
         this.loading = false
-        let currentMsg = this.roomMsgs[res.room.id] ? this.roomMsgs[res.room.id] : []
-        let msgs = currentMsg.filter(msg => msg.type !== -1)
-        let lastMessage = msgs[msgs.length - 1]
-        if (lastMessage) {
-          let lastMessageData = {
-            id: lastMessage.id,
-            other: chat.id
-          }
-
-          this.$store.dispatch('updateChatRead', {username: chat.username, read: true})
-          this.read(this.ws, res.room.id, lastMessageData)
-        }
-
-        this.initRoomList()
+        this.$emit('switchToRooms')
       })
     },
     initChats () {
@@ -300,41 +180,109 @@ export default {
 
       this.interval = setInterval(() => {
         this.fillMemberChats()
-      }, 120000)
+      }, 60000)
     },
-    read (connection, roomId, lastMsg) {
-      connection.send(JSON.stringify({
-        command: 'read_msg',
-        message: lastMsg.id,
-        chat_with: lastMsg.other,
-        room: roomId,
-        user: this.user.username
-      }))
+    ban (chat, mins) {
+      banChatUser(chat.default_room, {
+        user: chat.username,
+        banned_time: mins
+      }).then((data) => {
+        this.getUser(chat.default_room)
+        this.$message({
+          showClose: true,
+          message: data.status,
+          type: 'success'
+        })
+      }, errorMsg => {
+        this.$message({
+          showClose: true,
+          message: errorMsg.response.data.message,
+          type: 'error'
+        })
+      })
+    },
+    unban (chat) {
+      unbanChatUser(chat.default_room, {
+        user: chat.username
+      }).then((data) => {
+        this.getUser(chat.default_room)
+        this.$message({
+          showClose: true,
+          message: data.status,
+          type: 'success'
+        })
+      }, errorMsg => {
+        this.$message({
+          showClose: true,
+          message: errorMsg.response.data.message,
+          type: 'error'
+        })
+      })
+    },
+    block (chat) {
+      blockChatUser(chat.default_room, {
+        user: chat.username
+      }).then((data) => {
+        this.getUser(chat.default_room)
+        this.$message({
+          showClose: true,
+          message: data.status,
+          type: 'success'
+        })
+      }, errorMsg => {
+        this.$message({
+          showClose: true,
+          message: errorMsg.response.data.message,
+          type: 'error'
+        })
+      })
+    },
+    unblock (chat) {
+      unblockChatUser(chat.default_room, {
+        user: chat.username
+      }).then((data) => {
+        this.getUser(chat.default_room)
+        this.$message({
+          showClose: true,
+          message: data.status,
+          type: 'success'
+        })
+      }, errorMsg => {
+        this.$message({
+          showClose: true,
+          message: errorMsg.response.data.message,
+          type: 'error'
+        })
+      })
+    },
+    getUser (roomId) {
+      getChatUser(roomId).then(response => {
+        this.$store.dispatch('setRestraintMembers', {
+          roomId: roomId,
+          data: {
+            block_users: response.block_users,
+            banned_users: response.banned_users
+          }})
+      })
     }
   },
   created () {
-    if (!this.unread) {
-      this.initChats()
-    } else {
-      this.initRoomList()
-    }
+    this.initChats()
   },
   beforeDestroy () {
     clearInterval(this.interval)
   }
 }
 </script>
+
 <style lang="scss" scoped>
-.rooms-container {
+.chats-container {
    height: calc(100% - 90px);
    overflow-y: auto;
 }
-.rooms {
+
+.chats {
   border-top: 1px solid rgba(255, 255, 255, .1);
-  .fa-icon {
-    vertical-align: middle;
-    fill: #fff;
-  }
   .title {
     color: #fff;
     font-size: 13px;
@@ -354,37 +302,37 @@ export default {
   .public .title {
     font-size: 14px;
   }
-  li {
+  .li {
+    position: relative;
     color: #ccc;
-    cursor: pointer;
     padding: 5px 10px;
     border-bottom: 1px solid rgba(255, 255, 255, .2);
     &:hover {
       background: rgba(255, 255, 255, .2);
     }
+    &.online:after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      right: 20px;
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-top: -5px;
+      background-color: #00c300;
+      border-radius: 50%;
+    }
   }
-  .unread {
-    background: #FFB74D;
-  }
-  .active {
-    background: #1976D2;
-    color: #fff;
-    font-weight: 700;
-  }
-
 }
 .load-more {
   padding: 5px 10px;
 }
-.default-room {
-  .fa-icon {
-    vertical-align: middle;
-  }
-}
+
 .illustration {
   display: inline-block;
 }
 
+/* search */
 .ipt-search /deep/ .el-input__inner{
   background: #999;
   border: none;
@@ -406,6 +354,8 @@ export default {
 .exit-search {
   float: right;
 }
+
+
 
 .action {
   position: relative;

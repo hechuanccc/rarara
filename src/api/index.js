@@ -85,7 +85,8 @@ export function banChatUser (id, data) {
     {
       action: 'banned',
       user: data.user,
-      banned_time: data.banned_time
+      banned_time: data.banned_time,
+      room_id: data.id
     })
 }
 
@@ -94,7 +95,8 @@ export function unbanChatUser (id, data) {
     {
       action: 'unbanned',
       user: data.user,
-      banned_time: data.banned_time
+      banned_time: data.banned_time,
+      room_id: data.id
     })
 }
 
@@ -103,7 +105,8 @@ export function blockChatUser (id, data) {
     {
       action: 'block',
       user: data.user,
-      block_time: 60
+      block_time: 60,
+      room_id: data.id
     })
 }
 
@@ -111,7 +114,8 @@ export function unblockChatUser (id, data) {
   return axios.put(`${urls.room}${id}/`,
     {
       action: 'unblock',
-      user: data.user
+      user: data.user,
+      room_id: data.id
     })
 }
 
@@ -124,6 +128,10 @@ export function getChatList (pagination) {
     return axios.get(`${urls.member}chat_list/`)
   }
   return axios.get(`${urls.member}chat_list/?offset=${pagination.offset}&limit=${pagination.limit}`)
+}
+
+export function searchChatList (search) { // todo backend new query field to ||
+  return axios.get(`${urls.member}chat_list/?nickname_q=${search}&remarks_q=${search}`)
 }
 
 export function checkUserName (username) {
@@ -143,7 +151,8 @@ export function sendEnvelope (data) {
     sender_id: data.sender_id,
     pack_amount: data.pack_amount,
     pack_nums: data.pack_nums,
-    content: data.content
+    content: data.content,
+    room_id: data.room_id
   })
 }
 
@@ -165,6 +174,7 @@ export function buildRoom (data) {
 export function fetchMember (userId) {
   return axios.get(`${urls.member}${userId}/`)
 }
+
 export function fetchStickers (group) {
   if (group) {
     return axios.get(`${urls.stickers}?group=${group}`)
@@ -184,4 +194,8 @@ export function fetchCheckinRecord (offset, limit) {
 
 export function checkin () {
   return axios.post(urls.checkin, {platform: 0})
+}
+
+export function fetchRooms () {
+  return axios.get(`${urls.memberRoom}`)
 }

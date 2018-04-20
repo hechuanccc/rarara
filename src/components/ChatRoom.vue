@@ -15,7 +15,6 @@
                 'item-right' : 'item-left', item.type < 0 ?
                 'sys-msg' : ''
               ]">
-
             <div class="lay-block clearfix" v-if="item.type >= 0 && item.type !== 6">
               <div class="avatar" @click="handleAvatarClick(item)">
                 <icon name="cog" class="font-cog" v-if="item.type == 4" scale="3"></icon>
@@ -89,10 +88,6 @@
               </div>
             </div>
 
-            <div class="inner" v-else-if="item.type === -1">
-              <p>以上是历史消息</p>
-            </div>
-
             <div class="text-center" v-else-if="item.type === 6 && item.sender.id === user.id">
               <p class="get-envelope">{{`${item.get_envelope_user.id === user.id ? '你' : item.get_envelope_user.nickname}抢到了你的红包`}}</p>
             </div>
@@ -152,7 +147,7 @@
             </label>
           </a>
 
-          <div v-if="globalPreference.envelope_settings && globalPreference.envelope_settings.enabled === '1' && chat.current.roomId === 1"
+          <div v-if="globalPreference.envelope_settings && globalPreference.envelope_settings.enabled === '1' && chat.current.type === 1"
             :class="['envelope-icon','pointer', {'not-allowed': personalSetting.blocked}]" @click="handleEnvelopeIconClick">
             <img class="img" src="../assets/envelope_icon.png" alt="envelope-icon">
           </div>
@@ -161,14 +156,18 @@
             <icon name="cog" class="font-cog" scale="1.4"></icon>
           </span>
 
-          <div class="chat-buttons" v-if="ws && (!myRoles.includes('customer service') && !myRoles.includes('manager') && !myRoles.includes('visitor'))">
-            <el-button :type="chat.read ? '' : 'warning'"
+          <div class="chat-buttons"
+            v-if="ws &&
+              (!myRoles.includes('customer service') &&
+              !myRoles.includes('manager') &&
+              !myRoles.includes('visitor'))">
+            <el-button :type="room.room.read ? '' : 'warning'"
               class="chat-button"
-              :plain="chat.read"
+              :plain="room.room.read"
               :key="index"
               size="mini"
-              @click.native="openChatDialog(chat)"
-              v-for="(chat, index) in chatList">
+              @click.native="openChatDialog(room)"
+              v-for="(room, index) in rooms">
               {{`客服 ${index + 1}`}}
             </el-button>
           </div>
@@ -212,11 +211,11 @@
       :append-to-body="true"
       :modal-append-to-body="true"
       center>
-      <Restraint :restraint="restraint"
+      <Restraint v-if="restraint.dialogVisible"
+        :restraint="restraint"
         :blockedUsers="blockedUsers"
-        v-if="restraint.dialogVisible"
         :bannedUsers="formattedBannerUsers"
-        :RECEIVER="1"
+        :RECEIVER="restraint.user.default_room || 1"
         @updateUsers="updateUsers"
       />
     </el-dialog>
@@ -224,6 +223,7 @@
     <!-- private chat dialog -->
      <el-dialog
        class="privatechat-dialog"
+       v-if="myRoles.length === 1 && myRoles[0] === 'member'"
        :visible.sync="chat.dialogVisible"
        :width="'550px'"
        @close="closeChatDialog()"
@@ -233,7 +233,7 @@
         :joinChatRoom="joinChatRoom"
         :roomMsgs="roomMsgs"
         :chat="chat"
-        v-if="chat.current.roomId && chat.current.roomId !== 1"/>
+        v-if="chat.current.roomId && chat.current.type === 2"/>
     </el-dialog>
 
     <!-- red envelope dialog -->
@@ -258,9 +258,8 @@
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/cog'
 import 'vue-awesome/icons/smile-o'
-import { fetchChatEmoji, sendImgToChat, getChatUser, buildRoom, getChatList, takeEnvelope } from '../api'
+import { fetchChatEmoji, sendImgToChat, getChatUser, takeEnvelope } from '../api'
 import urls from '../api/urls'
-import { msgFormatter } from '../utils'
 import { mapGetters, mapState } from 'vuex'
 import PrivateChat from '../components/PrivateChat'
 import Envelope from '../components/Envelope'
@@ -289,7 +288,6 @@ export default {
         people: []
       },
       RECEIVER: 1,
-      personalSetting: {},
       blockedUsers: [],
       bannedUsers: [],
       restraint: {
@@ -309,7 +307,6 @@ export default {
       roomMessages: {},
       host: urls.domain,
       emojiSuccess: true,
-      currentChat: null,
       envelope: {
         content: '',
         status: '',
@@ -319,7 +316,8 @@ export default {
       showStickerPopover: false,
       stickerTab: 'emojis',
       imgLoadCount: 0,
-      needScrollToBottom: false
+      needScrollToBottom: false,
+      showingMsgs: null
     }
   },
   watch: {
@@ -335,7 +333,8 @@ export default {
     'chat.current.roomId' (val) {
       this.RECEIVER = val
 
-      this.roomMessages[val] = this.roomMessages[val] ? this.roomMessages[val] : []
+      this.roomMessages[val] = this.roomMessages[val] || []
+      this.showingMsgs = this.roomMessages[val]
       this.$store.dispatch('getChatMessages', this.roomMessages[val])
 
       this.$nextTick(() => {
@@ -345,29 +344,7 @@ export default {
     'roomMessages': {
       handler: function () {
         this.$store.dispatch('setRoomMsgs', this.roomMessages)
-
-        let rooms = {}
-        let roomIds = Object.keys(this.roomMessages)
-
-        roomIds.forEach((roomId) => {
-          let otherSent = this.roomMessages[roomId].filter((msg) => {
-            if (roomId !== '1' && msg.type !== -1) {
-              return true
-            }
-          })
-
-          if (!otherSent.length) { return }
-          let other = otherSent[0].chat_with.username === this.user.username ? otherSent[0].sender : otherSent[0].chat_with
-          let roomData = {
-            roomId: roomId,
-            id: other.id,
-            username: other.username
-          }
-          rooms[roomData.roomId] = roomData
-        })
-
-        this.$store.dispatch('setRooms', rooms)
-        this.$forceUpdate()
+        this.$emit('chatRoomReady', true)
       },
       deep: true
     },
@@ -382,7 +359,7 @@ export default {
     }
   },
   beforeDestroy () {
-    this.leaveRoom()
+    this.$store.dispatch('leaveSocket', this.chat.current.roomId)
     this.$store.dispatch('endChat')
     clearInterval(this.liveInterval)
   },
@@ -395,6 +372,7 @@ export default {
       'user',
       'chat',
       'chatList',
+      'rooms',
       'roomMsgs',
       'envelopes',
       'stickerGroups',
@@ -420,11 +398,14 @@ export default {
       }
     },
     showingMessages () {
-      const showing = this.myRoles.includes('customer service') ? this.roomMessages[this.chat.current.roomId] : this.roomMessages[1]
+      let showing = this.chat.dialogVisible ? this.roomMessages[this.user.default_room_id] : this.showingMsgs
       return showing
     },
     chatable () {
       return !this.personalSetting.blocked || !this.personalSetting.banned
+    },
+    personalSetting () {
+      return this.user[this.chat.current.roomId] || {banned: false, blocked: false}
     }
   },
   created () {
@@ -516,71 +497,41 @@ export default {
     showingName (user) {
       return user.usernickname ? user.usernickname : user.username
     },
-    getChatList (pagination) {
-      getChatList(pagination).then(data => {
-        this.$store.dispatch('updateChatList', data.results)
+    openChatDialog (room) {
+      let currentMsgs = this.roomMsgs[room.room.id]
+      this.$store.dispatch('startChat', {
+        id: room.room.id,
+        chatWith: room.id,
+        otherUser: room.username,
+        type: 2
       })
-    },
-    openChatDialog (chat) {
-      let obj = {
-        type: 2,
-        status: 1,
-        latest_message: '',
-        users: [this.user.id, chat.id]
+
+      if (currentMsgs && currentMsgs.length) {
+        this.read(this.ws, room.room.id, currentMsgs[currentMsgs.length - 1].id)
       }
-
-      buildRoom(obj).then(res => {
-        let newRoom = res.room
-        this.$store.dispatch('startChat', {id: newRoom.id, chatWith: chat.id, otherUser: chat.username})
-        this.$store.dispatch('updateChatRead', {username: chat.username, read: true})
-
-        let currentMsg = this.roomMessages[newRoom.id] ? this.roomMessages[newRoom.id] : []
-        if (currentMsg.length) {
-          let msgs = currentMsg.filter(msg => msg.type !== -1)
-          let lastMessage = msgs[msgs.length - 1]
-          let lastMsgData = {
-            msgId: lastMessage.id,
-            other: chat.id
-          }
-          this.read(this.ws, newRoom.id, lastMsgData)
-
-          this.currentChat = {
-            chat: chat,
-            roomId: newRoom.id
-          }
-        }
-      }, errRes => {
-        this.openMessageBox(msgFormatter(errRes), 'error')
-      })
     },
     closeChatDialog () {
-      if (this.currentChat) {
-        let room = this.currentChat.roomId
-        let currentMsg = this.chat.current.messages ? this.chat.current.messages : []
+      let roomId = this.chat.current.roomId
+      let currentMsg = this.roomMsgs[roomId] || []
 
-        if (currentMsg.length) {
-          let msgs = currentMsg.filter(msg => msg.type !== -1)
-          let lastMessage = msgs[msgs.length - 1]
-          let lastMsgData = {
-            msgId: lastMessage.id,
-            other: this.currentChat.chat.id
-          }
-          this.read(this.ws, room, lastMsgData)
-          this.currentChat = null
-        }
+      if (currentMsg.length) {
+        let lastMessage = currentMsg[currentMsg.length - 1]
+
+        this.read(this.ws, roomId, lastMessage.id)
       }
 
       this.$store.dispatch('endChat')
     },
-    read (connection, roomId, lastMsg) {
+    read (connection, roomId, msgId) {
       if (connection) {
         connection.send(JSON.stringify({
           command: 'read_msg',
-          message: lastMsg.msgId,
-          chat_with: lastMsg.other,
+          message: msgId,
           room: roomId,
-          user: this.user.username
+          user: this.user.id
         }))
+
+        this.$store.dispatch('updateRoomRead', {roomId: roomId, read: true})
       }
     },
     checkLiving (ws) {
@@ -617,12 +568,17 @@ export default {
         if (socketValidate) {
           callback()
         } else {
-          this.leaveRoom()
+          this.$store.dispatch('leaveSocket', this.chat.current.roomId)
           this.$store.dispatch('connectSocket', callback)
         }
       } else {
         this.$store.dispatch('connectSocket', callback)
       }
+    },
+    getPersonalSetting () {
+      this.ws.send(JSON.stringify({
+        'command': 'user_profile'
+      }))
     },
     handleMsg () {
       this.loading = false
@@ -637,27 +593,30 @@ export default {
             if (!data.error_type) {
               let latestMsgs = data.latest_message
 
-              if (latestMsgs) {
-                if (data.count) {
-                  let lastMsg = latestMsgs[0]
-                  this.needScrollToBottom = true
-                  latestMsgs.forEach((msg) => {
-                    if (msg.type === 7) {
-                      msg.content = this.host + msg.content
-                    }
-                    if (!msg.sender.avatar) {
-                      return
-                    }
-                    msg.sender.avatar = this.host + msg.sender.avatar
-                  })
+              if (latestMsgs && data.room_id) {
+                this.needScrollToBottom = true
+                latestMsgs.forEach((msg) => {
+                  if (msg.type === 7) {
+                    msg.content = this.host + msg.content
+                  }
+                  if (!msg.sender.avatar) {
+                    return
+                  }
+                  msg.sender.avatar = this.host + msg.sender.avatar
+                })
 
-                  this.$set(this.roomMessages, lastMsg.receivers, latestMsgs.reverse().concat([{ type: -1 }]))
+                this.$set(this.roomMessages, data.room_id, latestMsgs.reverse())
 
-                  let envelopes = latestMsgs.filter((msg) => msg.type === 5 && msg.envelope_status && !msg.envelope_status.expired)
-                  envelopes.forEach((envelope) => {
-                    this.$store.dispatch('collectEnvelope', envelope)
-                  })
+                if (this.myRoles.includes('manager')) {
+                  this.showingMsgs = this.roomMessages[this.user.default_room_id]
+                } else {
+                  this.showingMsgs = this.roomMessages[data.room_id]
                 }
+
+                let envelopes = latestMsgs.filter((msg) => msg.type === 5 && msg.envelope_status && !msg.envelope_status.expired)
+                envelopes.forEach((envelope) => {
+                  this.$store.dispatch('collectEnvelope', envelope)
+                })
 
                 this.$nextTick(() => {
                   this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
@@ -665,26 +624,21 @@ export default {
 
                 return
               } else if (data.personal_setting) {
-                let personalData = {
-                  banned: data.personal_setting.banned,
-                  blocked: data.personal_setting.blocked,
-                  room: data.personal_setting.room
-                }
                 this.$store.dispatch('setUser', {
-                  user: personalData
+                  user: data.personal_setting.room
                 })
               } else {
                 switch (data.type) {
                   case 2:
 
                     if (data.command === 'banned') {
-                      this.personalSetting.banned = true
+                      this.getPersonalSetting()
                       this.openMessageBox(data.content, 'error')
                     } else if (data.command === 'unblock') {
-                      this.personalSetting.blocked = false
+                      this.getPersonalSetting()
                       this.$emit('chatStatusChanged', data.command)
                     } else if (data.command === 'unbanned') {
-                      this.personalSetting.banned = false
+                      this.getPersonalSetting()
                     }
 
                     this.$notify({
@@ -732,7 +686,7 @@ export default {
                     return
 
                   default:
-                    if (data.command === 'live') {
+                    if (data.command === 'live' || data.command === 'read_msg') {
                       return
                     }
                     if (data.sender && data.sender.avatar !== null) {
@@ -758,7 +712,9 @@ export default {
                     let inCurrentRoom = (this.chat.current.roomId === data.receivers)
 
                     if (!meSpeaking && !inCurrentRoom) {
-                      this.$store.dispatch('updateChatRead', {username: data.sender.username, read: false})
+                      this.$store.dispatch('updateRoomRead', {roomId: data.receivers, read: false})
+                    } else {
+                      this.read(this.ws, data.receivers, data.id)
                     }
 
                     let chatBox = document.getElementById('chatBox')
@@ -782,18 +738,18 @@ export default {
               if (data.error_type !== 2 && data.error_type !== 3) {
                 switch (data.error_type) {
                   case 4:
-                    this.personalSetting.banned = true
+                    this.getPersonalSetting()
                     this.openMessageBox('您已被聊天室管理员禁言，在' + this.$moment(data.msg).format('YYYY-MM-DD HH:mm:ss') + '后才可以发言。', 'error')
                     break
                   case 5:
-                    this.personalSetting.blocked = true
+                    this.getPersonalSetting()
                     this.$emit('chatStatusChanged', 'block')
                     this.openMessageBox(data.msg, 'error')
                     break
                   case 6: // 同時登入
                     this.openMessageBox(data.msg, 'error')
                     setTimeout(() => {
-                      this.leaveRoom()
+                      this.$store.dispatch('leaveSocket', this.chat.current.roomId)
                       this.$store.dispatch('trial').then(() => {
                         this.$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
                       })
@@ -867,7 +823,7 @@ export default {
       this.msgContent = ''
     },
     leaveRoom () {
-      this.$store.dispatch('leaveSocket', this.chat.current.roomId)
+      this.$store.dispatch('sendLeaveCommand', this.chat.current.roomId)
     },
     getUser () {
       getChatUser(1).then(response => {
