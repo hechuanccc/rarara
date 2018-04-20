@@ -1,6 +1,6 @@
 const pattern = {
   username: /^[a-zA-Z0-9]{6,15}$/,
-  password: /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,15}$/,
+  password: /^[a-zA-Z0-9]{6,15}$/,
   qq: /^[0-9]{4,}$/,
   phone: /^1[0-9]{10}$/,
   bankAccount: /^[0-9]{10,}$/,

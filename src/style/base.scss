@@ -82,6 +82,11 @@ body {
 .m-b-xlg {
   margin-bottom: 40px;
 }
+
+.m-a {
+  margin: 10px;
+}
+
 .p-r {
   padding-right: 10px;
 }
@@ -114,6 +119,10 @@ body {
   padding-top: 40px;
 }
 
+.p-a {
+  padding: 10px;
+}
+
 /*breadcrumb & the line*/
 
 .fr {
@@ -137,9 +146,6 @@ body {
   .el-tabs__header {
     background-color: transparent;
     border-bottom: none;
-  }
-  .el-tabs__nav {
-    width: 100%;
   }
   .el-tabs__content {
     height: 100%;

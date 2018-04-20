@@ -85,6 +85,7 @@
         <el-tabs
           v-model="activeTab"
           type="border-card">
+
           <el-tab-pane
             :disabled="loading"
             label="会员列表"
@@ -98,6 +99,7 @@
               </ChatList>
             </div>
           </el-tab-pane>
+
           <el-tab-pane
             :disabled="loading"
             label="聊天列表"
@@ -107,6 +109,7 @@
               <RoomList :defaultHall="user.default_room_id" v-if="activeTab === 'rooms'"/>
             </div>
           </el-tab-pane>
+
         </el-tabs>
 
       </el-aside>
@@ -121,9 +124,21 @@
 
       <el-aside width="395px" class="aside">
         <el-tabs type="border-card" v-model="activeAside" class="alone">
-          <el-tab-pane :label="'文字开奖'" class="full-height" name="draw">
+          <el-tab-pane
+            :label="'文字开奖'"
+            class="full-height"
+            name="draw">
             <div class="results-container" v-if="activeAside === 'draw'">
               <result></result>
+            </div>
+          </el-tab-pane>
+          <el-tab-pane
+            :label="'彩票计划'"
+            v-if="false"
+            class="full-height"
+            name="plan">
+            <div class="plans-container" v-if="activeAside === 'plan'">
+              <plan/>
             </div>
           </el-tab-pane>
         </el-tabs>
@@ -425,6 +440,7 @@ import EditUser from '../components/EditUser'
 import Checking from '../components/Checking.vue'
 import RoomList from '../components/RoomList.vue'
 import UnloginedDialog from '../components/UnloginedDialog.vue'
+import Plan from '../components/Plan'
 
 export default {
   name: 'home',
@@ -432,6 +448,7 @@ export default {
     Icon,
     ChatRoom,
     Result,
+    Plan,
     ChatList,
     RoomList,
     EditUser,
@@ -467,7 +484,7 @@ export default {
     }
     const passwordFormatValidator = (rule, value, callback) => {
       if (!validatePassword(value)) {
-        callback(new Error('请输入8~15字元，其中至少包含一大写字母及一数字'))
+        callback(new Error('请输入6~15位数字或字母'))
       } else {
         callback()
       }
@@ -1083,21 +1100,6 @@ export default {
 
 }
 
-.aside {
-  height: 100%;
-  padding: 0 10px 10px;
-  overflow-y: hidden;
-  /deep/ .el-tabs {
-    height: 100%;
-    background: rgba(255, 255, 255, .2);
-  }
-  /deep/ .el-tabs__content {
-    padding: 0;
-  }
-  /deep/ .el-form-item--small.el-form-item {
-    margin-bottom: 0;
-  }
-}
 
 .chat-area {
   padding: 0 0px 10px 0;
@@ -1216,6 +1218,11 @@ export default {
   padding: 10px;
 }
 
+.plans-container {
+  height: 100%;
+  overflow-y: hidden;
+}
+
 .qrcode {
   position: absolute;
   z-index: 3;
@@ -1292,4 +1299,29 @@ export default {
     }
   }
 }
+
+
+.aside {
+  height: 100%;
+  padding: 0 10px 10px;
+  overflow-y: hidden;
+
+  /deep/ .el-tabs {
+    height: 100%;
+    background: rgba(255, 255, 255, .2);
+  }
+
+  /deep/ .el-tabs__content {
+    padding: 0;
+  }
+
+  /deep/ .el-form-item--small.el-form-item {
+    margin-bottom: 0;
+  }
+
+  /deep/.el-tabs__nav {
+    width: 100%;
+  }
+}
+
 </style>
