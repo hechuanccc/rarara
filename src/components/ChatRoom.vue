@@ -24,13 +24,13 @@
 
                 <div class="msg-header">
                   <h4>{{
-                    item.type === 4 ?
-                    '计划消息' : item.sender && item.sender.username === user.username && user.nickname ?
-                    user.nickname : item.sender && (item.sender.nickname || item.sender.username)
-                  }}
+                      item.type === 4 ?
+                      '计划消息' : item.sender && item.sender.username === user.username && user.nickname ?
+                      user.nickname : item.sender && (item.sender.nickname || item.sender.username)
+                    }}
                   </h4>
-                  <span :class="['common-member', {'manager': getRoles(item).includes('manager')}]" v-if="item.type !== 4 && item.sender && item.sender.roles.length !== 1">
-                    {{ getRoles(item).includes('manager') ? '管理员' : '客服人员' }}
+                  <span :class="['common-member', {'manager': getRoles(item).includes('manager')}]" v-if="item.type !== 4 && item.sender && item.sender.roles.length !== 1 && (getRoles(item).includes('manager') || getRoles(item).includes('customer service'))">
+                    {{ getRoles(item).includes('manager') ? '管理员': '客服人员' }}
                   </span>
                   <span class="msg-time">{{item.created_at | moment('HH:mm:ss')}}</span>
                 </div>
@@ -417,7 +417,8 @@ export default {
   },
   methods: {
     handleImgIconClick (e) {
-      if (this.personalSetting.blocked) {
+      if (this.personalSetting.blocked || this.personalSetting.banned) {
+        e.preventDefault()
         return
       }
       if ((this.myRoles.length && this.myRoles.includes('visitor'))) {
@@ -743,7 +744,7 @@ export default {
                 switch (data.error_type) {
                   case 4:
                     this.getPersonalSetting()
-                    this.openMessageBox('您已被聊天室管理员禁言，在' + this.$moment(data.msg).format('YYYY-MM-DD HH:mm:ss') + '后才可以发言。', 'error')
+                    this.openMessageBox(`${data.msg}，在${this.$moment(data.unbanned_time).format('YYYY-MM-DD HH:mm:ss')} 后才可以发言。`, 'error')
                     break
                   case 5:
                     this.getPersonalSetting()
