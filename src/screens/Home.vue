@@ -32,7 +32,8 @@
             </div>
           </div>
           <div v-if="globalPreference.envelope_settings && globalPreference.checkin_settings.enabled === '1'"
-            :class="['checkin-btn','m-l', 'text-center',{'pointer': chatStatus !== 'block'}, {'disabled': chatStatus === 'block'}]" @click="handleCheckinClick">
+            :class="['checkin-btn','m-l', 'text-center',{'pointer': chatStatus !== 'block'}, {'disabled': chatStatus === 'block'}]"
+            @click="handleCheckinClick">
             <span class="text">签到</span>
             <span class="badge" v-if="(user.last_checkin !== $moment().format('YYYY-MM-DD')) && !myRoles.includes('visitor')"></span>
           </div>
@@ -46,11 +47,11 @@
               trigger="hover">
               <ul class="member-popover m-t">
                 <li class="li m-b pointer" @click="showProfileDiag = true, memberPopoverVisible = false">
-                  <icon class="icon m-r-sm" name="user-circle" scale="2"></icon>
+                  <icon class="icon m-r-sm" name="user-circle" scale="1.6"></icon>
                   <span class="text">用户中心</span>
                 </li>
                 <li class="li pointer m-b" @click="logout(), memberPopoverVisible = false">
-                  <icon class="icon m-r-sm" name="sign-out" scale="2"></icon>
+                  <icon class="icon m-r-sm" name="sign-out" scale="1.6"></icon>
                   <span class="text">退出登陆</span>
                 </li>
               </ul>
@@ -81,6 +82,7 @@
 
     <el-container class="home-container full-height">
       <el-aside v-if="asideShown" width="250px" class="aside">
+
         <el-tabs
           v-model="activeTab"
           type="border-card">
@@ -102,16 +104,20 @@
             label="聊天列表"
             class="full-height"
             name="rooms">
-            <div class="chat-list full-height">
-              <ChatList v-if="activeTab === 'rooms'" :rooms="rooms" :roomAmount="Object.values(rooms).length" :unread="true" ref="chatList">
-              </ChatList>
+            <div class="rooms-container">
+              <RoomList :defaultHall="user.default_room_id" v-if="activeTab === 'rooms'"/>
             </div>
           </el-tab-pane>
         </el-tabs>
+
       </el-aside>
 
       <el-main class="chat-area full-height">
-        <chat-room :class="{'p-l': !asideShown}" @handleAvatarClick="handleAvatarClick" @chatStatusChanged="chatStatusChanged"></chat-room>
+        <chat-room :class="{'p-l': !asideShown}"
+          @chatRoomReady="chatRoomReady"
+          @handleAvatarClick="handleAvatarClick"
+          @chatStatusChanged="chatStatusChanged">
+        </chat-room>
       </el-main>
 
       <el-aside width="395px" class="aside">
@@ -414,7 +420,7 @@
 </template>
 
 <script>
-import Vue from 'vue'
+import { mapState, mapGetters } from 'vuex'
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/volume-up'
 import 'vue-awesome/icons/mobile-phone'
@@ -427,18 +433,13 @@ import ChatRoom from '../components/ChatRoom'
 import { fetchAnnouce, updateUser, getEnvelopeRecord, fetchCheckinRecord } from '../api'
 import { msgFormatter, filtAmount } from '../utils'
 import { validatePhone, validateQQ, validatePassword } from '../validate'
-import urls from '../api/urls'
 import Result from '../components/Result'
-import { mapState, mapGetters } from 'vuex'
 import ChatList from '../components/ChatList'
 import EditUser from '../components/EditUser'
 import Checking from '../components/Checking.vue'
+import RoomList from '../components/RoomList.vue'
 import UnloginedDialog from '../components/UnloginedDialog.vue'
 import Plan from '../components/Plan'
-
-Vue.filter('truncate', function (text, stop) {
-  return text.slice(0, stop) + (stop < text.length ? '...' : '')
-})
 
 export default {
   name: 'home',
@@ -448,6 +449,7 @@ export default {
     Result,
     Plan,
     ChatList,
+    RoomList,
     EditUser,
     Checking,
     UnloginedDialog
@@ -481,7 +483,7 @@ export default {
     }
     const passwordFormatValidator = (rule, value, callback) => {
       if (!validatePassword(value)) {
-        callback(new Error('请输入8~15字元，其中至少包含一大写字母及一数字'))
+        callback(new Error('请输入6~15位数字或字母'))
       } else {
         callback()
       }
@@ -499,15 +501,10 @@ export default {
     }
 
     return {
-      activeRoom: {},
-      popoverMember: {},
-      searchEnabled: false,
       activeTab: 'chats',
       activeAside: 'draw',
       swichAvatar: false,
-      uploadUrl: urls.user,
       showProfileDiag: false,
-      searchStr: '',
       announcementStyle: {
         opacity: 1,
         translateY: 0
@@ -515,11 +512,6 @@ export default {
       announcements: [],
       currentAnnouncementIndex: 0,
       announcementDialogVisible: false,
-      memberLimit: 20,
-      memberPage: 0,
-      onlineMemberLoading: false,
-      onlineMembersEnded: false,
-      roomLoading: false,
       onlineMembers: [],
       editUser: {
         mobile: '',
@@ -560,11 +552,8 @@ export default {
       currentChooseAvatar: '',
       changeProfileSuccess: true,
       changeProfileRes: '',
-      createRoomLoading: false,
-      lasyLoadResult: false,
       showQR: false,
       activePanel: 'account',
-      hallLastMsg: '',
       tempAvatar: '',
       memberDialog: {
         visible: true,
@@ -582,7 +571,10 @@ export default {
       },
       checkinRecord: [],
       memberPopoverVisible: false,
-      chatStatus: ''
+      chatStatus: '',
+      chatRoomIsReady: false,
+      openRestrainDialog: false,
+      restraintMember: null
     }
   },
   filters: {
@@ -596,23 +588,19 @@ export default {
       'loading',
       'user',
       'rooms',
-      'unloginedDialog'
+      'unloginedDialog',
+      'chat',
+      'roomMsgs'
     ]),
     ...mapGetters([
       'myRoles'
     ]),
-    isHome () {
-      return ''
-    },
     currentAnnouncement () {
       if (this.announcements[this.currentAnnouncementIndex]) {
         return this.announcements[this.currentAnnouncementIndex].content
       } else {
         return ''
       }
-    },
-    user () {
-      return this.$store.state.user
     },
     promoteUrl () {
       return this.user.promote_code ? window.location.origin + '/#/?r=' + this.user.promote_code : ''
@@ -621,7 +609,7 @@ export default {
       return this.user.agent ? this.user.agent.username : ''
     },
     asideShown () {
-      return this.myRoles.includes('customer service')
+      return (this.myRoles.includes('customer service') || this.myRoles.includes('manager')) && this.chatRoomIsReady
     }
   },
   watch: {
@@ -630,7 +618,7 @@ export default {
         this.$refs['editUser'].clearValidate()
       })
     },
-    'user': function () {
+    'user': function (user) {
       this.initUser()
     },
     'activePanel': function (panel) {
@@ -640,12 +628,28 @@ export default {
       if (panel === 'checkin') {
         this.getCheckinRecord(0, this.tablePagination.limit)
       }
+    },
+    'roomMsgs': function (val) {
+      if (val[this.user.default_room_id]) {
+        this.$store.dispatch('startChat', {
+          id: this.user.default_room_id,
+          type: 1
+        })
+      }
+    },
+    'activeTab': function (val) {
+      if (!val) {
+        this.activeTab = 'chats'
+      }
     }
   },
   created () {
     this.getAnnouce()
   },
   methods: {
+    chatRoomReady (ready) {
+      this.chatRoomIsReady = ready
+    },
     chatStatusChanged (status) {
       this.chatStatus = status
     },
@@ -893,11 +897,6 @@ export default {
       }
       this.tempAvatar = URL.createObjectURL(file)
       this.currentChooseAvatar = URL.createObjectURL(file)
-    },
-    loadResult (tab) {
-      if (tab.index === '1') {
-        this.lasyLoadResult = true
-      }
     }
   }
 }
@@ -1140,6 +1139,10 @@ export default {
 
 .chat-list {
   color: #ccc;
+}
+
+.rooms-container {
+  height: calc(100% - 45px);
 }
 
 .el-carousel.announcement-popup .el-carousel__button {

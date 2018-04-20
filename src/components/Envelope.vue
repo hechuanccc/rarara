@@ -151,7 +151,8 @@ export default {
       'user',
       'globalPreference',
       'ws',
-      'envelopes'
+      'envelopes',
+      'chat'
     ]),
     success () {
       return this.status === 'success'
@@ -194,7 +195,8 @@ export default {
           sender_id: this.user.id,
           pack_amount: parseInt(this.send.pack_amount),
           pack_nums: parseInt(this.send.pack_nums),
-          content: this.send.content ? this.send.content : '恭喜发财，大吉大利'
+          content: this.send.content ? this.send.content : '恭喜发财，大吉大利',
+          room_id: this.chat.current.roomId
         }
 
         this.loading = true

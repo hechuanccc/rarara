@@ -11,7 +11,8 @@ export function createStore () {
     state: {
       user: {
         logined: false,
-        roles: []
+        roles: [],
+        default_room_id: 1
       },
       loading: false,
       globalPreference: {
@@ -24,9 +25,11 @@ export function createStore () {
         dialogVisible: false,
         current: {
           roomId: 1,
-          messages: []
+          messages: [],
+          type: 1
         }
       },
+      restraintMembers: {},
       roomMsgs: {},
       rooms: [],
       envelopes: {},

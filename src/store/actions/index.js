@@ -58,10 +58,10 @@ export default {
         fn()
       }
 
-      state.ws.send(JSON.stringify({
-        'command': 'join',
-        'receivers': [state.chat.current.roomId]
-      }))
+      // state.ws.send(JSON.stringify({
+      //   'command': 'join',
+      //   'receivers': [state.chat.current.roomId]
+      // }))
     }
 
     state.ws.onclose = () => {
@@ -72,9 +72,16 @@ export default {
       dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
     }
   },
+  sendJoinCommand: ({state, dispatch}, roomId) => {
+    state.ws.send(JSON.stringify({
+      'command': 'join',
+      'receivers': [roomId]
+    }))
+  },
   logout: ({ commit, state, dispatch }) => {
     return logout().then(
       res => {
+        dispatch('endChat')
         Vue.cookie.delete('access_token')
         Vue.cookie.delete('refresh_token')
         dispatch('leaveSocket', state.chat.current.roomId)
@@ -82,17 +89,20 @@ export default {
       errRes => Promise.reject(errRes)
     )
   },
-  leaveSocket: ({commit, state, diapatch}, room) => {
+  leaveSocket: ({commit, state, dispatch}, room) => {
     if (state.ws) {
       if (room) {
-        state.ws && state.ws.send(JSON.stringify({
-          'command': 'leave',
-          'receivers': [room]
-        }))
+        dispatch('sendLeaveCommand', room)
       }
 
       state.ws.close()
     }
+  },
+  sendLeaveCommand: ({state, dispatch}, roomId) => {
+    state.ws.send(JSON.stringify({
+      'command': 'leave',
+      'receivers': [roomId]
+    }))
   },
   fetchUser: ({ commit, state, dispatch, getters }) => {
     return fetchUser().then(res => {
@@ -111,6 +121,9 @@ export default {
           if (state.chatList.length === 0) {
             getChatList({offset: 0, limit: 20}).then(data => {
               dispatch('updateChatList', data.results)
+              if (getters.myRoles.length === 1 && getters.myRoles[0] === 'member') {
+                dispatch('setRooms', data.results)
+              }
             })
           }
         }
@@ -169,6 +182,9 @@ export default {
   updateChatList: ({ commit, state }, data) => {
     commit(types.UPDATE_CHATLIST, data)
   },
+  updateRoomRead: ({ commit, state }, data) => {
+    commit(types.UPDATE_ROOMREAD, data)
+  },
   startChat: ({ commit, state }, data) => {
     commit(types.START_CHAT, data)
   },
@@ -181,14 +197,14 @@ export default {
   setWebsocket: ({ commit, state }, data) => {
     commit(types.SET_WEBSOCKET, data)
   },
-  updateChatRead: ({ commit, state }, data) => {
-    commit(types.UPDATE_CHATREAD, data)
+  setRooms: ({ commit, state }, data) => {
+    commit(types.SET_ROOMS, data)
+  },
+  setRestraintMembers: ({ commit, state }, data) => {
+    commit(types.SET_RESTRAINTMEMBERS, data)
   },
   setRoomMsgs: ({ commit, state }, data) => {
     commit(types.SET_ROOMMSGS, data)
-  },
-  setRooms: ({ commit, state }, data) => {
-    commit(types.SET_ROOMS, data)
   },
   setStickerGroups: ({ commit, state }, data) => {
     commit(types.SET_STICKERGROUPS, data)
