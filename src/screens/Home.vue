@@ -64,7 +64,6 @@
                 <i class="el-icon-caret-bottom p-t" v-else></i>
               </div>
             </a>
-
           </div>
           <div class="visitor-actions fr" v-else>
             <span class="login m-r-lg pointer" @click="$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})">
@@ -121,9 +120,9 @@
       </el-main>
 
       <el-aside width="395px" class="aside">
-        <el-tabs type="border-card" class="alone">
-          <el-tab-pane :label="'文字开奖'" class="full-height">
-            <div class="results-container">
+        <el-tabs type="border-card" v-model="activeAside" class="alone">
+          <el-tab-pane :label="'文字开奖'" class="full-height" name="draw">
+            <div class="results-container" v-if="activeAside === 'draw'">
               <result></result>
             </div>
           </el-tab-pane>
@@ -487,6 +486,7 @@ export default {
 
     return {
       activeTab: 'chats',
+      activeAside: 'draw',
       swichAvatar: false,
       showProfileDiag: false,
       announcementStyle: {
@@ -624,6 +624,11 @@ export default {
     'activeTab': function (val) {
       if (!val) {
         this.activeTab = 'chats'
+      }
+    },
+    'activeAside': function (val) {
+      if (!val) {
+        this.activeAside = 'draw'
       }
     }
   },

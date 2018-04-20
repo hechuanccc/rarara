@@ -148,7 +148,8 @@
           </a>
 
           <div v-if="globalPreference.envelope_settings && globalPreference.envelope_settings.enabled === '1' && chat.current.type === 1"
-            :class="['envelope-icon','pointer', {'not-allowed': personalSetting.blocked}]" @click="handleEnvelopeIconClick">
+            :class="['envelope-icon','pointer', {'not-allowed': personalSetting.blocked || personalSetting.banned }]"
+            @click="handleEnvelopeIconClick">
             <img class="img" src="../assets/envelope_icon.png" alt="envelope-icon">
           </div>
 
@@ -405,7 +406,7 @@ export default {
       return !this.personalSetting.blocked || !this.personalSetting.banned
     },
     personalSetting () {
-      return this.user[this.chat.current.roomId] || {banned: false, blocked: false}
+      return this.user[this.user.default_room_id] || {banned: false, blocked: false}
     }
   },
   created () {
@@ -483,7 +484,7 @@ export default {
       })
     },
     handleEnvelopeIconClick () {
-      if (this.personalSetting.blocked) {
+      if (this.personalSetting.blocked || this.personalSetting.banned) {
         return
       }
       if (this.myRoles.includes('visitor')) {
@@ -576,9 +577,11 @@ export default {
       }
     },
     getPersonalSetting () {
-      this.ws.send(JSON.stringify({
-        'command': 'user_profile'
-      }))
+      if (this.ws) {
+        this.ws.send(JSON.stringify({
+          'command': 'user_profile'
+        }))
+      }
     },
     handleMsg () {
       this.loading = false
@@ -614,6 +617,7 @@ export default {
                 }
 
                 let envelopes = latestMsgs.filter((msg) => msg.type === 5 && msg.envelope_status && !msg.envelope_status.expired)
+
                 envelopes.forEach((envelope) => {
                   this.$store.dispatch('collectEnvelope', envelope)
                 })
