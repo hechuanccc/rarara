@@ -606,7 +606,12 @@ export default {
                 })
 
                 this.$set(this.roomMessages, data.room_id, latestMsgs.reverse())
-                this.showingMsgs = this.roomMessages[data.room_id]
+
+                if (this.myRoles.includes('manager')) {
+                  this.showingMsgs = this.roomMessages[this.user.default_room_id]
+                } else {
+                  this.showingMsgs = this.roomMessages[data.room_id]
+                }
 
                 let envelopes = latestMsgs.filter((msg) => msg.type === 5 && msg.envelope_status && !msg.envelope_status.expired)
                 envelopes.forEach((envelope) => {

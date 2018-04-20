@@ -91,6 +91,16 @@ export default {
     },
     initRooms () {
       fetchRooms().then((rooms) => {
+        let temp = []
+        rooms.forEach((room) => {
+          if (room.type === 1) {
+            temp.push(room)
+            return
+          }
+          if (room.chat_with && room.type === 2) {
+            temp.push(room)
+          }
+        })
         if (this.chat.current.rooomId && !_.find(rooms, room => room.id === this.chat.current.rooomId)) {
           rooms.push({
             id: this.chat.current.roomId,
@@ -99,7 +109,9 @@ export default {
             type: 2
           })
         }
-        this.$store.dispatch('setRooms', rooms)
+
+        this.$store.dispatch('setRooms', temp)
+
         if (this.myRoles.includes('manager')) {
           this.rooms.forEach((room) => {
             this.$store.dispatch('sendJoinCommand', room.id)
@@ -125,10 +137,6 @@ export default {
   },
   created () {
     this.initRooms()
-  },
-  beforeDestroy () {
-    let currentMsgs = this.roomMsgs[this.chat.current.roomId]
-    this.read(this.ws, this.chat.current.roomId, currentMsgs[currentMsgs.length - 1])
   }
 }
 </script>

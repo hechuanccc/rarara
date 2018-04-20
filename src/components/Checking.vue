@@ -377,12 +377,12 @@ export default {
       &:before {
         content: '红包';
         position: absolute;
-        top: -15px;
+        top: -5px;
         font-size: 12px;
       }
       .img {
         position: relative;
-        top: 10px;
+        top: 15px;
       }
     }
 

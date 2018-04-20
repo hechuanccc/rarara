@@ -620,6 +620,11 @@ export default {
           type: 1
         })
       }
+    },
+    'activeTab': function (val) {
+      if (!val) {
+        this.activeTab = 'chats'
+      }
     }
   },
   created () {
