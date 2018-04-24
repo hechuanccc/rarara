@@ -101,10 +101,13 @@ export default {
             temp.push(room)
           }
         })
-        if (this.chat.current.rooomId && !_.find(rooms, room => room.id === this.chat.current.rooomId)) {
-          rooms.push({
+
+        if (this.chat.current.roomId && !_.find(rooms, room => room.id === this.chat.current.roomId)) {
+          temp.push({
             id: this.chat.current.roomId,
-            chat_with: this.chat.current.otherUser,
+            chat_with: {
+              display_name: this.chat.current.otherUser
+            },
             is_read_latest_message: true,
             type: 2
           })

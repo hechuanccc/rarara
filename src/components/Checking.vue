@@ -377,7 +377,7 @@ export default {
       &:before {
         content: '红包';
         position: absolute;
-        top: -5px;
+        top: -3px;
         font-size: 12px;
       }
       .img {
