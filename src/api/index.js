@@ -116,11 +116,16 @@ export function unblockChatUser (id, data) {
       action: 'unblock',
       user: data.user,
       room_id: data.id
-    })
+    }
+  )
 }
 
 export function getChatUser (id) {
   return axios.get(`${urls.room}${id}/`)
+}
+
+export function getAllChatUser () {
+  return axios.get(`${urls.memberRoom}`)
 }
 
 export function getChatList (pagination) {
@@ -130,8 +135,8 @@ export function getChatList (pagination) {
   return axios.get(`${urls.member}chat_list/?offset=${pagination.offset}&limit=${pagination.limit}`)
 }
 
-export function searchChatList (search) { // todo backend new query field to ||
-  return axios.get(`${urls.member}chat_list/?nickname_q=${search}&remarks_q=${search}`)
+export function searchChatList (search) {
+  return axios.get(`${urls.member}chat_list/?nickname_or=${search}&remarks_or=${search}`)
 }
 
 export function checkUserName (username) {
