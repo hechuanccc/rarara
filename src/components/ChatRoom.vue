@@ -218,6 +218,7 @@
         :bannedUsers="formattedBannerUsers"
         :RECEIVER="restraint.user.default_room || 1"
         @updateUsers="updateUsers"
+        @handleUserRelease="handleUserRelease"
       />
     </el-dialog>
 
@@ -403,7 +404,7 @@ export default {
       return showing
     },
     chatable () {
-      return !this.personalSetting.blocked || !this.personalSetting.banned
+      return !this.personalSetting.blocked && !this.personalSetting.banned
     },
     personalSetting () {
       return this.user[this.user.default_room_id] || {banned: false, blocked: false}
@@ -416,6 +417,9 @@ export default {
     this.joinChatRoom()
   },
   methods: {
+    handleUserRelease (releasedUser) {
+      this.$emit('handleUserRelease', releasedUser)
+    },
     handleImgIconClick (e) {
       if (this.personalSetting.blocked || this.personalSetting.banned) {
         e.preventDefault()
@@ -565,7 +569,7 @@ export default {
       this.loading = true
       let currentToken = this.$cookie.get('access_token')
 
-      if (this.ws) { // avoid rejoin room
+      if (this.ws) {
         let socketValidate = this.ws.url.indexOf(currentToken) !== -1
         if (socketValidate) {
           callback()

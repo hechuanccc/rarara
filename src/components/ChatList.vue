@@ -66,6 +66,9 @@ export default {
     Icon
   },
   props: {
+    releasedUser: {
+      type: Object
+    }
   },
   data () {
     return {
@@ -112,6 +115,16 @@ export default {
     'searchData.input': function (ipt) {
       if (!ipt.length) {
         this.exitSearch()
+      }
+    },
+    'releasedUser': function (obj) {
+      let released = this.chats.find(chat => chat.username === obj.user)
+      if (obj.action === 'unblock') {
+        released.blocked = false
+      }
+
+      if (obj.action === 'unban') {
+        released.banned = false
       }
     }
   },

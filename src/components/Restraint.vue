@@ -128,6 +128,8 @@ export default {
       }).then((data) => {
         this.getUser()
         this.restraint.dialogVisible = false
+        this.$emit('handleUserRelease', {user: user, action: 'unban'})
+
         this.$message({
           showClose: true,
           message: data.status,
@@ -169,6 +171,8 @@ export default {
       }).then((data) => {
         this.getUser()
         this.restraint.dialogVisible = false
+        this.$emit('handleUserRelease', {user: user, action: 'unblock'})
+
         this.$message({
           showClose: true,
           message: data.status,
