@@ -43,6 +43,7 @@ if (token) {
   axios.defaults.withCredentials = true
   axios.defaults.headers.common['Authorization'] = 'Bearer ' + token
 }
+
 axios.interceptors.response.use(res => {
   let responseData = res.data
   if (!responseData.error) {
@@ -66,6 +67,10 @@ axios.interceptors.response.use(res => {
   }
 
   if (error && error.response && error.response.status !== 587) { // 表示為意料之外的錯誤
+    if (error.response.status === 503) {
+      router.replace({name: 'Maintenance'})
+    }
+
     let msg = error.response.data.error
 
     if (error.response.status === 401 || error.response.status === 403) {
