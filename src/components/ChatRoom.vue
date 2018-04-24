@@ -77,7 +77,7 @@
                 </div>
                 <div :class="['bubble', 'bubble' + item.type]" v-else>
                   <p>
-                    <span v-if="item.type === 0 || item.type === 4">{{item.content}}</span>
+                    <span v-if="item.type === 0 || item.type === 4 || item.type === 8">{{item.content}}</span>
                     <img-async @click.native="showImageMsg = true; showImageMsgUrl = item.content"
                       v-else-if="item.type === 1"
                       :src="item.content"
@@ -187,7 +187,7 @@
             </textarea>
           </div>
           <div class="sendbtn fr">
-            <a href="javascript:void(0)" class="u-btn" @click="sendMsg">发送</a>
+            <a href="javascript:void(0)" :class="['u-btn', { 'not-allowed': !chatable }]" @click="sendMsg">发送</a>
           </div>
         </div>
       </el-footer>
@@ -789,6 +789,9 @@ export default {
       this.showStickerPopover = false
     },
     sendMsgImg (e) {
+      if (!this.chatable) {
+        return
+      }
       if (this.myRoles.includes('visitor')) {
         this.$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
         return
@@ -812,6 +815,9 @@ export default {
       })
     },
     sendMsg () {
+      if (!this.chatable) {
+        return
+      }
       if (this.myRoles.includes('visitor')) {
         this.$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
         return
