@@ -1087,6 +1087,7 @@ export default {
   color: #fff;
   padding: 0 10px;
   border-radius: 10px;
+
   &.manager {
     background: #d6a254;
   }
@@ -1098,9 +1099,11 @@ export default {
   float: left;
   max-width: 75%;
 }
+
 .msg-header {
   overflow: hidden;
   margin-bottom: 5px;
+
   h4 {
     display: inline-block;
     color: #fff;
@@ -1121,11 +1124,12 @@ export default {
     vertical-align: middle;
   }
 }
+
 .bubble {
-  background: linear-gradient(to right, $primary, rgb(25, 158, 216));
-  border-left-color: rgb(25, 158, 216);
-  border-right-color: $primary;
-  color: rgb(255, 255, 255);
+  background: #fff;
+  border-left-color: #fff;
+  border-right-color: #fff;
+  color: #4a4a4a;
   position: relative;
   border-radius: 5px;
   padding: 5px 8px;
@@ -1134,15 +1138,25 @@ export default {
   p {
     width: 100%;
   }
+
   &.bubble1 {
     width: 55%;
   }
+
   &.bubble4 {
     background: #ab47bc;
     background: linear-gradient(to right,#ab47bc,#5169DE);
     border-left-color: #5169de;
     border-right-color: #ab47bc;
   }
+
+  &.bubble8 {
+    background: linear-gradient(to right, $primary, rgb(25, 158, 216));
+    border-left-color: rgb(25, 158, 216);
+    border-right-color: $primary;
+    color: #fff;
+  }
+
   p {
     display: inline-block;
     span {

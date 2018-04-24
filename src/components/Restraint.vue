@@ -8,25 +8,39 @@
             @click.native="switchBlockTab(index)">{{tab.display}}</el-menu-item>
         </el-menu>
         <el-table
-          :data="restraint.nowTab === '1' ? bannedUsers : blockedUsers"
+          :data="restraint.nowTab === '1' ? manage.bannedUsers : manage.blockedUsers"
           style="width: 100%">
           <el-table-column
             prop="username"
             label="帐号"
-            :width="restraint.nowTab === '0' ? 322 : 215">
+            :width="restraint.nowTab === '0' ? 215 : 160">
+          </el-table-column>
+          <el-table-column
+            prop="title"
+            label="房间"
+            :width="restraint.nowTab === '0' ? 215 : 160">
+            <template slot-scope="scope">
+              <span>{{scope.row.title + '大厅'}}</span>
+            </template>
           </el-table-column>
           <el-table-column
             v-if="restraint.nowTab === '1'"
             prop="banned_time"
-            label="时间(min)"
-            width="215">
+            label="时间(mins)"
+            width="160">
           </el-table-column>
           <el-table-column
             label="操作"
-            :width="restraint.nowTab === '0' ? 322 : 215">
+            :width="restraint.nowTab === '0' ? 215 : 160">
             <template slot-scope="scope">
-              <el-button v-if="restraint.nowTab === '1'" size="mini" type="danger" @click.native="unban(scope.row.username)">解除</el-button>
-              <el-button v-else size="mini" type="danger" @click.native="unblock(scope.row.username)">解除</el-button>
+              <el-button v-if="restraint.nowTab === '1'"
+                size="mini"
+                type="danger"
+                @click.native="unban(scope.row.username, scope.row.room_id)">解除</el-button>
+              <el-button v-else
+                size="mini"
+                type="danger"
+                @click.native="unblock(scope.row.username, scope.row.room_id)">解除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -62,36 +76,33 @@
 </template>
 
 <script>
-import { banChatUser, blockChatUser, unbanChatUser, unblockChatUser, getChatUser } from '../api'
+import { banChatUser, blockChatUser, unbanChatUser, unblockChatUser, getChatUser, getAllChatUser } from '../api'
+import { mapState } from 'vuex'
 
 export default {
   props: {
     restraint: {
       type: Object
-    },
-    blockedUsers: {
-      type: Array
-    },
-    bannedUsers: {
-      type: Array
-    },
-    RECEIVER: {
-      type: Number,
-      default: 1
     }
   },
   data () {
     return {
       isBanned: undefined,
-      isBlocked: undefined
+      isBlocked: undefined,
+      manage: {
+        usersStatus: null,
+        userArr: null,
+        bannedUsers: [],
+        blockedUsers: []
+      }
     }
   },
   methods: {
     switchBlockTab (index) {
       this.restraint.nowTab = index + ''
     },
-    ban (mins) {
-      banChatUser(this.RECEIVER, {
+    ban (mins, roomId) {
+      banChatUser(roomId || this.user.default_room_id, {
         user: this.restraint.user.username,
         banned_time: mins
       }).then((data) => {
@@ -111,8 +122,8 @@ export default {
         })
       })
     },
-    unban (user) {
-      unbanChatUser(this.RECEIVER, {
+    unban (user, roomId) {
+      unbanChatUser(roomId || this.user.default_room_id, {
         user: user
       }).then((data) => {
         this.getUser()
@@ -132,8 +143,8 @@ export default {
         })
       })
     },
-    block () {
-      blockChatUser(this.RECEIVER, {
+    block (roomId) {
+      blockChatUser(roomId || this.user.default_room_id, {
         user: this.restraint.user.username
       }).then((data) => {
         this.getUser()
@@ -152,8 +163,8 @@ export default {
         })
       })
     },
-    unblock (user) {
-      unblockChatUser(this.RECEIVER, {
+    unblock (user, roomId) {
+      unblockChatUser(roomId || this.user.default_room_id, {
         user: user
       }).then((data) => {
         this.getUser()
@@ -174,7 +185,8 @@ export default {
       })
     },
     getUser () {
-      getChatUser(1).then(response => {
+      // forSingle
+      getChatUser(this.user.default_room_id).then(response => {
         this.$emit('updateUsers', {banned_users: response.banned_users, block_users: response.block_users})
 
         if (!response.banned_users.length || !response.block_users.length) {
@@ -188,7 +200,43 @@ export default {
         this.isBanned = newBannedUsers.includes(this.restraint.user.username)
         this.isBlocked = newBlockUsers.includes(this.restraint.user.username)
       })
+    },
+    getRoomsUsers () {
+      // for all
+      getAllChatUser().then(response => {
+        this.manage.userArr = response
+
+        let temp = {}
+        response.forEach((room) => {
+          console.log(room)
+
+          temp[room.id] = {
+            title: room.title,
+            banned_users: room.banned_users,
+            block_users: room.block_users
+          }
+
+          room.banned_users.forEach((user) => {
+            user.title = room.title
+            user.room_id = room.id
+          })
+          room.block_users.forEach((user) => {
+            user.title = room.title
+            user.room_id = room.id
+          })
+
+          this.manage.bannedUsers.push(...room.banned_users)
+          this.manage.blockedUsers.push(...room.block_users)
+        })
+
+        this.manage.usersStatus = temp
+      })
     }
+  },
+  computed: {
+    ...mapState([
+      'user'
+    ])
   },
   watch: {
     'restraint.user.username': function () {
@@ -196,7 +244,11 @@ export default {
     }
   },
   created () {
-    this.getUser()
+    if (this.restraint.content === 'single') {
+      this.getUser()
+    } else {
+      this.getRoomsUsers()
+    }
   }
 }
 </script>

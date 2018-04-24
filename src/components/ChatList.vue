@@ -1,7 +1,6 @@
 <template>
   <div class="full-height">
-    <div class="search-form m-t m-b m-l m-r" v-if="false">
-      <!-- TODO: backend search query login change -->
+    <div class="search-form m-t m-b m-l m-r">
       <el-input v-model="searchData.input"
         type="text"
         placeholder="请输入帐号名"
@@ -27,8 +26,10 @@
             placement="right"
             trigger="click">
             <div v-if="isManager">
-              <div class="action pointer" @click="ban(item, 15)">禁言 {{item.username}}</div>
-              <div class="action pointer" @click="block(item)">拉黑 {{item.username}}</div>
+              <div v-if="!item.banned" class="action pointer" @click="ban(item, 15, index)">禁言 {{item.username}}</div>
+              <div v-if="!item.blocked" class="action pointer" @click="block(item, index)">拉黑 {{item.username}}</div>
+              <div v-if="item.banned" class="action pointer" @click="unban(item, index)">解除禁言 {{item.username}}</div>
+              <div v-if="item.blocked" class="action pointer" @click="unblock(item, index)">解除拉黑 {{item.username}}</div>
             </div>
             <div v-else>
               <div class="action pointer" @click="enterChat(item)">与 {{item.username}} 私聊</div>
@@ -41,12 +42,12 @@
                   alt="avatar">
               </div>
               <p class="title">
-                {{ item.remarks || item.nickname || item.username }}
+                {{ item.remarks || item.nickname}}
               </p>
             </div>
           </el-popover>
         </li>
-        <li  v-if="(pagination.total > chats.length && !searchData.input.length)" @click="fillMemberChats">更多...</li>
+        <li class="pointer m-l" v-if="(pagination.total > chats.length && !searchData.input.length)" @click="fillMemberChats">更多...</li>
       </ul>
       <ul class="text-center m-t" v-else>暂无进行中的聊天</ul>
     </div>
@@ -182,12 +183,14 @@ export default {
         this.fillMemberChats()
       }, 60000)
     },
-    ban (chat, mins) {
+    ban (chat, mins, index) {
       banChatUser(chat.default_room, {
         user: chat.username,
         banned_time: mins
       }).then((data) => {
         this.getUser(chat.default_room)
+
+        this.$set(this.chats[index], 'banned', true)
         this.$message({
           showClose: true,
           message: data.status,
@@ -201,11 +204,12 @@ export default {
         })
       })
     },
-    unban (chat) {
+    unban (chat, index) {
       unbanChatUser(chat.default_room, {
         user: chat.username
       }).then((data) => {
         this.getUser(chat.default_room)
+        this.$set(this.chats[index], 'banned', false)
         this.$message({
           showClose: true,
           message: data.status,
@@ -219,11 +223,13 @@ export default {
         })
       })
     },
-    block (chat) {
+    block (chat, index) {
       blockChatUser(chat.default_room, {
         user: chat.username
       }).then((data) => {
         this.getUser(chat.default_room)
+        this.$set(this.chats[index], 'blocked', true)
+
         this.$message({
           showClose: true,
           message: data.status,
@@ -237,11 +243,12 @@ export default {
         })
       })
     },
-    unblock (chat) {
+    unblock (chat, index) {
       unblockChatUser(chat.default_room, {
         user: chat.username
       }).then((data) => {
         this.getUser(chat.default_room)
+        this.$set(this.chats[index], 'blocked', false)
         this.$message({
           showClose: true,
           message: data.status,
