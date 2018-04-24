@@ -64,11 +64,11 @@
       <div slot="footer"
         class="m-t-lg actions text-center"
         v-if="typeof(isBanned) === 'boolean' || typeof(isBlocked) === 'boolean'">
-        <el-button type="danger" v-if="!isBanned" @click.native="ban(15)">禁言15分钟</el-button>
-        <el-button type="danger" v-if="!isBanned" @click.native="ban(30)">禁言30分钟</el-button>
-        <el-button type="danger" v-if="!isBlocked" @click.native="block()">加入黑名单</el-button>
-        <el-button type="danger" v-if="isBlocked" @click.native="unblock(restraint.user.username)">解除拉黑</el-button>
-        <el-button type="danger" v-if="isBanned" @click.native="unban(restraint.user.username)">解除禁言</el-button>
+        <el-button type="danger" v-if="!isBanned" @click.native="ban(15, chat.current.roomId)">禁言15分钟</el-button>
+        <el-button type="danger" v-if="!isBanned" @click.native="ban(30, chat.current.roomId)">禁言30分钟</el-button>
+        <el-button type="danger" v-if="!isBlocked" @click.native="block(chat.current.roomId)">加入黑名单</el-button>
+        <el-button type="danger" v-if="isBlocked" @click.native="unblock(restraint.user.username, chat.current.roomId)">解除拉黑</el-button>
+        <el-button type="danger" v-if="isBanned" @click.native="unban(restraint.user.username, chat.current.roomId)">解除禁言</el-button>
       </div>
     </div>
 
@@ -128,6 +128,8 @@ export default {
       }).then((data) => {
         this.getUser()
         this.restraint.dialogVisible = false
+        this.$emit('handleUserRelease', {user: user, action: 'unban'})
+
         this.$message({
           showClose: true,
           message: data.status,
@@ -169,6 +171,8 @@ export default {
       }).then((data) => {
         this.getUser()
         this.restraint.dialogVisible = false
+        this.$emit('handleUserRelease', {user: user, action: 'unblock'})
+
         this.$message({
           showClose: true,
           message: data.status,
@@ -235,7 +239,8 @@ export default {
   },
   computed: {
     ...mapState([
-      'user'
+      'user',
+      'chat'
     ])
   },
   watch: {

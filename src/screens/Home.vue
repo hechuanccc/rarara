@@ -95,6 +95,7 @@
               <ChatList v-if="activeTab === 'chats'"
                 @getChosenChat="handleChatChoose"
                 @switchToRooms="handlePrivateChat"
+                :releasedUser="releasedUser"
                 ref="chatList">
               </ChatList>
             </div>
@@ -116,6 +117,7 @@
 
       <el-main class="chat-area full-height">
         <chat-room :class="{'p-l': !asideShown}"
+          @handleUserRelease="handleUserRelease"
           @chatRoomReady="chatRoomReady"
           @handleAvatarClick="handleAvatarClick"
           @chatStatusChanged="chatStatusChanged">
@@ -575,7 +577,8 @@ export default {
       chatStatus: '',
       chatRoomIsReady: false,
       openRestrainDialog: false,
-      restraintMember: null
+      restraintMember: null,
+      releasedUser: {}
     }
   },
   filters: {
@@ -653,6 +656,9 @@ export default {
     this.getAnnouce()
   },
   methods: {
+    handleUserRelease (releasedUser) {
+      this.releasedUser = releasedUser
+    },
     chatRoomReady (ready) {
       this.chatRoomIsReady = ready
     },
