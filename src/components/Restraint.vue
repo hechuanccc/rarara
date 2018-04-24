@@ -108,6 +108,7 @@ export default {
       }).then((data) => {
         this.getUser()
         this.restraint.dialogVisible = false
+        this.$emit('handleUserRestraint', {user: this.restraint.user.username, action: 'ban'})
         this.$message({
           showClose: true,
           message: data.status,
@@ -151,6 +152,8 @@ export default {
       }).then((data) => {
         this.getUser()
         this.restraint.dialogVisible = false
+        this.$emit('handleUserRestraint', {user: this.restraint.user.username, action: 'block'})
+
         this.$message({
           showClose: true,
           message: data.status,

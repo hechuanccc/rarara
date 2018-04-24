@@ -96,6 +96,7 @@
                 @getChosenChat="handleChatChoose"
                 @switchToRooms="handlePrivateChat"
                 :releasedUser="releasedUser"
+                :restraintedUser="restraintedUser"
                 ref="chatList">
               </ChatList>
             </div>
@@ -118,6 +119,7 @@
       <el-main class="chat-area full-height">
         <chat-room :class="{'p-l': !asideShown}"
           @handleUserRelease="handleUserRelease"
+          @handleUserRestraint="handleUserRestraint"
           @chatRoomReady="chatRoomReady"
           @handleAvatarClick="handleAvatarClick"
           @chatStatusChanged="chatStatusChanged">
@@ -578,7 +580,8 @@ export default {
       chatRoomIsReady: false,
       openRestrainDialog: false,
       restraintMember: null,
-      releasedUser: {}
+      releasedUser: {},
+      restraintedUser: {}
     }
   },
   filters: {
@@ -658,6 +661,9 @@ export default {
   methods: {
     handleUserRelease (releasedUser) {
       this.releasedUser = releasedUser
+    },
+    handleUserRestraint (restraintedUser) {
+      this.restraintedUser = restraintedUser
     },
     chatRoomReady (ready) {
       this.chatRoomIsReady = ready

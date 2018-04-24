@@ -68,6 +68,9 @@ export default {
   props: {
     releasedUser: {
       type: Object
+    },
+    restraintedUser: {
+      type: Object
     }
   },
   data () {
@@ -125,6 +128,16 @@ export default {
 
       if (obj.action === 'unban') {
         released.banned = false
+      }
+    },
+    'restraintedUser': function (obj) {
+      let restraintedIdx = this.chats.findIndex(chat => chat.username === obj.user)
+      if (obj.action === 'block') {
+        this.$set(this.chats[restraintedIdx], 'blocked', true)
+      }
+
+      if (obj.action === 'ban') {
+        this.$set(this.chats[restraintedIdx], 'banned', true)
       }
     }
   },

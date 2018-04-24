@@ -219,6 +219,7 @@
         :RECEIVER="restraint.user.default_room || 1"
         @updateUsers="updateUsers"
         @handleUserRelease="handleUserRelease"
+        @handleUserRestraint="handleUserRestraint"
       />
     </el-dialog>
 
@@ -419,6 +420,9 @@ export default {
   methods: {
     handleUserRelease (releasedUser) {
       this.$emit('handleUserRelease', releasedUser)
+    },
+    handleUserRestraint (restraintedUser) {
+      this.$emit('handleUserRestraint', restraintedUser)
     },
     handleImgIconClick (e) {
       if (this.personalSetting.blocked || this.personalSetting.banned) {
