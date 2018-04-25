@@ -31,7 +31,12 @@
             </li>
           </ul>
         </div>
-        <div class="prediction">
+        <div
+          class="prediction"
+          :style="{
+            height: `calc(100% - ${(schemeList.length-1) * 8 + 10}px)`
+          }"
+        >
           <div class="prediction-container">
             <p class="text" v-for="p in prediction" :key="p.id">
               {{ `${p.issue_numbers} ${p.scheme}  ( ${p.numbers_predicted} ) ${(p.result && p.result.draw_result.length) ? `${p.result.draw_result || ''}` : ''}` }}
@@ -174,6 +179,11 @@ export default {
         font-size: 16px;
         color: white;
       }
+      &:hover {
+        i {
+          color: #999;
+        }
+      }
     }
   }
 
@@ -200,7 +210,6 @@ export default {
 
   .scheme {
     padding: 0 50px;
-    min-height: 80px;
     background: #383838;
     color: #9b9b9b;
     li {
@@ -223,7 +232,6 @@ export default {
   }
 
   .prediction {
-    height: calc(100% - 90px);
     overflow-y: hidden;
 
     .prediction-container {
