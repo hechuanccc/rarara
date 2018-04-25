@@ -184,7 +184,6 @@ export default {
       }
     }
   }
-  }
 
   .el-tab-pane {
     height: 100%;
