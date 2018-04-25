@@ -217,9 +217,11 @@ export default {
       width: 20%;
       height: 40px;
       line-height: 40px;
+      text-align: center;
       button {
         color: #9b9b9b;
         font-size: 14px;
+        border: none;
       }
       button:hover {
         color: #c5c4c4;
