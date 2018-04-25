@@ -14,6 +14,7 @@
         element-loading-background="rgba(0, 0, 0, 0)"
         v-for="(g, i) in gameList"
       >
+      <div class="full-height">
         <div class="scheme">
           <ul>
             <li
@@ -30,12 +31,15 @@
             </li>
           </ul>
         </div>
-        <div class="m-a prediction">
-          <p v-for="p in prediction" :key="p.id">
-            {{ `${p.issue_numbers} ${p.scheme}  ( ${p.numbers_predicted} ) ${(p.result && p.result.draw_result.length) ? `${p.result.draw_result || ''}` : ''}` }}
-          </p>
-          <p v-if="!(loading || prediction.length )">暂无资料</p>
-          <p :ref="`prediction${i}`"></p>
+        <div class="prediction">
+          <div class="prediction-container">
+            <p class="text" v-for="p in prediction" :key="p.id">
+              {{ `${p.issue_numbers} ${p.scheme}  ( ${p.numbers_predicted} ) ${(p.result && p.result.draw_result.length) ? `${p.result.draw_result || ''}` : ''}` }}
+            </p>
+            <p class="text" v-if="!(loading || prediction.length )">暂无资料</p>
+            <p class="scroll-trigger" :ref="`prediction${i}`"></p>
+          </div>
+        </div>
         </div>
       </el-tab-pane>
     </el-tabs>
@@ -128,27 +132,26 @@ export default {
 }
 </script>
 
+
 <style lang="scss">
 .plan {
-  color: white;
-  height: calc(100% - 40px);
-
   .el-tabs__nav-scroll > .el-tabs__nav {
-    border: none;
-    text-align: center;
     width: auto;
     min-width: 100%;
-    height: 45px;
+    height: 50px;
+    border: none;
+    text-align: center;
+
     .el-tabs__item {
       height: 25px;
-      font-size: 14px;
-      color: white;
       line-height: 20px;
+      color: white;
+      font-size: 14px;
+      padding: 3px 6px 5px 6px;
       margin: 10px 5px;
       border: 0;
       border-radius: 4px;
       transition: all .3s ease-in-out;
-      padding: 3px 6px 5px 6px;
 
       &.is-active {
         background: #4a96f3;
@@ -159,7 +162,6 @@ export default {
       }
     }
   }
-
   .el-tabs__header {
     background: rgba(0, 0, 0, 0.2);
     margin: 0;
@@ -175,12 +177,25 @@ export default {
   }
 
   .el-tabs__content {
-    height: calc(100% - 40px);
+    height: calc(100% - 90px);
   }
 
   .el-tab-pane {
     height: 100%;
   }
+
+  .el-tabs--card>.el-tabs__header .el-tabs__nav {
+    border: none;
+  }
+
+}
+
+</style>
+
+<style lang="scss" scoped>
+.plan {
+  color: white;
+  height: 100%;
 
   .scheme {
     padding: 0 50px;
@@ -190,7 +205,6 @@ export default {
     color: #9b9b9b;
     li {
       float: left;
-      position: relative;
       width: 55px;
       height: 40px;
       line-height: 40px;
@@ -207,16 +221,26 @@ export default {
       }
     }
   }
-  .el-tabs--card>.el-tabs__header .el-tabs__nav {
-    border: none;
-  }
+
   .prediction {
-    height: calc(100% - 110px);
-    overflow-y: auto;
-    p {
+    height: calc(100% - 90px);
+    overflow-y: hidden;
+
+    .prediction-container {
+      height: 100%;
+      padding-left: 10px;
+      padding-right: 10px;
+      overflow: auto;
+    }
+
+    .text {
       line-height: 1.8;
       font-weight: 300;
       font-size: 14px;
+    }
+
+    .scroll-trigger {
+      font-size: 0;
     }
   }
 }

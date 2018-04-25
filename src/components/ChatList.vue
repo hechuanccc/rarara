@@ -26,14 +26,14 @@
             placement="right"
             trigger="click">
             <div v-if="isManager">
-              <div v-if="!item.banned" class="action pointer" @click="ban(item, 15, index)">禁言 {{item.username}}</div>
-              <div v-if="!item.blocked" class="action pointer" @click="block(item, index)">拉黑 {{item.username}}</div>
-              <div v-if="item.banned" class="action pointer" @click="unban(item, index)">解除禁言 {{item.username}}</div>
-              <div v-if="item.blocked" class="action pointer" @click="unblock(item, index)">解除拉黑 {{item.username}}</div>
+              <div v-if="!item.banned" class="action pointer" @click="ban(item, 15, index)">禁言 {{item.remarks || item.nickname}}</div>
+              <div v-if="!item.blocked" class="action pointer" @click="block(item, index)">拉黑 {{item.remarks || item.nickname}}</div>
+              <div v-if="item.banned" class="action pointer" @click="unban(item, index)">解除禁言 {{item.remarks || item.nickname}}</div>
+              <div v-if="item.blocked" class="action pointer" @click="unblock(item, index)">解除拉黑 {{item.remarks || item.nickname}}</div>
             </div>
             <div v-else>
-              <div class="action pointer" @click="enterChat(item)">与 {{item.username}} 私聊</div>
-              <div class="action pointer" @click="handleChatClick(item)">查看 {{item.username}}</div>
+              <div class="action pointer" @click="enterChat(item)">与 {{item.remarks || item.nickname}} 私聊</div>
+              <div class="action pointer" @click="handleChatClick(item)">查看 {{item.remarks || item.nickname}}</div>
             </div>
             <div slot="reference">
               <div class="illustration">
@@ -87,7 +87,8 @@ export default {
         searching: false,
         input: '',
         result: []
-      }
+      },
+      roomsRestraintStatus: null
     }
   },
   computed: {
@@ -217,6 +218,7 @@ export default {
         this.getUser(chat.default_room)
 
         this.$set(this.chats[index], 'banned', true)
+        this.$forceUpdate()
         this.$message({
           showClose: true,
           message: data.status,
@@ -236,6 +238,7 @@ export default {
       }).then((data) => {
         this.getUser(chat.default_room)
         this.$set(this.chats[index], 'banned', false)
+        this.$forceUpdate()
         this.$message({
           showClose: true,
           message: data.status,
@@ -255,7 +258,7 @@ export default {
       }).then((data) => {
         this.getUser(chat.default_room)
         this.$set(this.chats[index], 'blocked', true)
-
+        this.$forceUpdate()
         this.$message({
           showClose: true,
           message: data.status,
@@ -275,6 +278,7 @@ export default {
       }).then((data) => {
         this.getUser(chat.default_room)
         this.$set(this.chats[index], 'blocked', false)
+        this.$forceUpdate()
         this.$message({
           showClose: true,
           message: data.status,

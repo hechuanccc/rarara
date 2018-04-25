@@ -127,7 +127,7 @@
       </el-main>
 
       <el-aside width="395px" class="aside">
-        <el-tabs type="border-card" v-model="activeAside" class="alone">
+        <el-tabs type="border-card" v-model="activeAside">
           <el-tab-pane
             :label="'文字开奖'"
             class="full-height"
@@ -138,7 +138,6 @@
           </el-tab-pane>
           <el-tab-pane
             :label="'彩票计划'"
-            v-if="false"
             class="full-height"
             name="plan">
             <div class="plans-container" v-if="activeAside === 'plan'">
@@ -1284,6 +1283,7 @@ export default {
   .el-dialog__headerbtn {
     z-index: 1;
   }
+
   .el-tabs__nav {
     width: calc(100% - 45px);
     border-radius: 0;
@@ -1293,6 +1293,7 @@ export default {
     text-align: center;
     width: 50%;
   }
+
   .el-form-item--small.el-form-item {
     margin-bottom: 30px;
   }
@@ -1311,29 +1312,4 @@ export default {
     }
   }
 }
-
-
-.aside {
-  height: 100%;
-  padding: 0 10px 10px;
-  overflow-y: hidden;
-
-  /deep/ .el-tabs {
-    height: 100%;
-    background: rgba(255, 255, 255, .2);
-  }
-
-  /deep/ .el-tabs__content {
-    padding: 0;
-  }
-
-  /deep/ .el-form-item--small.el-form-item {
-    margin-bottom: 0;
-  }
-
-  /deep/.el-tabs__nav {
-    width: 100%;
-  }
-}
-
 </style>
