@@ -7,14 +7,13 @@
       type="card"
       >
       <el-tab-pane
+        v-for="(g, i) in gameList"
         :label="g.display_name"
         :name="`${i}`"
-        :key="g.id"
+        :key="i"
         v-loading="loading"
         element-loading-background="rgba(0, 0, 0, 0)"
-        v-for="(g, i) in gameList"
         >
-      <div class="full-height">
         <div class="scheme">
           <ul>
             <li
@@ -44,7 +43,6 @@
             <p class="text" v-if="!(loading || prediction.length )">暂无资料</p>
             <p class="scroll-trigger" :ref="`prediction${i}`"></p>
           </div>
-        </div>
         </div>
       </el-tab-pane>
     </el-tabs>
@@ -186,9 +184,6 @@ export default {
       }
     }
   }
-
-  .el-tabs__content {
-    height: calc(100% - 90px);
   }
 
   .el-tab-pane {
