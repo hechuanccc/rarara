@@ -5,7 +5,7 @@
       v-loading="!gameList.length"
       @tab-click="changeGame"
       type="card"
-    >
+      >
       <el-tab-pane
         :label="g.display_name"
         :name="`${i}`"
@@ -13,7 +13,7 @@
         v-loading="loading"
         element-loading-background="rgba(0, 0, 0, 0)"
         v-for="(g, i) in gameList"
-      >
+        >
       <div class="full-height">
         <div class="scheme">
           <ul>
@@ -87,7 +87,8 @@ export default {
       let plan = gamePlan.code || ''
       let scheme = gamePlan.schemes[this.activeScheme].code || ''
       fetchPlan({ plan, scheme }).then(res => {
-        this.prediction = res
+        this.prediction = res.results
+
         toEnd && this.toEnd()
         this.loading = false
       }, () => {
@@ -199,13 +200,12 @@ export default {
 
   .scheme {
     padding: 0 50px;
-    height: 80px;
-    text-align: center;
+    min-height: 80px;
     background: #383838;
     color: #9b9b9b;
     li {
-      float: left;
-      width: 55px;
+      display: inline-block;
+      width: 20%;
       height: 40px;
       line-height: 40px;
       button {

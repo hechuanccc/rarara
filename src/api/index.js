@@ -210,13 +210,14 @@ export function fetchGame () {
 }
 
 export function fetchPlan ({
-  plan = 'benz', scheme = '1st_place', numbers = 5
+  plan = 'benz', scheme = '1st_place', numbers = 5, limit = 50
 }) {
   return axios.get(urls.plan, {
     params: {
       plan,
       scheme,
-      numbers
+      numbers,
+      limit
     }
   })
 }
