@@ -52,7 +52,7 @@
                 </li>
                 <li class="li pointer m-b" @click="logout(), memberPopoverVisible = false">
                   <icon class="icon m-r-sm" name="sign-out" scale="1.6"></icon>
-                  <span class="text">退出登陆</span>
+                  <span class="text">退出登录</span>
                 </li>
               </ul>
             </el-popover>
@@ -68,7 +68,7 @@
           <div class="visitor-actions fr" v-else>
             <span class="login m-r-lg pointer" @click="$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})">
               <icon class="icon m-r-sm" name="user" scale="1.6"></icon>
-              <span class="text">登入</span>
+              <span class="text">登录</span>
             </span>
             <span class="register pointer" @click="$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Register'})">
               <icon class="icon m-r-sm" name="pencil-square" scale="1.6"></icon>
