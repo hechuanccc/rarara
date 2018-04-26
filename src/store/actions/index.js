@@ -57,6 +57,10 @@ export default {
       if (fn) {
         fn()
       }
+      dispatch('startChat', {
+        id: state.user.default_room_id,
+        type: 1
+      })
     }
 
     state.ws.onclose = () => {
