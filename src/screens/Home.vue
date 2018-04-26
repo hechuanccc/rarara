@@ -596,7 +596,8 @@ export default {
       'rooms',
       'unloginedDialog',
       'chat',
-      'roomMsgs'
+      'roomMsgs',
+      'ws'
     ]),
     ...mapGetters([
       'myRoles'
@@ -635,14 +636,6 @@ export default {
         this.getCheckinRecord(0, this.tablePagination.limit)
       }
     },
-    'roomMsgs': function (val) {
-      if (val[this.user.default_room_id]) {
-        this.$store.dispatch('startChat', {
-          id: this.user.default_room_id,
-          type: 1
-        })
-      }
-    },
     'activeTab': function (val) {
       if (!val) {
         this.activeTab = 'chats'
@@ -651,6 +644,22 @@ export default {
     'activeAside': function (val) {
       if (!val) {
         this.activeAside = 'draw'
+      }
+    },
+    'ws': function () {
+      if (this.ws) {
+        if (this.roomMsgs[this.user.default_room_id]) {
+          this.$store.dispatch('startChat', {
+            id: this.user.default_room_id,
+            type: 1
+          })
+        }
+      } else {
+        this.$store.dispatch('logout').then(() => {
+          this.$store.dispatch('resetUser')
+
+          this.$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
+        })
       }
     }
   },
