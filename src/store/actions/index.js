@@ -57,11 +57,6 @@ export default {
       if (fn) {
         fn()
       }
-
-      // state.ws.send(JSON.stringify({
-      //   'command': 'join',
-      //   'receivers': [state.chat.current.roomId]
-      // }))
     }
 
     state.ws.onclose = () => {
@@ -69,6 +64,10 @@ export default {
     }
 
     state.ws.onerror = () => {
+      Vue.cookie.delete('csrftoken')
+      Vue.cookie.delete('access_token')
+      Vue.cookie.delete('refresh_token')
+
       dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
     }
   },

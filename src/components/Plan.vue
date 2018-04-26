@@ -45,7 +45,7 @@
             <p class="scroll-trigger" :ref="`prediction${i}`"></p>
           </div>
         </div>
-        </div>
+      </div>
       </el-tab-pane>
     </el-tabs>
   </div>

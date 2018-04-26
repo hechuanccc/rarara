@@ -87,8 +87,7 @@ export default {
         searching: false,
         input: '',
         result: []
-      },
-      roomsRestraintStatus: null
+      }
     }
   },
   computed: {
@@ -370,6 +369,11 @@ export default {
 }
 
 /* search */
+
+.search-form {
+  position: relative;
+}
+
 .ipt-search /deep/ .el-input__inner{
   background: #999;
   border: none;
@@ -380,8 +384,8 @@ export default {
 }
 .el-icon-search {
   position: absolute;
-  right: 20px;
-  top: 15px;
+  right: 10px;
+  top: 5px;
   font-size: 18px;
   font-weight: bolder;
   &:hover {
@@ -391,8 +395,6 @@ export default {
 .exit-search {
   float: right;
 }
-
-
 
 .action {
   position: relative;
