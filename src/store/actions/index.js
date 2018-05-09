@@ -16,13 +16,12 @@ import {
 export default {
   login: ({ commit, state, dispatch }, { user }) => {
     let token = Vue.cookie.get('access_token')
-    if (state.user.logined && token) {
-      dispatch('logout')
-    }
 
     return login(user).then(res => {
       dispatch('resetUser')
-
+      if (state.user.logined && token) {
+        dispatch('logout')
+      }
       let expires = new Date(res.expires_in)
 
       if (res.access_token && res.refresh_token) {
@@ -50,7 +49,6 @@ export default {
     const WSHOST = config.chatHost
     let token = Vue.cookie.get('access_token')
     let socket = new WebSocket(`${WSHOST}/chat/stream?token=${token}`)
-
     dispatch('setWebsocket', socket)
 
     state.ws.onopen = () => {
@@ -78,7 +76,7 @@ export default {
   sendJoinCommand: ({state, dispatch}, roomId) => {
     state.ws.send(JSON.stringify({
       'command': 'join',
-      'receivers': [roomId]
+      'receivers': roomId
     }))
   },
   logout: ({ commit, state, dispatch }) => {
