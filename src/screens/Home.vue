@@ -654,12 +654,6 @@ export default {
             type: 1
           })
         }
-      } else {
-        this.$store.dispatch('logout').then(() => {
-          this.$store.dispatch('resetUser')
-
-          this.$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
-        })
       }
     }
   },
@@ -817,9 +811,8 @@ export default {
       this.oldUser = Object.assign({}, this.editUser)
     },
     logout () {
-      this.$store.dispatch('logout').then(() => {
-        this.$store.dispatch('trial')
-      })
+      this.$store.dispatch('logout')
+      this.$store.dispatch('trial')
     },
     submit () {
       let hasChanged = false
@@ -881,11 +874,10 @@ export default {
             setTimeout(() => {
               this.disabledEditProfile = false
               this.changeProfileRes = ''
-              this.$store.dispatch('logout').then(() => {
-                this.showProfileDiag = false
-                this.$store.dispatch('trial').then(() => {
-                  this.$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
-                })
+              this.$store.dispatch('logout')
+              this.showProfileDiag = false
+              this.$store.dispatch('trial').then(() => {
+                this.$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
               })
               this.$refs['editPassword'].resetFields()
             }, 1000)

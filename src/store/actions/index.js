@@ -15,13 +15,11 @@ import {
 
 export default {
   login: ({ commit, state, dispatch }, { user }) => {
-    let token = Vue.cookie.get('access_token')
-
     return login(user).then(res => {
-      dispatch('resetUser')
-      if (state.user.logined && token) {
+      if (state.user.logined) {
         dispatch('logout')
       }
+
       let expires = new Date(res.expires_in)
 
       if (res.access_token && res.refresh_token) {
@@ -66,10 +64,6 @@ export default {
     }
 
     state.ws.onerror = () => {
-      Vue.cookie.delete('csrftoken')
-      Vue.cookie.delete('access_token')
-      Vue.cookie.delete('refresh_token')
-
       dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
     }
   },
@@ -80,15 +74,13 @@ export default {
     }))
   },
   logout: ({ commit, state, dispatch }) => {
-    return logout().then(
-      res => {
-        dispatch('endChat')
-        Vue.cookie.delete('access_token')
-        Vue.cookie.delete('refresh_token')
-        dispatch('leaveSocket', state.chat.current.roomId)
-      },
-      errRes => Promise.reject(errRes)
-    )
+    logout().catch(() => {})
+    dispatch('endChat')
+    dispatch('resetUser')
+    dispatch('setRooms', [])
+    dispatch('setRoomMsgs', {})
+
+    dispatch('leaveSocket', state.chat.current.roomId)
   },
   leaveSocket: ({commit, state, dispatch}, room) => {
     if (state.ws) {

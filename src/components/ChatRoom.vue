@@ -571,19 +571,8 @@ export default {
       }
 
       this.loading = true
-      let currentToken = this.$cookie.get('access_token')
 
-      if (this.ws) {
-        let socketValidate = this.ws.url.indexOf(currentToken) !== -1
-        if (socketValidate) {
-          callback()
-        } else {
-          this.$store.dispatch('leaveSocket', this.chat.current.roomId)
-          this.$store.dispatch('connectSocket', callback)
-        }
-      } else {
-        this.$store.dispatch('connectSocket', callback)
-      }
+      this.$store.dispatch('connectSocket', callback)
     },
     getPersonalSetting () {
       if (this.ws) {
@@ -654,14 +643,16 @@ export default {
                       this.getPersonalSetting()
                     }
 
-                    this.$notify({
-                      message: data.content,
-                      offset: 100,
-                      type: 'success',
-                      duration: 2200,
-                      customClass: 'top-right-msg',
-                      showClose: false
-                    })
+                    if (data.receivers === this.user.default_room_id) {
+                      this.$notify({
+                        message: data.content,
+                        offset: 100,
+                        type: 'success',
+                        duration: 2200,
+                        customClass: 'top-right-msg',
+                        showClose: false
+                      })
+                    }
 
                     return
                   case 5:
