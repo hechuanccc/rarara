@@ -135,7 +135,13 @@ export default {
       return _.findIndex(this.rooms, obj => obj.id === this.chat.current.roomId)
     },
     lastMsgloading () {
-      return this.rooms.length !== Object.keys(this.roomMsgs).length
+      let loading
+      if (this.myRoles.includes('manager')) {
+        loading = this.rooms.length !== Object.keys(this.roomMsgs).length
+      } else {
+        loading = false
+      }
+      return loading
     }
   },
   created () {
