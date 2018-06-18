@@ -1,11 +1,11 @@
 <template>
-  <div class="container-chat">
+  <div class="chat-container">
     <el-container
       class="chat-box"
       v-loading="loading"
       element-loading-text="正在登录计划聊天室">
       <el-main class="content" id="chatBox">
-        <ul class="lay-scroll">
+        <ul>
           <li v-for="(item, index) in showingMessages"
             :key="index"
             :class="
@@ -21,7 +21,6 @@
                 <img :src="item.sender && item.sender.avatar ? item.sender.avatar : require('../assets/avatar.png')" v-else>
               </div>
               <div class="lay-content">
-
                 <div class="msg-header">
                   <h4>{{
                       item.type === 4 ?
@@ -87,17 +86,14 @@
                 </div>
               </div>
             </div>
-
             <div class="text-center" v-else-if="item.type === 6 && item.sender.id === user.id">
               <p class="get-envelope">{{`${item.get_envelope_user.id === user.id ? '你' : item.get_envelope_user.nickname}抢到了你的红包`}}</p>
             </div>
-
           </li>
           <li v-if="personalSetting.blocked" class="block-user-info">您已被管理员拉黑，请联系客服。<li>
           <li ref="msgEnd" id="msgEnd" class="msgEnd"></li>
         </ul>
       </el-main>
-
       <el-footer class="footer m-t"
         height="100">
         <div class="control-bar">
@@ -120,9 +116,8 @@
                   <Stickers @sendSticker="sendSticker" v-if="stickerTab === 'stickers'"/>
                 </div>
               </el-tab-pane>
-              </el-tabs>
-            </el-popover>
-
+            </el-tabs>
+          </el-popover>
           <a v-popover:popover4
             v-if="emojiSuccess"
             @click="handleEmojiIconClick"
@@ -131,7 +126,6 @@
             :class="['btn-control','btn-smile', 'pointer', {'not-allowed': personalSetting.blocked}]">
             <icon scale="1.3" name="smile-o"></icon>
           </a>
-
           <a href="javascript:void(0)" :class="['btn-control', 'btn-smile', 'pointer', {'not-allowed': personalSetting.blocked}]">
             <label for="imgUploadInput" @click="handleImgIconClick($event)">
               <span title="上传图片">
@@ -146,17 +140,14 @@
               </span>
             </label>
           </a>
-
           <div v-if="globalPreference.envelope_settings && globalPreference.envelope_settings.enabled === '1' && chat.current.type === 1"
             :class="['envelope-icon','pointer', {'not-allowed': personalSetting.blocked || personalSetting.banned }]"
             @click="handleEnvelopeIconClick">
             <img class="img" src="../assets/envelope_icon.png" alt="envelope-icon">
           </div>
-
           <span v-if="myRoles.includes('manager')" class="btn-control right" @click="openManageDialog()" >
             <icon name="cog" class="font-cog" scale="1.4"></icon>
           </span>
-
           <div class="chat-buttons"
             v-if="ws &&
               (!myRoles.includes('customer service') &&
@@ -172,7 +163,6 @@
               {{`客服 ${index + 1}`}}
             </el-button>
           </div>
-
         </div>
         <div class="typing">
           <div :class="['txtinput', 'el-textarea', !chatable ? 'is-disabled' : '']">
@@ -191,9 +181,7 @@
           </div>
         </div>
       </el-footer>
-
     </el-container>
-
     <!-- chatting image lightbox -->
     <el-dialog :visible.sync="showImageMsg"
       width="640px"
@@ -201,7 +189,6 @@
       append-to-body>
       <img :src="showImageMsgUrl" class="popup-uploadedimage">
     </el-dialog>
-
     <!-- for Restraint member in chatHall -->
     <el-dialog
       title="管理"
@@ -222,7 +209,6 @@
         @handleUserRestraint="handleUserRestraint"
       />
     </el-dialog>
-
     <!-- private chat dialog -->
      <el-dialog
        class="privatechat-dialog"
@@ -238,7 +224,6 @@
         :chat="chat"
         v-if="chat.current.roomId && chat.current.type === 2"/>
     </el-dialog>
-
     <!-- red envelope dialog -->
      <el-dialog
        class="red-envelope-dialog"
@@ -893,7 +878,7 @@ export default {
 <style lang="scss" scoped>
 @import '../style/vars.scss';
 
-.container-chat {
+.chat-container {
   height: 100%;
 }
 .chat-box {
@@ -901,7 +886,6 @@ export default {
   height: 100%;
   overflow-x: hidden;
   z-index: 1;
-
 }
 .title {
   line-height: 40px;
@@ -939,65 +923,13 @@ export default {
   padding: 10px;
 }
 
-.chat-announce {
-  position: absolute;
-  top: 43px;
-  left: 5px;
-  right: 5px;
-  background: rgba(237,244,254,.91);
-  border: 1px solid #c2cfe2;
-  border-radius: 5px;
-  padding-right: 10px;
-  height: 29px;
-  overflow: hidden;
-  z-index: 999;
-  .ttl {
-    display: block;
-    float: left;
-    background: #e1edfd;
-    color: red;
-    padding: 6px 8px;
-    padding-top: 0;
-    padding-bottom: 0;
-    line-height: 29px;
-    .volume-up {
-      padding-top: 5px;
-      margin-right: 4px;
-    }
-  }
-  .scroll {
-    display: block;
-    margin-left: 72px;
-    padding-top: 5px;
-  }
-}
-.controls {
-  position: absolute;
-  top: 78px;
-  left: 0;
-  width: 100%;
+.block-user-info {
   text-align: center;
-  z-index: 999;
-  .list-ctrl {
-    margin: 0 5px;
-    display: inline-block;
-    background: #fff;
-    border: 1px solid #e2e2e2;
-    padding: 1px 9px;
-    padding-left: 7px;
-    border-radius: 15px;
-    color: #a5a5a5;
-    height: 17px;
-  }
+  padding-top: 100px;
+  font-size: 16px;
+  color: red;
 }
-.lay-scroll {
-  .block-user-info {
-    text-align: center;
-    padding-top: 100px;
-    font-size: 16px;
-    color: red;
-  }
-}
+
 .item {
   margin-top: 20px;
   &:empty {
@@ -1012,12 +944,6 @@ export default {
       background: rgba(255, 255, 255, .1);
       border-radius: 4px;
       padding: 5px 20px;
-    }
-    .type-warning {
-      color: #f60;
-      .btn-here {
-        color: rgb(25, 158, 216);
-      }
     }
   }
   &.item-left {
@@ -1092,12 +1018,10 @@ export default {
   color: #fff;
   padding: 0 10px;
   border-radius: 10px;
-
   &.manager {
     background: #d6a254;
   }
 }
-
 
 .lay-content {
   margin-left: 18px;
@@ -1280,7 +1204,6 @@ export default {
   }
 }
 
-
 .edit-profile {
   max-width: 310px;
   border-radius: 5px;
@@ -1326,9 +1249,6 @@ export default {
       cursor: pointer;
     }
   }
-  .txt-nick {
-    font-size: 20px;
-  }
   p {
     margin-top: 5px;
     cursor: pointer;
@@ -1359,32 +1279,6 @@ export default {
   cursor: pointer;
 }
 
-.chat-guide {
-  position: fixed;
-  right: 0;
-  top: 50%;
-  width: 40px;
-  height: 122px;
-  margin-top: -76px;
-  background-size: 100%;
-  cursor: pointer;
-  z-index: 0;
-  background: #1e72df;
-  border-radius: 8px 0 0 8px;
-  padding-top: 14px;
-  .font-wechat {
-    color: #d1e6fe;
-  }
-  ul {
-    font-size: 18px;
-    color: #fff;
-    li {
-      text-align: center;
-      padding: 4px 0;
-    }
-  }
-}
-
 .emoji-container {
   height: 300px;
   max-height: 300px;
@@ -1396,7 +1290,6 @@ export default {
   max-height: 300px;
   overflow-y: auto;
 }
-
 
 .popup-uploadedimage {
   width: 100%;
@@ -1503,7 +1396,6 @@ export default {
   padding: 5px 20px;
   border-radius: 4px;
 }
-
 </style>
 
 <style lang="scss">

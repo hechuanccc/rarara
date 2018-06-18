@@ -130,7 +130,6 @@ export default {
     &:hover {
       background: rgba(0, 0, 0, .1);
     }
-
     .text {
       font-size: 12px;
     }

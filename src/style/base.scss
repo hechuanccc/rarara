@@ -100,6 +100,9 @@ body {
 .p-l-sm {
   padding-left: 5px;
 }
+.p-b-sm {
+  padding-bottom: 5px;
+}
 .p-b {
   padding-bottom: 10px;
 }
@@ -109,6 +112,7 @@ body {
 .p-l-xlg {
   padding-left: 40px;
 }
+
 .p-t {
   padding-top: 10px;
 }
@@ -117,6 +121,9 @@ body {
 }
 .p-t-xlg {
   padding-top: 40px;
+}
+.p-t-sm {
+  padding-top: 5px;
 }
 
 .p-a {
@@ -128,16 +135,13 @@ body {
 .fr {
   float: right;
 }
-
 .fl {
   float: left;
 }
-
 .full-height {
   height: 100%;
   overflow-y: hidden;
 }
-
 .aside {
   height: 100%;
   padding: 0 10px 10px;

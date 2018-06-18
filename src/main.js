@@ -14,6 +14,23 @@ import Vue2Filters from 'vue2-filters'
 import { fetchGlobalData, setCookie } from './api'
 import qs from 'qs'
 import VueQRCodeComponent from 'vue-qrcode-component'
+import Perfume from 'perfume.js'
+
+const options = {
+  firstPaint: true,
+  firstContentfulPaint: true,
+  timeToInteractive: true,
+  analyticsLogger: undefined,
+  googleAnalytics: {
+    enable: false,
+    timingVar: 'name'
+  },
+  logging: true,
+  logPrefix: 'Perfume.js:',
+  warning: false
+}
+const perfume = new Perfume({...options})
+console.log(perfume) // avoid eslint
 
 Vue.use(require('vue-moment'))
 Vue.use(Vue2Filters)

@@ -138,7 +138,6 @@ export default {
 }
 </script>
 
-
 <style lang="scss">
 .plan {
   .el-tabs__nav-scroll > .el-tabs__nav {
@@ -186,28 +185,22 @@ export default {
       }
     }
   }
-
   .el-tabs__content {
     height: calc(100% - 90px);
   }
-
   .el-tab-pane {
     height: 100%;
   }
-
   .el-tabs--card>.el-tabs__header .el-tabs__nav {
     border: none;
   }
-
 }
-
 </style>
 
 <style lang="scss" scoped>
 .plan {
   color: white;
   height: 100%;
-
   .scheme {
     padding: 0 50px;
     background: #383838;
@@ -232,7 +225,6 @@ export default {
       }
     }
   }
-
   .prediction {
     overflow-y: hidden;
 
@@ -242,17 +234,14 @@ export default {
       padding-right: 10px;
       overflow: auto;
     }
-
     .text {
       line-height: 1.8;
       font-weight: 300;
       font-size: 14px;
     }
-
     .scroll-trigger {
       font-size: 0;
     }
   }
 }
-
 </style>

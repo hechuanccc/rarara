@@ -1,7 +1,6 @@
 <template>
   <div class="container">
-    <div
-      v-if="key !== 'csffc'"
+    <div v-if="key !== 'csffc'"
       v-for="(value, key, index) in resultsMap"
       :key="index" class="result m-b">
       <div class="information">
@@ -22,18 +21,13 @@
           </div>
         </div>
       </div>
-      <div :class="['result-numbers', {'tie-up': key === 'bjkl8' || key === 'auluck8'}]">
+      <div :class="['result-numbers', 'm-b', {'tie-up': key === 'bjkl8' || key === 'auluck8'}]">
         <span v-for="(num, index) in value.resultStr.split(',')"
           :key="index"
-          :class="[
-            key,
-            `${key}-${loading(key) ? getPositiveNumber(number, num) : num}`,
-          ]">
-            <b :class="['num',
-              {transition: loading(key) && (index % 2)},
-              {transition2: loading(key) && !(index % 2)}]">
-              {{loading(key) ? getPositiveNumber(number, num , true) : num}}
-            </b>
+          :class="[ key, `${key}-${loading(key) ? getPositiveNumber(number, num) : num}`]">
+          <b :class="['num', {transition: loading(key) && (index % 2)}, {transition2: loading(key) && !(index % 2)}]">
+            {{loading(key) ? getPositiveNumber(number, num , true) : num}}
+          </b>
         </span>
       </div>
     </div>
@@ -44,10 +38,8 @@
 import urls from '../api/urls'
 import _ from 'lodash'
 import { setIndicator } from '../utils'
-
 const jsonp = require('jsonp')
 const CryptoJS = require('crypto-js')
-
 const encoded = (data) => {
   const ciphertext = CryptoJS.enc.Base64.parse(data)
   const key = CryptoJS.enc.Utf8.parse(urls.decode.replace(/"/g, ''))
@@ -57,7 +49,6 @@ const encoded = (data) => {
   const plaintext = decryped.toString(CryptoJS.enc.Utf8)
   return plaintext
 }
-
 export default {
   data () {
     return {
@@ -77,9 +68,7 @@ export default {
       }
     },
     startCountdown (game) {
-      if (!game.next_draw_time) {
-        return
-      }
+      if (!game.next_draw_time) { return }
       this[`timer-${game.game_code}`] = setInterval(() => {
         if (this.$moment().isAfter(game.next_draw_time)) {
           clearInterval(this[`timer-${game.game_code}`])
@@ -90,18 +79,14 @@ export default {
     getDiffOfTime (game) {
       const time = this.$moment(game.next_draw_time)
       const lag = this.$moment.duration(time.diff())
-
       let [days, hours, minutes, seconds] = [lag.days(), lag.hours(), lag.minutes(), lag.seconds()]
-
       if (days + hours + minutes + seconds === 0) {
         this.pollResults(game)
       }
-
       days = days < 0 ? 0 : days
       hours = hours < 0 ? 0 : hours
       minutes = minutes < 0 ? 0 : minutes
       seconds = seconds < 0 ? 0 : seconds
-
       return {
         days,
         hours,
@@ -111,13 +96,11 @@ export default {
     },
     pollResults (game) {
       clearInterval(this[`timer-${game.game_code}`])
-
       this[`issueInterval-${game.game_code}`] = setInterval(() => {
         this.fetchResults(game.game_code).then(data => {
           let newResult = data[0]
           let oldIssue = this.resultsMap[game.game_code].oldIssue
           let newIssue = newResult.issue_number
-
           if (oldIssue !== newIssue) {
             this.$set(this.resultsMap, game.game_code, {
               displayName: newResult.game_display_name,
@@ -125,7 +108,6 @@ export default {
               resultStr: newResult.result_str,
               nextDraw: newResult.next_draw_time
             })
-
             clearInterval(this[`issueInterval-${game.game_code}`])
             this.startCountdown(newResult)
           }
@@ -154,7 +136,6 @@ export default {
           })
         } else {
           let formatted = JSON.parse(encoded(data))
-
           this.codes = _.map(formatted, (obj) => obj.game_code)
           _.each(formatted, (game, index) => {
             this.$set(this.resultsMap, game.game_code, {
@@ -163,7 +144,6 @@ export default {
               resultStr: game.result_str,
               nextDraw: game.next_draw_time
             })
-
             this.startCountdown(game)
           })
         }
@@ -176,25 +156,24 @@ export default {
     runAnimate (game, num) {
       this.runList = () => {
         let t = Math.floor(Math.random() * 250)
-
         if (this.number < 5) {
           this.number ++
         } else {
           this.number = 1
         }
-
         this.$nextTick(() => {  // to avoid the view can't keep up the data changing
-          this.timer = setTimeout(() => {
-            this.runList()
-          }, t)
+          this.timer = setTimeout(() => { this.runList() }, t)
         })
       }
-
       this.runList()
     },
     stopAnimate () {
       this.number = 0
       clearTimeout(this.timer)
+      _.each(this.codes, (code) => {
+        clearInterval(this[`timer-${code}`])
+        clearInterval(this[`issueInterval-${code}`])
+      })
     },
     init () {
       this.resultsMap = {}
@@ -217,31 +196,21 @@ export default {
       this.runAnimate()
     }, () => {
       this.stopAnimate()
-      _.each(this.codes, (code) => {
-        clearInterval(this[`timer-${code}`])
-        clearInterval(this[`issueInterval-${code}`])
-      })
     })
   },
   beforeDestroy () {
     this.stopAnimate()
-    _.each(this.codes, (code) => {
-      clearInterval(this[`timer-${code}`])
-      clearInterval(this[`issueInterval-${code}`])
-    })
   }
 }
 </script>
 
 <style lang="scss" scoped>
 @import '../style/resultnumbers.scss';
-
 .container {
   width: 100%;
   height: calc(100% - 60px);
   overflow-y: auto;
 }
-
 .result {
   box-sizing: border-box;
   width: 100%;
@@ -250,7 +219,6 @@ export default {
   background-color: rgba(255, 255, 255, 0.6);
   color: #4a4a4a;
 }
-
 .information {
   display: inline-block;
   width: 100%;
@@ -271,13 +239,10 @@ export default {
     font-size: 12px;
   }
 }
-
 .result-numbers {
   display: block;
-  margin-bottom: 10px;
   &.tie-up {
     width: 290px;
   }
 }
 </style>
-
