@@ -38,7 +38,7 @@
         <li class="text-center" v-else>
           <span class="separator">以上是历史消息</span>
         </li>
-      <div ref="msgEnd"></div>
+        <div ref="msgEnd"></div>
       </ul>
       <div class="text-center chat-records" v-else>
         <div class="p-t">暂无聊天记录</div>
@@ -53,7 +53,7 @@
             placement="top-start"
             width="280"
             trigger="click">
-            <div class="emoji-container">
+            <div class="emoji-container text-center">
               <span v-for="(item, index) in emojis.people.slice(0, 42)"
                 :key="index"
                 class="emoji pointer"
@@ -164,7 +164,6 @@ export default {
       if (!this.ws) {
         this.joinChatRoom()
       }
-
       this.ws.send(JSON.stringify({
         'command': 'send',
         'receivers': [this.chat.current.roomId],
@@ -215,7 +214,6 @@ export default {
   font-size: 18px;
   color: #4a4a4a;
 }
-
 .chat-records {
   width: 100%;
   max-height: 45vh;
@@ -223,7 +221,6 @@ export default {
   background-color: #f6f6f6;
   overflow: auto;
 }
-
 .separator {
   display: inline-block;
   font-size: 12px;
@@ -232,14 +229,11 @@ export default {
   padding: 5px 10px;
   color: #666;
 }
-
 .speaker {
   width: 100%;
-
   .avatar, .information {
     display: inline-block;
   }
-
   .avatar {
     width: 42px;
     height: 42px;
@@ -248,7 +242,6 @@ export default {
       height: 100%;
     }
   }
-
   .information {
     font-size: 12px;
     word-break: break-all;
@@ -274,7 +267,6 @@ export default {
       background: linear-gradient(to right, #1976D2, #199ed8);
     }
   }
-
   &.self {
     text-align: right;
     .content-box {
@@ -285,8 +277,6 @@ export default {
     }
   }
 }
-
-
 .speaking {
   box-sizing: border-box;
   height: 90px;
@@ -309,7 +299,6 @@ export default {
         background: #ddd;
         color: black;
       }
-
     }
     .emoji.active {
       background: #ddd;
@@ -321,7 +310,6 @@ export default {
       top: 2px;
     }
   }
-
   .typing {
     display: inline-flex;
     width: 100%;
@@ -329,7 +317,6 @@ export default {
       flex-grow: 1;
     }
   }
-
   .send-button {
     width: 60px;
     height: 60px - 1px;
@@ -347,18 +334,16 @@ export default {
 .emoji-container {
   overflow-y: auto;
   .emoji {
-    padding: 2px 6px 0 4px;
     display: inline-block;
     position: relative;
+    padding: 2px 6px 0 4px;
     font-size: 22px;
-    text-align: center;
     border: 2px solid transparent;
   }
   .emoji:hover {
     border-color: #ff5a00;
   }
 }
-
 .input {
   .textarea {
     width: 100%;
@@ -373,7 +358,6 @@ export default {
     background-color: transparent;
   }
 }
-
 .sticker-msg {
   width: 150px;
   height: auto;

@@ -29,7 +29,7 @@
           <img class="money" src="../assets/money.png" alt="money">
           <span class="text" v-if="currentEnvelope">￥{{showingAmount}}</span>
         </div>
-        <div class="congra" v-if="success || repeat">恭喜你抢到红包啦!</div>
+        <div class="congra p-b" v-if="success || repeat">恭喜你抢到红包啦!</div>
       </div>
     </div>
 
@@ -259,13 +259,11 @@ export default {
 $header_red: #c0493c;
 $main_red: #de5547;
 $gold-text: #debd85;
-
 .red-envelope {
   position: relative;
   background-color: $main_red;
   min-height: 300px;
 }
-
 .flick {
   height: 55px;
   border-radius: 0px 0px 50% 50%;
@@ -297,7 +295,6 @@ $gold-text: #debd85;
     font-size: 30px;
   }
 }
-
 .header {
   font-size: 14px;
   margin-top: 35px;
@@ -305,35 +302,29 @@ $gold-text: #debd85;
     font-weight: 600;
     color: $gold-text;
   }
-
   .slogan, .postscript {
     color: #fff;
     margin-top: 5px;
     word-break: break-all;
   }
-
   .slogan {
     font-size: 16px;
   }
-
   .balance {
     color: #fff;
     margin-bottom: 30px;
   }
-
   .loading {
     position: relative;
     display: inline-block;
     padding-top: 30px;
     padding-bottom: 25px;
-
     .money-circle {
       display: inline-block;
       box-sizing: border-box;
       width: 95px;
       height: 95px;
     }
-
     .money {
       position: absolute;
       left: 50%;
@@ -369,10 +360,10 @@ $gold-text: #debd85;
   background-color: #fff;
   overflow-y: auto;
   .data {
-  width: 260px;
-  max-height: 260px;
-  min-height: 150px;
-  margin: 0 auto;
+    width: 260px;
+    max-height: 260px;
+    min-height: 150px;
+    margin: 0 auto;
     .title {
       font-size: 12px;
       margin-top: 5px;
@@ -389,7 +380,6 @@ $gold-text: #debd85;
     }
   }
 }
-
 .form {
   width: 305px;
   margin: 0 auto;
@@ -412,11 +402,9 @@ $gold-text: #debd85;
     }
   }
 }
-
 .error{
   color: #ddd;
 }
-
 .loader {
   font-size: 10px;
   margin: 50px auto;
@@ -445,18 +433,16 @@ $gold-text: #debd85;
     }
   }
 }
-
 .loader:before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
   width: 50%;
   height: 50%;
   background: #f8e71c;
   border-radius: 100% 0 0 0;
-  position: absolute;
-  top: 0;
-  left: 0;
-  content: '';
 }
-
 .loader:after {
   content: '';
   background: $main_red;
@@ -470,7 +456,6 @@ $gold-text: #debd85;
   bottom: 0;
   right: 0;
 }
-
 @keyframes load3 {
   0% {
     transform: rotate(0deg);
@@ -479,11 +464,8 @@ $gold-text: #debd85;
     transform: rotate(360deg);
   }
 }
-
 .congra {
   color: #fff;
-  padding-bottom: 10px;
   font-size: 14px;
 }
-
 </style>

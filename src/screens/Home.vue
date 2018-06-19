@@ -1283,6 +1283,9 @@ export default {
 .unlogined-dialog {
   .el-dialog__headerbtn {
     z-index: 1;
+    top: 10px;
+    right: 15px;
+    font-size: 18px;
   }
 
   .el-tabs__nav {

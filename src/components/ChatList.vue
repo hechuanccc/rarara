@@ -5,12 +5,10 @@
         type="text"
         placeholder="请输入帐号名"
         class="ipt-search"
-        @input="search">
-      </el-input>
+        @input="search"></el-input>
       <span class="el-icon-search pointer" @click="search"></span>
-      <div v-if="searchData.searching">
-        搜索 「{{searchData.input}}」中
-        <span class="exit-search pointer" @click="exitSearch">退出搜索</span>
+      <div v-if="searchData.searching">搜索 「{{searchData.input}}」中
+        <span class="exit-search fr pointer" @click="exitSearch">退出搜索</span>
       </div>
     </div>
     <div class="chats-container">
@@ -18,13 +16,8 @@
         <li v-for="(item, index) in showing"
           :key="index"
           v-if="item"
-          :class="['li', 'pointer',
-            {
-              online: item.online,
-            }]">
-          <el-popover
-            placement="right"
-            trigger="click">
+          :class="['li', 'pointer', { online: item.online }]">
+          <el-popover placement="right" trigger="click">
             <div v-if="isManager">
               <div v-if="!item.banned" class="action pointer" @click="ban(item, 15, index)">禁言 {{item.remarks || item.nickname}}</div>
               <div v-if="!item.blocked" class="action pointer" @click="block(item, index)">拉黑 {{item.remarks || item.nickname}}</div>
@@ -37,13 +30,11 @@
             </div>
             <div slot="reference">
               <div class="illustration">
-                <img class="avatar"
+                <img class="avatar m-r"
                   :src="item.avatar || require('../assets/avatar.png')"
                   alt="avatar">
               </div>
-              <p class="title">
-                {{ item.remarks || item.nickname}}
-              </p>
+              <p class="title">{{ item.remarks || item.nickname}}</p>
             </div>
           </el-popover>
         </li>
@@ -59,7 +50,6 @@ import Icon from 'vue-awesome/components/Icon'
 import { getChatList, searchChatList, buildRoom, getChatUser, unbanChatUser, banChatUser, blockChatUser, unblockChatUser } from '../api'
 import { mapState, mapGetters } from 'vuex'
 import _ from 'lodash'
-
 export default {
   name: 'chatlist',
   components: {
@@ -181,11 +171,8 @@ export default {
       })
     },
     enterChat (chat) {
-      if (this.loading) {
-        return
-      }
+      if (this.loading) { return }
       this.loading = true
-
       buildRoom({
         type: 2,
         status: 1,
@@ -204,7 +191,6 @@ export default {
     },
     initChats () {
       this.fillMemberChats(this.pagination)
-
       this.interval = setInterval(() => {
         this.fillMemberChats()
       }, 60000)
@@ -215,7 +201,6 @@ export default {
         banned_time: mins
       }).then((data) => {
         this.getUser(chat.default_room)
-
         this.$set(this.chats[index], 'banned', true)
         this.$forceUpdate()
         this.$message({
@@ -316,23 +301,21 @@ export default {
    height: calc(100% - 90px);
    overflow-y: auto;
 }
-
 .chats {
   border-top: 1px solid rgba(255, 255, 255, .1);
   .title {
-    color: #fff;
-    font-size: 13px;
-    vertical-align: middle;
     display: inline-block;
     width: 150px;
-    text-overflow: ellipsis;
     overflow: hidden;
+    vertical-align: middle;
+    font-size: 13px;
+    color: #fff;
+    text-overflow: ellipsis;
     white-space: nowrap;
   }
   .avatar {
     width: 28px;
     height: 28px;
-    margin-right: 10px;
     vertical-align: middle;
   }
   .public .title {
@@ -363,17 +346,13 @@ export default {
 .load-more {
   padding: 5px 10px;
 }
-
 .illustration {
   display: inline-block;
 }
-
 /* search */
-
 .search-form {
   position: relative;
 }
-
 .ipt-search /deep/ .el-input__inner{
   background: #999;
   border: none;
@@ -392,10 +371,6 @@ export default {
     color: #666;
   }
 }
-.exit-search {
-  float: right;
-}
-
 .action {
   position: relative;
   border-bottom: 1px solid #ddd;
@@ -403,13 +378,13 @@ export default {
   padding-bottom: 5px;
   line-height: 24px;
   &:after {
-    position: absolute;
     content: '';
+    position: absolute;
     left: 0;
     bottom: 0;
     width: 0;
     height: 1px;
-    background: #000;
+    background-color: #000;
     transition: width .3s;
   }
   &:hover {
