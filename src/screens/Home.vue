@@ -80,12 +80,11 @@
     </el-header>
 
     <el-container class="home-container full-height">
-      <el-aside v-if="asideShown" width="250px" class="aside">
+      <el-aside v-if="asideShown" width="250px" class="aside two">
 
         <el-tabs
           v-model="activeTab"
           type="border-card">
-
           <el-tab-pane
             :disabled="loading"
             label="会员列表"
@@ -101,7 +100,6 @@
               </ChatList>
             </div>
           </el-tab-pane>
-
           <el-tab-pane
             :disabled="loading"
             label="聊天列表"
@@ -111,11 +109,8 @@
               <RoomList :defaultHall="user.default_room_id" v-if="activeTab === 'rooms'"/>
             </div>
           </el-tab-pane>
-
         </el-tabs>
-
       </el-aside>
-
       <el-main class="chat-area full-height">
         <chat-room :class="{'p-l': !asideShown}"
           @handleUserRelease="handleUserRelease"
@@ -125,8 +120,7 @@
           @chatStatusChanged="chatStatusChanged">
         </chat-room>
       </el-main>
-
-      <el-aside width="395px" class="aside">
+      <el-aside width="30%" class="aside">
         <el-tabs type="border-card" v-model="activeAside">
           <el-tab-pane
             :label="'文字开奖'"
@@ -142,6 +136,14 @@
             name="plan">
             <div class="plans-container" v-if="activeAside === 'plan'">
               <plan/>
+            </div>
+          </el-tab-pane>
+          <el-tab-pane v-if="globalPreference.mobile_lottery_url"
+            :label="'彩票投注'"
+            class="full-height"
+            name="betting">
+            <div class="plans-container" v-if="activeAside === 'betting'">
+              <iframe :style="{'width': '100%', 'height': 'calc(100% - 40px)'}" :src="globalPreference.mobile_lottery_url"></iframe>
             </div>
           </el-tab-pane>
         </el-tabs>
@@ -218,7 +220,6 @@
                     @mouseover="currentChooseAvatar = require('../assets/avatar.png')"
                     @mouseout="currentChooseAvatar = tempAvatar ? tempAvatar : user.avatar">恢复预设头像</label>
                 </p>
-
                 <el-form :model="editUser"
                   status-icon
                   :rules="rules"
@@ -244,7 +245,6 @@
                               class="inp">
                     </el-input>
                   </el-form-item>
-
                   <el-form-item label="用户余额"  label-width="85px">
                     <p class="member-info">{{user.balance}}</p>
                   </el-form-item>
@@ -266,7 +266,6 @@
                   </el-form-item>
                 </el-form>
               </el-tab-pane>
-
               <el-tab-pane label="红包纪录" name="record">
                 <div  v-if="activePanel === 'record'" v-loading="tableLoading">
                   <el-table
@@ -304,7 +303,6 @@
                   </el-pagination>
                 </div>
               </el-tab-pane>
-
               <el-tab-pane label="签到纪录" name="checkin">
                 <div  v-if="activePanel === 'checkin'" v-loading="tableLoading">
                   <el-table
@@ -350,7 +348,6 @@
                   </el-pagination>
                 </div>
               </el-tab-pane>
-
               <el-tab-pane class="edit-password-panel"
                 label="修改密码"
                 name="password"
