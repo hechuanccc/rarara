@@ -174,10 +174,20 @@ body {
     height: 100%;
     padding: 0;
   }
-
+  &.two {
+    .el-tabs--border-card>.el-tabs__header .el-tabs__item {
+      border: none;
+      width: calc(100% / 2);
+      padding: 0;
+      text-align: center;
+      color: #d8d4d4;
+      margin: 0;
+      background: #3d4650;
+    }
+  }
   .el-tabs--border-card>.el-tabs__header .el-tabs__item {
     border: none;
-    width: 50%;
+    width: calc(100% / 3);
     padding: 0;
     text-align: center;
     color: #d8d4d4;
