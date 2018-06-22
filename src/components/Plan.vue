@@ -42,7 +42,7 @@
               {{ `${p.issue_numbers} ${p.scheme}  ( ${p.numbers_predicted} ) ${(p.result && p.result.draw_result.length) ? `${p.result.draw_result || ''}` : ''}` }}
             </p>
             <p class="text" v-if="!(loading || prediction.length )">暂无资料</p>
-            <p class="scroll-trigger" :ref="`prediction${i}`"></p>
+            <!-- <p class="scroll-trigger" :ref="`prediction${i}`"></p> -->
           </div>
         </div>
       </div>
@@ -244,4 +244,5 @@ export default {
     }
   }
 }
+
 </style>
