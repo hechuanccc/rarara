@@ -120,7 +120,7 @@
           @chatStatusChanged="chatStatusChanged">
         </chat-room>
       </el-main>
-      <el-aside width="30%" class="aside">
+      <el-aside width="30%" :class="['aside',{'two': !globalPreference.mobile_lottery_url}]">
         <el-tabs type="border-card" v-model="activeAside">
           <el-tab-pane
             :label="'文字开奖'"
