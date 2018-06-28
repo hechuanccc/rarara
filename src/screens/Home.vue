@@ -507,7 +507,7 @@ export default {
     }
 
     return {
-      rechargeCenter: 'zz79.com',
+      rechargeCenter: 'https://www.zz79.com',
       activeTab: 'chats',
       activeAside: 'draw',
       swichAvatar: false,
