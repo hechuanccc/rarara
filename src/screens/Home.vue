@@ -23,6 +23,11 @@
             </el-col>
           </el-row>
         </el-col>
+        <el-col :span="2" :offset="1">
+          <a class="recharge" target="_blank" :href="rechargeCenter">
+            快速充值中心
+          </a>
+        </el-col>
         <el-col class="head-right fr" :span="10">
           <div class="mobile-promotion" @mouseover="showQR = true" @mouseleave="showQR = false">
             <icon class="icon m-r-sm" name="mobile-phone" scale="2.5"></icon>
@@ -65,7 +70,7 @@
               </div>
             </a>
           </div>
-          <div class="visitor-actions fr" v-else>
+          <div class="visitor-actions m-l fr" v-else>
             <span class="login m-r-lg pointer" @click="$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})">
               <icon class="icon m-r-sm" name="user" scale="1.6"></icon>
               <span class="text">登录</span>
@@ -502,6 +507,7 @@ export default {
     }
 
     return {
+      rechargeCenter: 'https://www.zz79.com',
       activeTab: 'chats',
       activeAside: 'draw',
       swichAvatar: false,
@@ -1000,7 +1006,7 @@ export default {
 }
 
 .head-right {
-  width: 375px;
+  width: auto;
   line-height: 80px;
   vertical-align: middle;
   .checkin-btn {
@@ -1274,6 +1280,14 @@ export default {
   }
 }
 
+.recharge {
+  color: #fff;
+  font-size: 18px;
+  line-height: 80px;
+  &:hover {
+    border-bottom: 1px solid #fff;
+  }
+}
 </style>
 
 <style lang="scss">
