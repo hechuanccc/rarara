@@ -1,5 +1,5 @@
 <template>
-  <div class="rooms-container" v-loading="lastMsgloading" element-loading-text="聊天室加载中" element-loading-background="rgba(0, 0, 0, 0.3)">
+  <div class="rooms-container">
     <ul class="list" v-if="rooms.length">
       <li :class="['item', 'pointer',
         { active: chat.current.roomId === room.id },
@@ -48,6 +48,10 @@ export default {
       this.previousRoom = room
 
       if (room.type === 1) {
+        if (!this.roomMsgs[room.id]) {
+          this.$store.dispatch('sendJoinCommand', [room.id])
+        }
+
         this.$store.dispatch('startChat', {id: room.id, type: 1})
       } else {
         this.$store.dispatch('startChat', {
@@ -111,12 +115,6 @@ export default {
         }
 
         this.$store.dispatch('setRooms', temp)
-
-        if (this.myRoles.includes('manager')) {
-          let roomIds = this.rooms.map(room => room.id)
-          roomIds.shift()
-          this.$store.dispatch('sendJoinCommand', roomIds)
-        }
       })
     }
   },
@@ -130,19 +128,7 @@ export default {
     ]),
     ...mapGetters([
       'myRoles'
-    ]),
-    currentIndex () {
-      return _.findIndex(this.rooms, obj => obj.id === this.chat.current.roomId)
-    },
-    lastMsgloading () {
-      let loading
-      if (this.myRoles.includes('manager')) {
-        loading = this.rooms.length !== Object.keys(this.roomMsgs).length
-      } else {
-        loading = false
-      }
-      return loading
-    }
+    ])
   },
   created () {
     this.initRooms()
