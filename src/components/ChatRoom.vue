@@ -318,16 +318,18 @@ export default {
         }
       }
     },
-    'chat.current.roomId' (val) {
-      this.RECEIVER = val
+    'chat.current.roomId': {
+      handler: function (val) {
+        this.RECEIVER = val
+        this.roomMessages[val] = this.roomMessages[val] || []
+        this.showingMsgs = this.roomMessages[val]
+        this.$store.dispatch('getChatMessages', this.roomMessages[val])
 
-      this.roomMessages[val] = this.roomMessages[val] || []
-      this.showingMsgs = this.roomMessages[val]
-      this.$store.dispatch('getChatMessages', this.roomMessages[val])
-
-      this.$nextTick(() => {
-        this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
-      })
+        this.$nextTick(() => {
+          this.$refs.msgEnd && this.$refs.msgEnd.scrollIntoView()
+        })
+      },
+      deep: true
     },
     'roomMessages': {
       handler: function () {
@@ -594,7 +596,11 @@ export default {
                 this.$set(this.roomMessages, data.room_id, latestMsgs.reverse())
 
                 if (this.myRoles.includes('manager')) {
-                  this.showingMsgs = this.roomMessages[this.user.default_room_id]
+                  if (data.room_id === this.user.default_room_id) {
+                    this.showingMsgs = this.roomMessages[this.user.default_room_id]
+                  } else {
+                    this.showingMsgs = this.roomMessages[data.room_id]
+                  }
                 } else {
                   this.showingMsgs = this.roomMessages[data.room_id]
                 }
