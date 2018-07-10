@@ -6,7 +6,7 @@
       class="info-area"
       ref="editUser">
       <div class="text-center m-b">
-        <img class="avatar-img" :src="member.avatar ? member.avatar : defaultAvatar" :alt="member.username">
+        <img class="avatar-img" :src="member.avatar || defaultAvatar" :alt="member.username">
       </div>
       <el-form-item label="用户名" label-width="85px">
         <span class="member-info">{{member.username}}</span>
@@ -18,10 +18,19 @@
         <p class="member-info">{{member.logined | whether}}</p>
       </el-form-item>
       <el-form-item label="是否禁言" label-width="85px">
-        <p class="member-info">{{member.banned | whether}}</p>
+        <p class="member-info">
+          {{isBanned | whether}}
+          <el-button type="danger" class="restraint-button" v-if="isBanned" @click.native="unban(member.username, roomId)">解除禁言</el-button>
+          <el-button type="danger" class="restraint-button" v-if="!isBanned" @click.native="ban(15, roomId)">禁言15分钟</el-button>
+          <el-button type="danger" class="restraint-button" v-if="!isBanned" @click.native="ban(30, roomId)">禁言30分钟</el-button>
+        </p>
       </el-form-item>
       <el-form-item label="是否拉黑" label-width="85px">
-        <p class="member-info">{{member.is_blocked | whether}}</p>
+        <p class="member-info">
+          {{isBlocked | whether}}
+          <el-button type="danger" class="restraint-button" v-if="!isBlocked" @click.native="block(roomId)">加入黑名单</el-button>
+          <el-button type="danger" class="restraint-button" v-if="isBlocked" @click.native="unblock(member.username, roomId)">解除拉黑</el-button>
+        </p>
       </el-form-item>
       <el-form-item label="备注" label-width="85px">
         <el-input
@@ -46,9 +55,8 @@
   </div>
 </template>
 
-
 <script>
-import { fetchMember, updateMember } from '../api'
+import { banChatUser, blockChatUser, unbanChatUser, unblockChatUser, fetchMember, updateMember, getChatUser } from '../api'
 import { msgFormatter } from '../utils'
 
 export default {
@@ -71,7 +79,9 @@ export default {
         result: false
       },
       defaultAvatar: require('../assets/avatar.png'),
-      loading: false
+      loading: false,
+      isBanned: false,
+      isBlocked: false
     }
   },
   filters: {
@@ -80,14 +90,102 @@ export default {
     }
   },
   methods: {
+    getUser (roomId) {
+      getChatUser(roomId || this.roomId).then(response => {
+        if (!response.banned_users.length || !response.block_users.length) {
+          this.isBanned = false
+          this.isBlocked = false
+        }
+        let newBannedUsers = response.banned_users.map((member) => member.username)
+        let newBlockUsers = response.block_users.map((member) => member.username)
+        this.isBanned = newBannedUsers.includes(this.member.username)
+        this.isBlocked = newBlockUsers.includes(this.member.username)
+      })
+    },
+    ban (mins, roomId) {
+      banChatUser(roomId, {
+        user: this.member.username,
+        banned_time: mins
+      }).then((data) => {
+        this.getUser()
+        this.$message({
+          showClose: true,
+          message: data.status,
+          type: 'success'
+        })
+      }, errorMsg => {
+        this.$message({
+          showClose: true,
+          message: errorMsg,
+          type: 'error'
+        })
+      })
+    },
+    unban (user, roomId) {
+      unbanChatUser(roomId, {
+        user: user
+      }).then((data) => {
+        this.getUser()
+
+        this.$message({
+          showClose: true,
+          message: data.status,
+          type: 'success'
+        })
+      }, errorMsg => {
+        let data = errorMsg.response.data
+        this.$message({
+          showClose: true,
+          message: data.error,
+          type: 'error'
+        })
+      })
+    },
+    block (roomId) {
+      blockChatUser(roomId, {
+        user: this.member.username
+      }).then((data) => {
+        this.getUser()
+        this.$message({
+          showClose: true,
+          message: data.status,
+          type: 'success'
+        })
+      }, errorMsg => {
+        this.$message({
+          showClose: true,
+          message: errorMsg.response.data.error,
+          type: 'error'
+        })
+      })
+    },
+    unblock (user, roomId) {
+      unblockChatUser(roomId, {
+        user: user
+      }).then((data) => {
+        this.getUser()
+        this.$message({
+          showClose: true,
+          message: data.status,
+          type: 'success'
+        })
+      }, errorMsg => {
+        let data = errorMsg.response.data
+        this.$message({
+          showClose: true,
+          message: data.error,
+          type: 'error'
+        })
+      })
+    },
     fetchMember () {
       this.loading = true
 
       fetchMember(this.userId).then(res => {
         this.changed.oldContent = res.remarks
         this.member = res
-
         this.loading = false
+        this.getUser()
       }, err => {
         this.$message({
           message: msgFormatter(err),
@@ -120,6 +218,11 @@ export default {
         result: false
       }
       this.loading = false
+    }
+  },
+  computed: {
+    roomId () {
+      return this.$store.state.user.default_room_id
     }
   },
   watch: {
@@ -160,4 +263,8 @@ export default {
   color: #999;
 }
 
+.restraint-button {
+  padding: 5px;
+  margin-left: 10px;
+}
 </style>

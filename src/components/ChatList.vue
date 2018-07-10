@@ -18,15 +18,13 @@
           v-if="item"
           :class="['li', 'pointer', { online: item.online }]">
           <el-popover placement="right" trigger="click">
-            <div v-if="isManager">
+            <div>
+              <div class="action pointer" @click="enterChat(item)">与 {{item.remarks || item.nickname}} 私聊</div>
+              <div class="action pointer" @click="handleChatClick(item)">查看 {{item.remarks || item.nickname}}</div>
               <div v-if="!item.banned" class="action pointer" @click="ban(item, 15, index)">禁言 {{item.remarks || item.nickname}}</div>
               <div v-if="!item.blocked" class="action pointer" @click="block(item, index)">拉黑 {{item.remarks || item.nickname}}</div>
               <div v-if="item.banned" class="action pointer" @click="unban(item, index)">解除禁言 {{item.remarks || item.nickname}}</div>
               <div v-if="item.blocked" class="action pointer" @click="unblock(item, index)">解除拉黑 {{item.remarks || item.nickname}}</div>
-            </div>
-            <div v-else>
-              <div class="action pointer" @click="enterChat(item)">与 {{item.remarks || item.nickname}} 私聊</div>
-              <div class="action pointer" @click="handleChatClick(item)">查看 {{item.remarks || item.nickname}}</div>
             </div>
             <div slot="reference">
               <div class="illustration">
@@ -196,7 +194,7 @@ export default {
       }, 60000)
     },
     ban (chat, mins, index) {
-      banChatUser(chat.default_room, {
+      banChatUser(chat.default_room || this.user.default_room_id, {
         user: chat.username,
         banned_time: mins
       }).then((data) => {
@@ -217,7 +215,7 @@ export default {
       })
     },
     unban (chat, index) {
-      unbanChatUser(chat.default_room, {
+      unbanChatUser(chat.default_room || this.user.default_room_id, {
         user: chat.username
       }).then((data) => {
         this.getUser(chat.default_room)
@@ -237,7 +235,7 @@ export default {
       })
     },
     block (chat, index) {
-      blockChatUser(chat.default_room, {
+      blockChatUser(chat.default_room || this.user.default_room_id, {
         user: chat.username
       }).then((data) => {
         this.getUser(chat.default_room)
@@ -257,7 +255,7 @@ export default {
       })
     },
     unblock (chat, index) {
-      unblockChatUser(chat.default_room, {
+      unblockChatUser(chat.default_room || this.user.default_room_id, {
         user: chat.username
       }).then((data) => {
         this.getUser(chat.default_room)
@@ -277,7 +275,7 @@ export default {
       })
     },
     getUser (roomId) {
-      getChatUser(roomId).then(response => {
+      getChatUser(roomId || this.user.default_room_id).then(response => {
         this.$store.dispatch('setRestraintMembers', {
           roomId: roomId,
           data: {

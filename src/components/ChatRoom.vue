@@ -847,7 +847,7 @@ export default {
         this.restraint.dialogVisible = true
       }
 
-      if (this.chat.current.roomId === 1 &&
+      if (this.chat.current.roomId === this.user.default_room_id &&
         this.myRoles.includes('customer service') &&
         userRole.length === 1 &&
         userRole[0] === 'member') {
