@@ -148,7 +148,7 @@
           <span v-if="myRoles.includes('manager')" class="btn-control right" @click="openManageDialog()" >
             <icon name="cog" class="font-cog" scale="1.4"></icon>
           </span>
-          <div class="chat-buttons"
+          <!-- <div class="chat-buttons"
             v-if="ws &&
               (!myRoles.includes('customer service') &&
               !myRoles.includes('manager') &&
@@ -162,7 +162,7 @@
               v-for="(room, index) in rooms">
               {{`客服 ${index + 1}`}}
             </el-button>
-          </div>
+          </div> -->
         </div>
         <div class="typing">
           <div :class="['txtinput', 'el-textarea', !chatable ? 'is-disabled' : '']">

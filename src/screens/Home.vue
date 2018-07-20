@@ -85,7 +85,7 @@
     </el-header>
 
     <el-container class="home-container full-height">
-      <el-aside v-if="asideShown" width="250px" class="aside two">
+      <el-aside v-if="asideShown" width="250px" :class="['aside', {two: myRoles.includes('manager')}, {one: myRoles.includes('customer service')},]">
 
         <el-tabs
           v-model="activeTab"
@@ -106,6 +106,7 @@
             </div>
           </el-tab-pane>
           <el-tab-pane
+             v-if="myRoles.includes('manager')"
             :disabled="loading"
             label="聊天列表"
             class="full-height"

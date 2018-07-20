@@ -19,8 +19,8 @@
           :class="['li', 'pointer', { online: item.online }]">
           <el-popover placement="right" trigger="click">
             <div>
-              <div class="action pointer" @click="enterChat(item)">与 {{item.remarks || item.nickname}} 私聊</div>
-              <div class="action pointer" @click="handleChatClick(item)">查看 {{item.remarks || item.nickname}}</div>
+              <!-- <div v-if="!isManager" class="action pointer" @click="enterChat(item)">与 {{item.remarks || item.nickname}} 私聊</div> -->
+              <div v-if="!isManager" class="action pointer" @click="handleChatClick(item)">查看 {{item.remarks || item.nickname}}</div>
               <div v-if="!item.banned" class="action pointer" @click="ban(item, 15, index)">禁言 {{item.remarks || item.nickname}}</div>
               <div v-if="!item.blocked" class="action pointer" @click="block(item, index)">拉黑 {{item.remarks || item.nickname}}</div>
               <div v-if="item.banned" class="action pointer" @click="unban(item, index)">解除禁言 {{item.remarks || item.nickname}}</div>
