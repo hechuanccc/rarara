@@ -175,6 +175,12 @@ body {
     padding: 0;
   }
 
+  &.one {
+    .el-tabs--border-card>.el-tabs__header .el-tabs__item {
+      width: 100%;
+    }
+  }
+
   &.two {
     .el-tabs--border-card>.el-tabs__header .el-tabs__item {
       border: none;
@@ -186,9 +192,11 @@ body {
       background: #3d4650;
     }
   }
+
   .el-tabs--border-card {
     overflow-y: hidden;
   }
+
   .el-tabs--border-card>.el-tabs__header .el-tabs__item {
     border: none;
     width: calc(100% / 3);
