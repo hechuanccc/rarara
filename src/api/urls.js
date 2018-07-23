@@ -14,7 +14,7 @@ export default {
   user: host + '/v1/token/identity/',
   logout: host + '/logout/',
   chatEmoji: host + '/v1/emoji/',
-  sendImgToChat: host + '/v1/image/',
+  sendMediaToChat: host + '/v1/media/',
   annoucement: apiv1 + '/announcement/',
   latest_results: ghost + '/latest_results/',
   memberRoom: host + '/v1/member/room/',

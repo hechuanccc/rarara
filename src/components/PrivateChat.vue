@@ -96,7 +96,7 @@
 </template>
 
 <script>
-import { sendImgToChat } from '../api'
+import { sendMediaToChat } from '../api'
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/smile-o'
 import {mapState} from 'vuex'
@@ -186,9 +186,9 @@ export default {
       }
       let formData = new FormData()
       formData.append('receiver', this.chat.current.roomId)
-      formData.append('image', file)
+      formData.append('media', file)
 
-      sendImgToChat(formData).then((data) => {
+      sendMediaToChat(formData).then((data) => {
         fileInp.value = ''
       })
     },

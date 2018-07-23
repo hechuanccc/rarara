@@ -75,14 +75,23 @@
                     @imgLoad="imgLoadCount--"/>
                 </div>
                 <div :class="['bubble', 'bubble' + item.type]" v-else>
-                  <p>
+                  <div>
                     <span v-if="item.type === 0 || item.type === 4 || item.type === 8">{{item.content}}</span>
-                    <img-async @click.native="showImageMsg = true; showImageMsgUrl = item.content"
-                      v-else-if="item.type === 1"
-                      :src="item.content"
-                      @imgStart="imgLoadCount++"
-                      @imgLoad="imgLoadCount--"/>
-                  </p>
+                    <p v-else-if="item.type === 1">
+                      <video v-if="videoType(item.content)" 
+                        :src="item.content" 
+                        controls
+                        preload 
+                        width="100%">
+                        您的浏览器不支持 video 播放
+                      </video>
+                      <img-async @click.native="showImageMsg = true; showImageMsgUrl = item.content"
+                        v-else="!videoType(item.content)"
+                        :src="item.content"
+                        @imgStart="imgLoadCount++"
+                        @imgLoad="imgLoadCount--"/>
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -131,12 +140,26 @@
               <span title="上传图片">
                 <i :class="['el-icon-picture', {'not-allowed': personalSetting.blocked}]"></i>
                 <input :disabled="!chatable"
-                  @change="sendMsgImg"
+                  @change="uploadMedia($refs.fileImgSend)"
                   type="file"
                   ref="fileImgSend"
                   class="img-upload-input"
                   id="imgUploadInput"
                   accept=".jpg, .png, .gif, .jpeg, image/jpeg, image/png, image/gif">
+              </span>
+            </label>
+          </a>
+          <a href="javascript:void(0)" :class="['btn-control', 'btn-smile', 'pointer', {'not-allowed': personalSetting.blocked}]">
+            <label for="videoUploadInput" @click="handleImgIconClick($event)">
+              <span title="上传视频">
+                <icon name="camera" class="font-camera" scale="1.3"></icon>
+                <input :disabled="!chatable"
+                  @change="uploadMedia($refs.fileVideoSend)"
+                  type="file"
+                  ref="fileVideoSend"
+                  class="img-upload-input"
+                  id="videoUploadInput"
+                  accept="video/*">
               </span>
             </label>
           </a>
@@ -246,7 +269,8 @@
 import Icon from 'vue-awesome/components/Icon'
 import 'vue-awesome/icons/cog'
 import 'vue-awesome/icons/smile-o'
-import { fetchChatEmoji, sendImgToChat, getChatUser, takeEnvelope } from '../api'
+import 'vue-awesome/icons/camera'
+import { fetchChatEmoji, sendMediaToChat, getChatUser, takeEnvelope } from '../api'
 import urls from '../api/urls'
 import { mapGetters, mapState } from 'vuex'
 import PrivateChat from '../components/PrivateChat'
@@ -774,7 +798,7 @@ export default {
     sendSticker () {
       this.showStickerPopover = false
     },
-    sendMsgImg (e) {
+    uploadMedia (fileInp) {
       if (!this.chatable) {
         return
       }
@@ -782,24 +806,63 @@ export default {
         this.$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
         return
       }
-      let fileInp = this.$refs.fileImgSend
       let file = fileInp.files[0]
-      if (!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(fileInp.value) || !this.chatable) {
-        this.openMessageBox('文件格式不正确或您目前尚不符合发言条件', 'error')
+      let reg
+      let size
+      let type
+
+      if (fileInp.id === 'imgUploadInput') {
+        type = '图片'
+        reg = /\.(gif|jpg|jpeg|png)$/i
+        size = 1
+      } else {
+        type = '视频'
+        reg = /\.(flv|avi|wmv|mp4|mov)$/i
+        size = 2
+      }
+
+      if (!reg.test(fileInp.value) || !this.chatable) {
+        this.openMessageBox(type + '格式不正确或您目前尚不符合发言条件', 'error')
         return false
       }
-      if (file.size > 1024 * 1024) {
-        this.openMessageBox('图片尺寸太大，请选择较小尺寸的图片。', 'error')
+      if (file.size > size * 1024 * 1024) {
+        this.openMessageBox(type + '尺寸太大，请选择较小尺寸的' + type, 'error')
         return
       }
       let formData = new FormData()
 
       formData.append('receiver', this.RECEIVER)
-      formData.append('image', file)
-      sendImgToChat(formData).then((data) => {
+      formData.append('media', file)
+      sendMediaToChat(formData).then((data) => {
         fileInp.value = ''
       })
     },
+    // sendMsgImg (e) {
+    //   if (!this.chatable) {
+    //     return
+    //   }
+    //   if (this.myRoles.includes('visitor')) {
+    //     this.$store.dispatch('updateUnloginedDialog', {visible: true, status: 'Login'})
+    //     return
+    //   }
+    //   let fileInp = this.$refs.fileImgSend
+    //   let file = fileInp.files[0]
+    //   if (!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(fileInp.value) || !this.chatable) {
+    //     this.openMessageBox('文件格式不正确或您目前尚不符合发言条件', 'error')
+    //     return false
+    //   }
+    //   if (file.size > 1024 * 1024) {
+    //     this.openMessageBox('图片尺寸太大，请选择较小尺寸的图片。', 'error')
+    //     return
+    //   }
+    //   let formData = new FormData()
+
+    //   formData.append('receiver', this.RECEIVER)
+    //   formData.append('image', file)
+    //   sendImgToChat(formData).then((data) => {
+    //     fileInp.value = ''
+    //   })
+    // },
     sendMsg () {
       if (!this.chatable) {
         return
@@ -874,6 +937,9 @@ export default {
         user_id: this.user.id,
         status: 'disconnect'
       }))
+    },
+    videoType (str) {
+      return /\.(flv|avi|wmv|mp4|mov)$/i.test(str)
     }
   },
   destroyed () {
